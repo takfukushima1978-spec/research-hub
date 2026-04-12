@@ -169,7 +169,7 @@
 const SUPABASE_URL = "https://swgdzytwyvkwvncaqjks.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3Z2R6eXR3eXZrd3ZuY2FxamtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzM2NTAsImV4cCI6MjA4MzU0OTY1MH0.ENvRrnMvvrYECscFNleKI2lBydZ6_aQ621V28bMwcCE";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
   db: { schema: 'research' }
 });
 
@@ -189,11 +189,11 @@ const TAG_COLORS = {
 
 // ===== Auth =====
 async function initAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
   }
-  supabase.auth.onAuthStateChange((event, session) => {
+  sb.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
     renderAuthArea();
     renderList(getFiltered());
@@ -214,14 +214,14 @@ function renderAuthArea() {
 }
 
 async function signIn() {
-  await supabase.auth.signInWithOAuth({
+  await sb.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.origin + window.location.pathname }
   });
 }
 
 async function signOut() {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   currentUser = null;
   renderAuthArea();
   renderList(getFiltered());
@@ -492,7 +492,7 @@ async function submitArticle() {
   const tagL2 = document.getElementById('addTagL2').value || null;
   const tagIds = [tagL1, tagL2].filter(Boolean);
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (!session) { alert('ログインが必要です'); return; }
 
   const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/add_manual_article", {
