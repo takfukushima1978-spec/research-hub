@@ -4,199 +4,528 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Research Hub</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; }
-  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 32px 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
-  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 10px; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 24px 20px 16px; text-align: center; position: sticky; top: 0; z-index: 10; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 680px; margin: 0 auto 12px; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; }
   .header h1 { font-size: 22px; font-weight: 800; }
-  .header p { font-size: 12px; opacity: 0.7; margin-top: 4px; }
-  .filters { display: flex; gap: 8px; padding: 12px 16px; max-width: 680px; margin: 0 auto; overflow-x: auto; }
-  .filters button { background: #fff; border: 1.5px solid #ddd; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; }
-  .filters button.active { background: #e94560; color: #fff; border-color: #e94560; }
+  .header p { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+  .auth-area { display: flex; align-items: center; gap: 8px; }
+  .auth-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .auth-btn:hover { background: rgba(255,255,255,0.25); }
+  .auth-email { font-size: 11px; color: rgba(255,255,255,0.7); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .add-btn { background: #e94560; color: #fff; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 20px; font-weight: 700; cursor: pointer; line-height: 32px; text-align: center; }
+
+  /* Filters */
+  .filter-section { max-width: 680px; margin: 0 auto; padding: 8px 16px 0; }
+  .filter-row { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; -webkit-overflow-scrolling: touch; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-label { font-size: 11px; color: #999; font-weight: 600; padding: 4px 0 2px; }
+  .fbtn { background: #fff; border: 1.5px solid #ddd; border-radius: 16px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .fbtn.active { background: #e94560; color: #fff; border-color: #e94560; }
+  .fbtn .icon { margin-right: 2px; }
+  .tag-l2-row { display: none; }
+  .tag-l2-row.show { display: flex; }
+
+  /* Search */
+  .search-bar { max-width: 680px; margin: 0 auto; padding: 10px 16px 0; }
+  .search-bar input { width: 100%; padding: 9px 14px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 14px; outline: none; }
+  .search-bar input:focus { border-color: #e94560; }
+  .count { max-width: 680px; margin: 0 auto; padding: 6px 20px 0; font-size: 12px; color: #999; }
+
+  /* Cards */
   .list { max-width: 680px; margin: 0 auto; padding: 4px 0 80px; }
-  .card { background: #fff; margin: 10px 16px; padding: 18px 20px; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); cursor: pointer; }
+  .card { background: #fff; margin: 8px 16px; padding: 16px 18px; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); cursor: pointer; position: relative; transition: opacity 0.2s; }
+  .card.read { opacity: 0.55; }
+  .card.clipped { border-left: 4px solid #e94560; }
   .card:active { background: #f9f9f9; }
-  .card .meta { font-size: 12px; color: #e94560; font-weight: 700; margin-bottom: 6px; }
-  .card .title { font-size: 17px; font-weight: 800; color: #1a1a2e; line-height: 1.5; margin-bottom: 6px; }
-  .card .summary { font-size: 14px; color: #888; line-height: 1.6; }
-  .loading { text-align: center; padding: 40px; color: #999; font-size: 15px; }
-  .error { text-align: center; padding: 40px; color: #e94560; font-size: 15px; }
+  .card .meta { font-size: 11px; color: #e94560; font-weight: 700; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+  .card .meta-left { display: flex; align-items: center; gap: 6px; }
+  .card .title { font-size: 16px; font-weight: 800; color: #1a1a2e; line-height: 1.5; margin-bottom: 4px; }
+  .card .summary { font-size: 13px; color: #888; line-height: 1.6; }
+  .card .tags-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .tag-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; color: #fff; }
+  .source-badge { font-size: 10px; padding: 2px 6px; border-radius: 8px; background: #f0f0f0; color: #888; }
+  .flag-btns { display: flex; gap: 4px; position: absolute; top: 14px; right: 14px; }
+  .flag-btn { background: none; border: 1px solid #e0e0e0; border-radius: 6px; padding: 3px 6px; font-size: 14px; cursor: pointer; line-height: 1; }
+  .flag-btn.on { border-color: #e94560; background: #fff0f3; }
+  .flag-btn:active { transform: scale(0.9); }
+
+  /* Article view */
   .article-view { display: none; }
   .article-view.show { display: block; }
   .list-view.hide { display: none; }
-  .back-btn { position: fixed; top: 10px; left: 10px; z-index: 20; background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
-  .article-content { line-height: 1.85; font-size: 18px; }
+  .back-btn { position: fixed; top: 10px; left: 10px; z-index: 20; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .ext-link { position: fixed; top: 10px; right: 10px; z-index: 20; background: #e94560; color: #fff; border: none; border-radius: 20px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
+
+  /* Article content styles */
+  .article-content { line-height: 1.85; font-size: 17px; }
   .article-content .header { position: relative; }
-  .article-content .header h1 { font-size: 26px; }
-  .article-content .card { cursor: default; }
-  .article-content .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
-  .article-content .card p { font-size: 17px; color: #444; margin-bottom: 12px; line-height: 1.85; }
-  .article-content .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
-  .article-content .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
-  .article-content .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .article-content .header h1 { font-size: 24px; }
+  .article-content .card { cursor: default; margin: 16px auto; max-width: 680px; }
+  .article-content .card h2 { font-size: 19px; font-weight: 800; color: #1a1a2e; margin-bottom: 12px; line-height: 1.5; }
+  .article-content .card p { font-size: 16px; color: #444; margin-bottom: 10px; line-height: 1.85; }
+  .article-content .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 10px 14px; margin: 14px 0; border-radius: 0 8px 8px 0; font-size: 15px; color: #555; }
+  .article-content .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 11px; font-weight: 700; width: 26px; height: 26px; line-height: 26px; text-align: center; border-radius: 50%; margin-bottom: 10px; }
+  .article-content .card .source-link { margin-top: 12px; padding-top: 8px; border-top: 1px dashed #e0e0e0; font-size: 13px; }
   .article-content .card .source-link a { color: #e94560; text-decoration: none; }
-  .article-content .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .article-content .lead { background: #fff; margin: -16px 16px 16px; padding: 20px 18px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 16px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
   .article-content .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
-  .article-content .dark-card { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
-  .article-content .dark-card h2 { color: #ff6b6b; }
-  .article-content .dark-card p { color: #ccc; }
-  .article-content .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
-  .article-content .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
-  .article-content .closing p { font-size: 16px; color: #666; line-height: 1.85; }
-  .article-content .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .article-content .dark-card, .article-content .warn-card, .article-content .impact, .article-content .security-section { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 24px 20px; border-radius: 12px; max-width: 680px; }
+  .article-content .dark-card h2, .article-content .warn-card h2, .article-content .impact h2, .article-content .security-section h2 { color: #ff6b6b; font-size: 19px; margin-bottom: 12px; }
+  .article-content .dark-card p, .article-content .warn-card p, .article-content .impact p, .article-content .security-section p { color: #ccc; font-size: 16px; margin-bottom: 10px; }
+  .article-content .warn, .article-content .security-section .warn { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-size: 15px; color: #ffaaaa; }
+  .article-content .impact .stat { display: inline-block; background: rgba(233,69,96,0.2); border: 1px solid rgba(233,69,96,0.4); padding: 6px 14px; border-radius: 8px; margin: 3px; font-size: 14px; color: #ff6b6b; font-weight: 700; }
+  .article-content .closing { background: #fff; margin: 20px auto; padding: 24px 20px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .article-content .closing h3 { font-size: 17px; color: #e94560; margin-bottom: 10px; }
+  .article-content .closing p { font-size: 15px; color: #666; line-height: 1.85; }
+  .article-content .sources { max-width: 680px; margin: 16px auto 40px; padding: 16px 20px; font-size: 13px; color: #888; }
   .article-content .sources a { color: #e94560; text-decoration: none; }
   .article-content .sources ul { list-style: none; padding: 0; }
-  .article-content .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .article-content .sources li { margin-bottom: 6px; padding-left: 14px; position: relative; }
   .article-content .sources li::before { content: '\2192'; position: absolute; left: 0; color: #ccc; }
-  .article-content .security-section { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
-  .article-content .security-section h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
-  .article-content .security-section p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
-  .article-content .security-section .warn { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); padding: 12px 16px; border-radius: 8px; margin: 14px 0; font-size: 16px; color: #ffaaaa; }
-  .article-content .warn-card { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
-  .article-content .warn-card h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
-  .article-content .warn-card p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
-  .article-content .warn-card .warn { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); padding: 12px 16px; border-radius: 8px; margin: 14px 0; font-size: 16px; color: #ffaaaa; }
-  .article-content .impact { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
-  .article-content .impact h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
-  .article-content .impact p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
-  .article-content .impact .stat { display: inline-block; background: rgba(233,69,96,0.2); border: 1px solid rgba(233,69,96,0.4); padding: 8px 16px; border-radius: 8px; margin: 4px; font-size: 15px; color: #ff6b6b; font-weight: 700; }
-  .article-content .pricing { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; text-align: center; }
-  .article-content .pricing h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 20px; }
-  .article-content .pricing .price { font-size: 40px; font-weight: 800; color: #fff; }
-  .article-content .pricing p { color: #ccc; font-size: 16px; text-align: left; }
-  .article-content code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 16px; color: #e94560; }
-  .search-bar { max-width: 680px; margin: 0 auto; padding: 12px 16px 0; }
-  .search-bar input { width: 100%; padding: 10px 16px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 15px; outline: none; }
-  .search-bar input:focus { border-color: #e94560; }
-  .count { max-width: 680px; margin: 0 auto; padding: 8px 20px 0; font-size: 13px; color: #999; }
+  .article-content .pricing { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 24px 20px; border-radius: 12px; max-width: 680px; text-align: center; }
+  .article-content .pricing h2 { color: #ff6b6b; }
+  .article-content .pricing .price { font-size: 36px; font-weight: 800; color: #fff; }
+  .article-content .pricing p { color: #ccc; font-size: 15px; text-align: left; }
+  .article-content code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 15px; color: #e94560; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 100; }
+  .modal-overlay.show { display: flex; align-items: flex-end; justify-content: center; }
+  .modal { background: #fff; border-radius: 16px 16px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 680px; max-height: 80vh; overflow-y: auto; }
+  .modal h3 { font-size: 18px; font-weight: 800; color: #1a1a2e; margin-bottom: 16px; }
+  .modal label { display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal textarea, .modal select { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; font-family: inherit; }
+  .modal input:focus, .modal textarea:focus, .modal select:focus { border-color: #e94560; }
+  .modal textarea { resize: vertical; min-height: 80px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+  .modal-actions button { flex: 1; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .btn-cancel { background: #f0f0f0; border: none; color: #666; }
+  .btn-submit { background: #e94560; border: none; color: #fff; }
+
+  .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
 </style>
 </head>
 <body>
 
 <div class="list-view" id="listView">
   <div class="header">
-    <div class="label">AI RESEARCH HUB</div>
+    <div class="header-top">
+      <div class="label">AI RESEARCH HUB</div>
+      <div class="auth-area" id="authArea"></div>
+    </div>
     <h1>Tak's Research Library</h1>
     <p>パーソナルAIリサーチ基盤</p>
   </div>
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="キーワードで検索..." oninput="filterArticles()">
+    <input type="text" id="searchInput" placeholder="キーワードで検索..." oninput="applyFilters()">
   </div>
-  <div class="filters" id="filters"></div>
+  <div class="filter-section">
+    <div class="filter-label">状態</div>
+    <div class="filter-row" id="statusFilters"></div>
+    <div class="filter-label">カテゴリ</div>
+    <div class="filter-row" id="catFilters"></div>
+    <div class="filter-label">タグ</div>
+    <div class="filter-row" id="tagL1Filters"></div>
+    <div class="filter-row tag-l2-row" id="tagL2Filters"></div>
+  </div>
   <div class="count" id="count"></div>
-  <div class="list" id="articleList">
-    <div class="loading">読み込み中...</div>
-  </div>
+  <div class="list" id="articleList"><div class="loading">読み込み中...</div></div>
 </div>
 
 <div class="article-view" id="articleView">
-  <button class="back-btn" onclick="showList()">← 一覧に戻る</button>
+  <button class="back-btn" onclick="showList()">← 戻る</button>
+  <a class="ext-link" id="extLink" href="#" target="_blank" style="display:none">原文を開く</a>
   <div class="article-content" id="articleContent"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>📎 記事を登録</h3>
+    <label>URL（任意）</label>
+    <input type="url" id="addUrl" placeholder="https://...">
+    <label>タイトル *</label>
+    <input type="text" id="addTitle" placeholder="記事のタイトル">
+    <label>メモ（任意）</label>
+    <textarea id="addBody" placeholder="要点やメモ"></textarea>
+    <label>タグ（大区分）</label>
+    <select id="addTagL1" onchange="updateTagL2Select()"><option value="">選択...</option></select>
+    <label>タグ（中区分）</label>
+    <select id="addTagL2"><option value="">選択...</option></select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('modalOverlay').classList.remove('show')">キャンセル</button>
+      <button class="btn-submit" onclick="submitArticle()">登録</button>
+    </div>
+  </div>
 </div>
 
 <script>
 const SUPABASE_URL = "https://swgdzytwyvkwvncaqjks.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3Z2R6eXR3eXZrd3ZuY2FxamtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzM2NTAsImV4cCI6MjA4MzU0OTY1MH0.ENvRrnMvvrYECscFNleKI2lBydZ6_aQ621V28bMwcCE";
 
-const headers = {
-  "apikey": SUPABASE_KEY,
-  "Authorization": "Bearer " + SUPABASE_KEY,
-  "Accept-Profile": "research",
-};
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  db: { schema: 'research' }
+});
 
 let allArticles = [];
-let currentCategory = null;
+let allTags = [];
+let articleTagsMap = {};
+let currentUser = null;
+let filters = { status: 'all', category: null, tagL1: null, tagL2: null };
 
-async function loadArticles() {
-  try {
-    const res = await fetch(
-      SUPABASE_URL + "/rest/v1/articles?select=slug,title_ja,summary,source_date,status,categories(name,label_ja)&status=eq.published&order=source_date.desc",
-      { headers: headers }
-    );
-    allArticles = await res.json();
-    renderFilters();
-    renderList(allArticles);
-  } catch (e) {
-    document.getElementById("articleList").innerHTML = '<div class="error">読み込みエラー: ' + e.message + '</div>';
+const TAG_COLORS = {
+  'accounting': '#3b82f6',
+  'ai_tech': '#10b981',
+  'tools': '#f59e0b',
+  'security_risk': '#ef4444',
+  'business': '#8b5cf6'
+};
+
+// ===== Auth =====
+async function initAuth() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+  }
+  supabase.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user || null;
+    renderAuthArea();
+    renderList(getFiltered());
+  });
+  renderAuthArea();
+}
+
+function renderAuthArea() {
+  const area = document.getElementById('authArea');
+  if (currentUser) {
+    area.innerHTML = `
+      <button class="add-btn" onclick="openModal()" title="記事を登録">+</button>
+      <span class="auth-email">${currentUser.email}</span>
+      <button class="auth-btn" onclick="signOut()">ログアウト</button>`;
+  } else {
+    area.innerHTML = `<button class="auth-btn" onclick="signIn()">Googleログイン</button>`;
   }
 }
 
-function renderFilters() {
-  const cats = [...new Set(allArticles.map(function(a) { return a.categories ? a.categories.name : null; }).filter(Boolean))];
-  const labels = {};
-  allArticles.forEach(function(a) { if (a.categories) labels[a.categories.name] = a.categories.label_ja; });
-
-  var html = '<button class="active" onclick="setCategory(null, this)">すべて</button>';
-  cats.forEach(function(c) {
-    html += '<button onclick="setCategory(\'' + c + '\', this)">' + (labels[c] || c) + '</button>';
+async function signIn() {
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + window.location.pathname }
   });
-  document.getElementById("filters").innerHTML = html;
 }
 
-function setCategory(cat, btn) {
-  currentCategory = cat;
-  document.querySelectorAll(".filters button").forEach(function(b) { b.classList.remove("active"); });
-  btn.classList.add("active");
-  filterArticles();
+async function signOut() {
+  await supabase.auth.signOut();
+  currentUser = null;
+  renderAuthArea();
+  renderList(getFiltered());
 }
 
-function filterArticles() {
-  var q = document.getElementById("searchInput").value.toLowerCase();
-  var filtered = allArticles;
-  if (currentCategory) filtered = filtered.filter(function(a) { return a.categories && a.categories.name === currentCategory; });
-  if (q) filtered = filtered.filter(function(a) { return ((a.title_ja || "") + (a.summary || "")).toLowerCase().indexOf(q) >= 0; });
-  renderList(filtered);
+// ===== Data Loading =====
+async function loadData() {
+  const [artRes, tagRes] = await Promise.all([
+    fetch(SUPABASE_URL + "/rest/v1/articles?select=id,slug,title_ja,summary,source_date,is_read,is_clipped,source_type,external_url,categories(name,label_ja)&status=eq.published&order=source_date.desc", {
+      headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept-Profile": "research" }
+    }),
+    fetch(SUPABASE_URL + "/rest/v1/tags?select=id,name,label_ja,level,parent_id,icon,sort_order&order=level.asc,sort_order.asc", {
+      headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept-Profile": "research" }
+    })
+  ]);
+  allArticles = await artRes.json();
+  allTags = await tagRes.json();
+
+  // Load article-tag mappings
+  const atRes = await fetch(SUPABASE_URL + "/rest/v1/article_tags?select=article_id,tag_id", {
+    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept-Profile": "research" }
+  });
+  const atData = await atRes.json();
+  articleTagsMap = {};
+  atData.forEach(at => {
+    if (!articleTagsMap[at.article_id]) articleTagsMap[at.article_id] = [];
+    articleTagsMap[at.article_id].push(at.tag_id);
+  });
+
+  renderFilters();
+  renderList(allArticles);
 }
 
+// ===== Filters =====
+function renderFilters() {
+  // Status
+  const statuses = [
+    { key: 'all', label: 'すべて' },
+    { key: 'unread', label: '未読' },
+    { key: 'clipped', label: '📌 クリップ' }
+  ];
+  document.getElementById('statusFilters').innerHTML = statuses.map(s =>
+    `<button class="fbtn ${filters.status === s.key ? 'active' : ''}" onclick="setFilter('status','${s.key}',this)">${s.label}</button>`
+  ).join('');
+
+  // Categories
+  const cats = [...new Set(allArticles.map(a => a.categories?.name).filter(Boolean))];
+  const catLabels = {};
+  allArticles.forEach(a => { if (a.categories) catLabels[a.categories.name] = a.categories.label_ja; });
+  let catHtml = `<button class="fbtn ${!filters.category ? 'active' : ''}" onclick="setFilter('category',null,this)">すべて</button>`;
+  cats.forEach(c => {
+    catHtml += `<button class="fbtn ${filters.category === c ? 'active' : ''}" onclick="setFilter('category','${c}',this)">${catLabels[c] || c}</button>`;
+  });
+  document.getElementById('catFilters').innerHTML = catHtml;
+
+  // L1 Tags
+  const l1Tags = allTags.filter(t => t.level === 1);
+  let l1Html = `<button class="fbtn ${!filters.tagL1 ? 'active' : ''}" onclick="setTagFilter(null)">すべて</button>`;
+  l1Tags.forEach(t => {
+    l1Html += `<button class="fbtn ${filters.tagL1 === t.id ? 'active' : ''}" onclick="setTagFilter('${t.id}')">${t.icon || ''} ${t.label_ja || t.name}</button>`;
+  });
+  document.getElementById('tagL1Filters').innerHTML = l1Html;
+
+  // L1 tag select for modal
+  const sel = document.getElementById('addTagL1');
+  sel.innerHTML = '<option value="">選択...</option>' + l1Tags.map(t => `<option value="${t.id}">${t.icon || ''} ${t.label_ja}</option>`).join('');
+}
+
+function setFilter(key, val, btn) {
+  filters[key] = val;
+  if (btn) {
+    btn.parentElement.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  applyFilters();
+}
+
+function setTagFilter(l1Id) {
+  filters.tagL1 = l1Id;
+  filters.tagL2 = null;
+  // Rebuild L1 buttons
+  const l1Tags = allTags.filter(t => t.level === 1);
+  let l1Html = `<button class="fbtn ${!l1Id ? 'active' : ''}" onclick="setTagFilter(null)">すべて</button>`;
+  l1Tags.forEach(t => {
+    l1Html += `<button class="fbtn ${l1Id === t.id ? 'active' : ''}" onclick="setTagFilter('${t.id}')">${t.icon || ''} ${t.label_ja || t.name}</button>`;
+  });
+  document.getElementById('tagL1Filters').innerHTML = l1Html;
+
+  // Show L2
+  const l2Row = document.getElementById('tagL2Filters');
+  if (l1Id) {
+    const l2Tags = allTags.filter(t => t.level === 2 && t.parent_id === l1Id);
+    if (l2Tags.length) {
+      l2Row.innerHTML = `<button class="fbtn active" onclick="setL2Filter(null, this)">すべて</button>` +
+        l2Tags.map(t => `<button class="fbtn" onclick="setL2Filter('${t.id}', this)">${t.label_ja || t.name}</button>`).join('');
+      l2Row.classList.add('show');
+    } else {
+      l2Row.classList.remove('show');
+    }
+  } else {
+    l2Row.classList.remove('show');
+  }
+  applyFilters();
+}
+
+function setL2Filter(l2Id, btn) {
+  filters.tagL2 = l2Id;
+  if (btn) {
+    btn.parentElement.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  applyFilters();
+}
+
+function getFiltered() {
+  let list = allArticles;
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  if (q) list = list.filter(a => ((a.title_ja || '') + (a.summary || '')).toLowerCase().includes(q));
+  if (filters.status === 'unread') list = list.filter(a => !a.is_read);
+  if (filters.status === 'clipped') list = list.filter(a => a.is_clipped);
+  if (filters.category) list = list.filter(a => a.categories?.name === filters.category);
+
+  if (filters.tagL1 || filters.tagL2) {
+    const targetTagId = filters.tagL2 || filters.tagL1;
+    // Get all descendant tag IDs
+    const tagIds = new Set();
+    function addDescendants(pid) {
+      tagIds.add(pid);
+      allTags.filter(t => t.parent_id === pid).forEach(t => addDescendants(t.id));
+    }
+    addDescendants(targetTagId);
+    list = list.filter(a => {
+      const aTags = articleTagsMap[a.id] || [];
+      return aTags.some(tid => tagIds.has(tid));
+    });
+  }
+  return list;
+}
+
+function applyFilters() {
+  renderList(getFiltered());
+}
+
+// ===== Render List =====
 function renderList(articles) {
-  document.getElementById("count").textContent = articles.length + " 件の記事";
-  if (articles.length === 0) {
-    document.getElementById("articleList").innerHTML = '<div class="loading">該当する記事がありません</div>';
+  document.getElementById('count').textContent = articles.length + ' 件の記事';
+  if (!articles.length) {
+    document.getElementById('articleList').innerHTML = '<div class="loading">該当する記事がありません</div>';
     return;
   }
-  var html = "";
-  articles.forEach(function(a) {
-    var cat = a.categories ? a.categories.label_ja : "";
-    var date = a.source_date || "";
-    var summary = (a.summary || "").substring(0, 120);
-    html += '<div class="card" onclick="showArticle(\'' + a.slug + '\')">' +
-      '<div class="meta">' + cat + ' | ' + date + '</div>' +
-      '<div class="title">' + (a.title_ja || "") + '</div>' +
-      '<div class="summary">' + summary + '...</div></div>';
-  });
-  document.getElementById("articleList").innerHTML = html;
+
+  const html = articles.map(a => {
+    const cat = a.categories?.label_ja || '';
+    const date = a.source_date || '';
+    const summary = (a.summary || '').substring(0, 100);
+    const readClass = a.is_read ? ' read' : '';
+    const clipClass = a.is_clipped ? ' clipped' : '';
+    const srcBadge = a.source_type === 'manual_clip' || a.source_type === 'manual_note'
+      ? '<span class="source-badge">手動</span>' : '';
+
+    // Tag badges
+    const aTags = (articleTagsMap[a.id] || []).map(tid => allTags.find(t => t.id === tid)).filter(Boolean);
+    let tagBadges = '';
+    aTags.forEach(tag => {
+      let l1 = tag;
+      if (tag.level === 3) l1 = allTags.find(t => t.id === tag.parent_id);
+      if (l1 && l1.level === 2) l1 = allTags.find(t => t.id === l1.parent_id);
+      const color = (l1 && TAG_COLORS[l1.name]) || '#888';
+      tagBadges += `<span class="tag-badge" style="background:${color}">${tag.label_ja || tag.name}</span>`;
+    });
+
+    const flagBtns = currentUser ? `
+      <div class="flag-btns">
+        <button class="flag-btn ${a.is_read ? 'on' : ''}" onclick="event.stopPropagation();toggleFlag('${a.id}','read')" title="既読">👁</button>
+        <button class="flag-btn ${a.is_clipped ? 'on' : ''}" onclick="event.stopPropagation();toggleFlag('${a.id}','clipped')" title="クリップ">📌</button>
+      </div>` : '';
+
+    return `<div class="card${readClass}${clipClass}" onclick="showArticle('${a.slug}','${a.external_url || ''}')">
+      ${flagBtns}
+      <div class="meta"><div class="meta-left">${cat} | ${date} ${srcBadge}</div></div>
+      <div class="title">${a.title_ja || ''}</div>
+      <div class="summary">${summary}...</div>
+      ${tagBadges ? `<div class="tags-row">${tagBadges}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('articleList').innerHTML = html;
 }
 
-async function showArticle(slug) {
-  document.getElementById("listView").classList.add("hide");
-  document.getElementById("articleView").classList.add("show");
-  document.getElementById("articleContent").innerHTML = '<div class="loading">読み込み中...</div>';
-  window.scrollTo(0, 0);
-
-  try {
-    var res = await fetch(
-      SUPABASE_URL + "/rest/v1/articles?slug=eq." + encodeURIComponent(slug) + "&select=title_ja,body_html,source_date&status=eq.published",
-      { headers: headers }
-    );
-    var data = await res.json();
-    if (data && data.length > 0) {
-      document.getElementById("articleContent").innerHTML = data[0].body_html || "<p>コンテンツがありません</p>";
-    } else {
-      document.getElementById("articleContent").innerHTML = "<h1>記事が見つかりません</h1>";
+// ===== Flag Toggle =====
+async function toggleFlag(articleId, flag) {
+  const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/toggle_article_flag", {
+    method: 'POST',
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ p_article_id: articleId, p_flag: flag })
+  });
+  if (res.ok) {
+    const result = await res.json();
+    const article = allArticles.find(a => a.id === articleId);
+    if (article) {
+      if (flag === 'read') article.is_read = result.value;
+      else article.is_clipped = result.value;
     }
-  } catch (e) {
-    document.getElementById("articleContent").innerHTML = '<div class="error">読み込みエラー: ' + e.message + '</div>';
+    renderList(getFiltered());
+  }
+}
+
+// ===== Show Article =====
+async function showArticle(slug, extUrl) {
+  document.getElementById('listView').classList.add('hide');
+  document.getElementById('articleView').classList.add('show');
+  document.getElementById('articleContent').innerHTML = '<div class="loading">読み込み中...</div>';
+
+  const extLink = document.getElementById('extLink');
+  if (extUrl && extUrl !== 'null' && extUrl !== '') {
+    extLink.href = extUrl;
+    extLink.style.display = 'block';
+  } else {
+    extLink.style.display = 'none';
+  }
+
+  window.scrollTo(0, 0);
+  const res = await fetch(SUPABASE_URL + "/rest/v1/articles?slug=eq." + encodeURIComponent(slug) + "&select=title_ja,body_html,source_date&status=eq.published", {
+    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept-Profile": "research" }
+  });
+  const data = await res.json();
+  if (data?.length) {
+    document.getElementById('articleContent').innerHTML = data[0].body_html || '<p>コンテンツがありません</p>';
+  } else {
+    document.getElementById('articleContent').innerHTML = '<div class="loading">記事が見つかりません</div>';
   }
 }
 
 function showList() {
-  document.getElementById("listView").classList.remove("hide");
-  document.getElementById("articleView").classList.remove("show");
+  document.getElementById('listView').classList.remove('hide');
+  document.getElementById('articleView').classList.remove('show');
   window.scrollTo(0, 0);
 }
 
-loadArticles();
+// ===== Modal =====
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('show');
+  }
+}
+
+function updateTagL2Select() {
+  const l1Id = document.getElementById('addTagL1').value;
+  const sel = document.getElementById('addTagL2');
+  if (!l1Id) { sel.innerHTML = '<option value="">選択...</option>'; return; }
+  const l2Tags = allTags.filter(t => t.level === 2 && t.parent_id === l1Id);
+  sel.innerHTML = '<option value="">選択...</option>' + l2Tags.map(t => `<option value="${t.id}">${t.label_ja || t.name}</option>`).join('');
+}
+
+async function submitArticle() {
+  const title = document.getElementById('addTitle').value.trim();
+  if (!title) { alert('タイトルは必須です'); return; }
+  const url = document.getElementById('addUrl').value.trim() || null;
+  const body = document.getElementById('addBody').value.trim() || null;
+  const tagL1 = document.getElementById('addTagL1').value || null;
+  const tagL2 = document.getElementById('addTagL2').value || null;
+  const tagIds = [tagL1, tagL2].filter(Boolean);
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { alert('ログインが必要です'); return; }
+
+  const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/add_manual_article", {
+    method: 'POST',
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + session.access_token,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      p_title: title,
+      p_url: url,
+      p_body_text: body,
+      p_tag_ids: tagIds,
+      p_source_type: url ? 'manual_clip' : 'manual_note'
+    })
+  });
+
+  if (res.ok) {
+    document.getElementById('modalOverlay').classList.remove('show');
+    document.getElementById('addTitle').value = '';
+    document.getElementById('addUrl').value = '';
+    document.getElementById('addBody').value = '';
+    await loadData();
+  } else {
+    const err = await res.text();
+    alert('登録エラー: ' + err);
+  }
+}
+
+// ===== Init =====
+initAuth();
+loadData();
 </script>
 </body>
 </html>
