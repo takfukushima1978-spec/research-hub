@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Research Hub</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 32px 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 10px; }
+  .header h1 { font-size: 22px; font-weight: 800; }
+  .header p { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+  .filters { display: flex; gap: 8px; padding: 12px 16px; max-width: 680px; margin: 0 auto; overflow-x: auto; }
+  .filters button { background: #fff; border: 1.5px solid #ddd; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; }
+  .filters button.active { background: #e94560; color: #fff; border-color: #e94560; }
+  .list { max-width: 680px; margin: 0 auto; padding: 4px 0 80px; }
+  .card { background: #fff; margin: 10px 16px; padding: 18px 20px; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); cursor: pointer; }
+  .card:active { background: #f9f9f9; }
+  .card .meta { font-size: 12px; color: #e94560; font-weight: 700; margin-bottom: 6px; }
+  .card .title { font-size: 17px; font-weight: 800; color: #1a1a2e; line-height: 1.5; margin-bottom: 6px; }
+  .card .summary { font-size: 14px; color: #888; line-height: 1.6; }
+  .loading { text-align: center; padding: 40px; color: #999; font-size: 15px; }
+  .error { text-align: center; padding: 40px; color: #e94560; font-size: 15px; }
+  .article-view { display: none; }
+  .article-view.show { display: block; }
+  .list-view.hide { display: none; }
+  .back-btn { position: fixed; top: 10px; left: 10px; z-index: 20; background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .article-content { line-height: 1.85; font-size: 18px; }
+  .article-content .header { position: relative; }
+  .article-content .header h1 { font-size: 26px; }
+  .article-content .card { cursor: default; }
+  .article-content .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .article-content .card p { font-size: 17px; color: #444; margin-bottom: 12px; line-height: 1.85; }
+  .article-content .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .article-content .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .article-content .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .article-content .card .source-link a { color: #e94560; text-decoration: none; }
+  .article-content .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .article-content .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .article-content .dark-card { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .article-content .dark-card h2 { color: #ff6b6b; }
+  .article-content .dark-card p { color: #ccc; }
+  .article-content .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .article-content .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .article-content .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .article-content .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .article-content .sources a { color: #e94560; text-decoration: none; }
+  .article-content .sources ul { list-style: none; padding: 0; }
+  .article-content .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .article-content .sources li::before { content: '\2192'; position: absolute; left: 0; color: #ccc; }
+  .article-content .security-section { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .article-content .security-section h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .article-content .security-section p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .article-content .security-section .warn { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); padding: 12px 16px; border-radius: 8px; margin: 14px 0; font-size: 16px; color: #ffaaaa; }
+  .article-content .warn-card { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .article-content .warn-card h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .article-content .warn-card p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .article-content .warn-card .warn { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); padding: 12px 16px; border-radius: 8px; margin: 14px 0; font-size: 16px; color: #ffaaaa; }
+  .article-content .impact { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .article-content .impact h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .article-content .impact p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .article-content .impact .stat { display: inline-block; background: rgba(233,69,96,0.2); border: 1px solid rgba(233,69,96,0.4); padding: 8px 16px; border-radius: 8px; margin: 4px; font-size: 15px; color: #ff6b6b; font-weight: 700; }
+  .article-content .pricing { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; text-align: center; }
+  .article-content .pricing h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 20px; }
+  .article-content .pricing .price { font-size: 40px; font-weight: 800; color: #fff; }
+  .article-content .pricing p { color: #ccc; font-size: 16px; text-align: left; }
+  .article-content code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 16px; color: #e94560; }
+  .search-bar { max-width: 680px; margin: 0 auto; padding: 12px 16px 0; }
+  .search-bar input { width: 100%; padding: 10px 16px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 15px; outline: none; }
+  .search-bar input:focus { border-color: #e94560; }
+  .count { max-width: 680px; margin: 0 auto; padding: 8px 20px 0; font-size: 13px; color: #999; }
+</style>
+</head>
+<body>
+
+<div class="list-view" id="listView">
+  <div class="header">
+    <div class="label">AI RESEARCH HUB</div>
+    <h1>Tak's Research Library</h1>
+    <p>パーソナルAIリサーチ基盤</p>
+  </div>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="キーワードで検索..." oninput="filterArticles()">
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="count" id="count"></div>
+  <div class="list" id="articleList">
+    <div class="loading">読み込み中...</div>
+  </div>
+</div>
+
+<div class="article-view" id="articleView">
+  <button class="back-btn" onclick="showList()">← 一覧に戻る</button>
+  <div class="article-content" id="articleContent"></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://swgdzytwyvkwvncaqjks.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3Z2R6eXR3eXZrd3ZuY2FxamtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzM2NTAsImV4cCI6MjA4MzU0OTY1MH0.ENvRrnMvvrYECscFNleKI2lBydZ6_aQ621V28bMwcCE";
+
+const headers = {
+  "apikey": SUPABASE_KEY,
+  "Authorization": "Bearer " + SUPABASE_KEY,
+  "Accept-Profile": "research",
+};
+
+let allArticles = [];
+let currentCategory = null;
+
+async function loadArticles() {
+  try {
+    const res = await fetch(
+      SUPABASE_URL + "/rest/v1/articles?select=slug,title_ja,summary,source_date,status,categories(name,label_ja)&status=eq.published&order=source_date.desc",
+      { headers: headers }
+    );
+    allArticles = await res.json();
+    renderFilters();
+    renderList(allArticles);
+  } catch (e) {
+    document.getElementById("articleList").innerHTML = '<div class="error">読み込みエラー: ' + e.message + '</div>';
+  }
+}
+
+function renderFilters() {
+  const cats = [...new Set(allArticles.map(function(a) { return a.categories ? a.categories.name : null; }).filter(Boolean))];
+  const labels = {};
+  allArticles.forEach(function(a) { if (a.categories) labels[a.categories.name] = a.categories.label_ja; });
+
+  var html = '<button class="active" onclick="setCategory(null, this)">すべて</button>';
+  cats.forEach(function(c) {
+    html += '<button onclick="setCategory(\'' + c + '\', this)">' + (labels[c] || c) + '</button>';
+  });
+  document.getElementById("filters").innerHTML = html;
+}
+
+function setCategory(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll(".filters button").forEach(function(b) { b.classList.remove("active"); });
+  btn.classList.add("active");
+  filterArticles();
+}
+
+function filterArticles() {
+  var q = document.getElementById("searchInput").value.toLowerCase();
+  var filtered = allArticles;
+  if (currentCategory) filtered = filtered.filter(function(a) { return a.categories && a.categories.name === currentCategory; });
+  if (q) filtered = filtered.filter(function(a) { return ((a.title_ja || "") + (a.summary || "")).toLowerCase().indexOf(q) >= 0; });
+  renderList(filtered);
+}
+
+function renderList(articles) {
+  document.getElementById("count").textContent = articles.length + " 件の記事";
+  if (articles.length === 0) {
+    document.getElementById("articleList").innerHTML = '<div class="loading">該当する記事がありません</div>';
+    return;
+  }
+  var html = "";
+  articles.forEach(function(a) {
+    var cat = a.categories ? a.categories.label_ja : "";
+    var date = a.source_date || "";
+    var summary = (a.summary || "").substring(0, 120);
+    html += '<div class="card" onclick="showArticle(\'' + a.slug + '\')">' +
+      '<div class="meta">' + cat + ' | ' + date + '</div>' +
+      '<div class="title">' + (a.title_ja || "") + '</div>' +
+      '<div class="summary">' + summary + '...</div></div>';
+  });
+  document.getElementById("articleList").innerHTML = html;
+}
+
+async function showArticle(slug) {
+  document.getElementById("listView").classList.add("hide");
+  document.getElementById("articleView").classList.add("show");
+  document.getElementById("articleContent").innerHTML = '<div class="loading">読み込み中...</div>';
+  window.scrollTo(0, 0);
+
+  try {
+    var res = await fetch(
+      SUPABASE_URL + "/rest/v1/articles?slug=eq." + encodeURIComponent(slug) + "&select=title_ja,body_html,source_date&status=eq.published",
+      { headers: headers }
+    );
+    var data = await res.json();
+    if (data && data.length > 0) {
+      document.getElementById("articleContent").innerHTML = data[0].body_html || "<p>コンテンツがありません</p>";
+    } else {
+      document.getElementById("articleContent").innerHTML = "<h1>記事が見つかりません</h1>";
+    }
+  } catch (e) {
+    document.getElementById("articleContent").innerHTML = '<div class="error">読み込みエラー: ' + e.message + '</div>';
+  }
+}
+
+function showList() {
+  document.getElementById("listView").classList.remove("hide");
+  document.getElementById("articleView").classList.remove("show");
+  window.scrollTo(0, 0);
+}
+
+loadArticles();
+</script>
+</body>
+</html>
