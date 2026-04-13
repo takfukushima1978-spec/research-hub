@@ -110,6 +110,17 @@
   .btn-submit { background: #e94560; border: none; color: #fff; }
 
   .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+
+  /* Modal tabs */
+  .modal-tabs { display: flex; gap: 0; margin-bottom: 16px; border: 1.5px solid #ddd; border-radius: 10px; overflow: hidden; }
+  .modal-tab { flex: 1; padding: 10px 8px; font-size: 13px; font-weight: 700; cursor: pointer; background: #f5f5f5; border: none; color: #999; transition: all 0.15s; }
+  .modal-tab.active { background: #e94560; color: #fff; }
+  .modal-tab:first-child { border-right: 1.5px solid #ddd; }
+  .modal-tab.active + .modal-tab, .modal-tab.active { border-color: #e94560; }
+  .modal-fields { display: none; }
+  .modal-fields.show { display: block; }
+  .char-count { text-align: right; font-size: 12px; color: #aaa; margin-top: 4px; }
+  .modal textarea.body-text { min-height: 200px; font-size: 15px; }
 </style>
 </head>
 <body>
@@ -148,16 +159,38 @@
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>📎 記事を登録</h3>
-    <label>URL（任意）</label>
-    <input type="url" id="addUrl" placeholder="https://...">
-    <label>タイトル *</label>
-    <input type="text" id="addTitle" placeholder="記事のタイトル">
-    <label>メモ（任意）</label>
-    <textarea id="addBody" placeholder="要点やメモ"></textarea>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tabUrl" onclick="switchMode('url')">🔗 URLで登録</button>
+      <button class="modal-tab" id="tabText" onclick="switchMode('text')">📝 テキスト貼り付け</button>
+    </div>
+
+    <!-- URLモード -->
+    <div class="modal-fields show" id="fieldsUrl">
+      <label>URL（任意）</label>
+      <input type="url" id="addUrl" placeholder="https://...">
+      <label>タイトル *</label>
+      <input type="text" id="addTitle" placeholder="記事のタイトル">
+      <label>メモ（任意）</label>
+      <textarea id="addBody" placeholder="要点やメモ"></textarea>
+    </div>
+
+    <!-- テキスト貼り付けモード -->
+    <div class="modal-fields" id="fieldsText">
+      <label>タイトル *</label>
+      <input type="text" id="addTitleText" placeholder="記事のタイトル">
+      <label>記事全文 *</label>
+      <textarea id="addBodyText" class="body-text" placeholder="記事の全文をここに貼り付け..." oninput="updateCharCount()"></textarea>
+      <div class="char-count" id="charCount">0文字</div>
+      <label>ソースURL（任意）</label>
+      <input type="url" id="addSourceUrl" placeholder="元記事のURL（任意）">
+    </div>
+
+    <!-- 共通: タグ選択 -->
     <label>タグ（大区分）</label>
     <select id="addTagL1" onchange="updateTagL2Select()"><option value="">選択...</option></select>
     <label>タグ（中区分）</label>
     <select id="addTagL2"><option value="">選択...</option></select>
+
     <div class="modal-actions">
       <button class="btn-cancel" onclick="document.getElementById('modalOverlay').classList.remove('show')">キャンセル</button>
       <button class="btn-submit" onclick="submitArticle()">登録</button>
@@ -466,6 +499,8 @@ function showList() {
 }
 
 // ===== Modal =====
+let currentMode = 'url';
+
 function openModal() {
   document.getElementById('modalOverlay').classList.add('show');
 }
@@ -473,6 +508,19 @@ function closeModal(e) {
   if (e.target === document.getElementById('modalOverlay')) {
     document.getElementById('modalOverlay').classList.remove('show');
   }
+}
+
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('tabUrl').classList.toggle('active', mode === 'url');
+  document.getElementById('tabText').classList.toggle('active', mode === 'text');
+  document.getElementById('fieldsUrl').classList.toggle('show', mode === 'url');
+  document.getElementById('fieldsText').classList.toggle('show', mode === 'text');
+}
+
+function updateCharCount() {
+  const len = document.getElementById('addBodyText').value.length;
+  document.getElementById('charCount').textContent = len.toLocaleString() + '文字';
 }
 
 function updateTagL2Select() {
@@ -484,16 +532,42 @@ function updateTagL2Select() {
 }
 
 async function submitArticle() {
-  const title = document.getElementById('addTitle').value.trim();
-  if (!title) { alert('タイトルは必須です'); return; }
-  const url = document.getElementById('addUrl').value.trim() || null;
-  const body = document.getElementById('addBody').value.trim() || null;
   const tagL1 = document.getElementById('addTagL1').value || null;
   const tagL2 = document.getElementById('addTagL2').value || null;
   const tagIds = [tagL1, tagL2].filter(Boolean);
 
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { alert('ログインが必要です'); return; }
+
+  let payload;
+  if (currentMode === 'url') {
+    const title = document.getElementById('addTitle').value.trim();
+    if (!title) { alert('タイトルは必須です'); return; }
+    const url = document.getElementById('addUrl').value.trim() || null;
+    const body = document.getElementById('addBody').value.trim() || null;
+    payload = {
+      p_title: title,
+      p_url: url,
+      p_body_text: body,
+      p_tag_ids: tagIds,
+      p_source_type: url ? 'manual_clip' : 'manual_note'
+    };
+  } else {
+    const title = document.getElementById('addTitleText').value.trim();
+    if (!title) { alert('タイトルは必須です'); return; }
+    const bodyText = document.getElementById('addBodyText').value.trim();
+    if (!bodyText) { alert('記事全文は必須です'); return; }
+    const sourceUrl = document.getElementById('addSourceUrl').value.trim() || null;
+    const summary = bodyText.substring(0, 200);
+    payload = {
+      p_title: title,
+      p_url: sourceUrl,
+      p_body_text: bodyText,
+      p_summary: summary,
+      p_tag_ids: tagIds,
+      p_source_type: sourceUrl ? 'manual_clip' : 'manual_note'
+    };
+  }
 
   const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/add_manual_article", {
     method: 'POST',
@@ -502,20 +576,20 @@ async function submitArticle() {
       "Authorization": "Bearer " + session.access_token,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      p_title: title,
-      p_url: url,
-      p_body_text: body,
-      p_tag_ids: tagIds,
-      p_source_type: url ? 'manual_clip' : 'manual_note'
-    })
+    body: JSON.stringify(payload)
   });
 
   if (res.ok) {
     document.getElementById('modalOverlay').classList.remove('show');
+    // フォームリセット
     document.getElementById('addTitle').value = '';
     document.getElementById('addUrl').value = '';
     document.getElementById('addBody').value = '';
+    document.getElementById('addTitleText').value = '';
+    document.getElementById('addBodyText').value = '';
+    document.getElementById('addSourceUrl').value = '';
+    document.getElementById('charCount').textContent = '0文字';
+    switchMode('url');
     await loadData();
   } else {
     const err = await res.text();
