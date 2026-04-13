@@ -121,6 +121,7 @@
   .modal-fields.show { display: block; }
   .char-count { text-align: right; font-size: 12px; color: #aaa; margin-top: 4px; }
   .modal textarea.body-text { min-height: 200px; font-size: 15px; }
+  .url-type-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #fff; margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -167,7 +168,8 @@
     <!-- URLモード -->
     <div class="modal-fields show" id="fieldsUrl">
       <label>URL（任意）</label>
-      <input type="url" id="addUrl" placeholder="https://...">
+      <input type="url" id="addUrl" placeholder="WebページURL / Googleドキュメント / Google DriveのPDF" oninput="updateUrlBadge('addUrl','urlTypeBadge')">
+      <div><span class="url-type-badge" id="urlTypeBadge" style="display:none"></span></div>
       <label>タイトル *</label>
       <input type="text" id="addTitle" placeholder="記事のタイトル">
       <label>メモ（任意）</label>
@@ -182,7 +184,8 @@
       <textarea id="addBodyText" class="body-text" placeholder="記事の全文をここに貼り付け..." oninput="updateCharCount()"></textarea>
       <div class="char-count" id="charCount">0文字</div>
       <label>ソースURL（任意）</label>
-      <input type="url" id="addSourceUrl" placeholder="元記事のURL（任意）">
+      <input type="url" id="addSourceUrl" placeholder="WebページURL / Googleドキュメント / Google DriveのPDF" oninput="updateUrlBadge('addSourceUrl','sourceUrlTypeBadge')">
+      <div><span class="url-type-badge" id="sourceUrlTypeBadge" style="display:none"></span></div>
     </div>
 
     <!-- 共通: タグ選択 -->
@@ -412,8 +415,9 @@ function renderList(articles) {
     const summary = (a.summary || '').substring(0, 100);
     const readClass = a.is_read ? ' read' : '';
     const clipClass = a.is_clipped ? ' clipped' : '';
+    const urlIcon = a.external_url ? getUrlIcon(a.external_url) : '📝';
     const srcBadge = a.source_type === 'manual_clip' || a.source_type === 'manual_note'
-      ? '<span class="source-badge">手動</span>' : '';
+      ? `<span class="source-badge">${urlIcon} 手動</span>` : '';
 
     // Tag badges
     const aTags = (articleTagsMap[a.id] || []).map(tid => allTags.find(t => t.id === tid)).filter(Boolean);
@@ -476,6 +480,10 @@ async function showArticle(slug, extUrl) {
   if (extUrl && extUrl !== 'null' && extUrl !== '') {
     extLink.href = extUrl;
     extLink.style.display = 'block';
+    const type = getUrlType(extUrl);
+    if (type === 'googledoc') extLink.textContent = '📄 Googleドキュメントを開く';
+    else if (type === 'pdf') extLink.textContent = '📕 PDFを開く';
+    else extLink.textContent = '🔗 原文を開く';
   } else {
     extLink.style.display = 'none';
   }
@@ -589,11 +597,49 @@ async function submitArticle() {
     document.getElementById('addBodyText').value = '';
     document.getElementById('addSourceUrl').value = '';
     document.getElementById('charCount').textContent = '0文字';
+    document.getElementById('urlTypeBadge').style.display = 'none';
+    document.getElementById('sourceUrlTypeBadge').style.display = 'none';
     switchMode('url');
     await loadData();
   } else {
     const err = await res.text();
     alert('登録エラー: ' + err);
+  }
+}
+
+// ===== URL Type Utils =====
+const URL_TYPE_INFO = {
+  googledoc: { label: '📄 Googleドキュメント', color: '#3b82f6' },
+  pdf:       { label: '📕 PDF',                color: '#ef4444' },
+  web:       { label: '🔗 Webページ',           color: '#9ca3af' }
+};
+
+function getUrlType(url) {
+  if (!url) return null;
+  if (url.includes('docs.google.com/document')) return 'googledoc';
+  if (url.endsWith('.pdf') || url.includes('drive.google.com')) return 'pdf';
+  return 'web';
+}
+
+function getUrlIcon(url) {
+  const type = getUrlType(url);
+  if (type === 'googledoc') return '📄';
+  if (type === 'pdf') return '📕';
+  if (type === 'web') return '🔗';
+  return '📝';
+}
+
+function updateUrlBadge(inputId, badgeId) {
+  const url = document.getElementById(inputId).value.trim();
+  const badge = document.getElementById(badgeId);
+  const type = getUrlType(url);
+  if (type && URL_TYPE_INFO[type]) {
+    const info = URL_TYPE_INFO[type];
+    badge.textContent = info.label;
+    badge.style.background = info.color;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
   }
 }
 
