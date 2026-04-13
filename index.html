@@ -122,6 +122,30 @@
   .char-count { text-align: right; font-size: 12px; color: #aaa; margin-top: 4px; }
   .modal textarea.body-text { min-height: 200px; font-size: 15px; }
   .url-type-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #fff; margin-top: 6px; }
+
+  /* Deep Research */
+  .deep-research-fab { display: none; position: fixed; bottom: 80px; right: 16px; z-index: 30; background: #8b5cf6; color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(139,92,246,0.4); align-items: center; justify-content: center; }
+  .deep-research-fab.show { display: flex; }
+
+  /* Research result cards */
+  .research-section { max-width: 680px; margin: 16px auto 40px; padding: 0 16px; }
+  .research-section h3 { font-size: 16px; font-weight: 700; color: #8b5cf6; margin-bottom: 12px; }
+  .research-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); border-left: 4px solid #8b5cf6; padding: 16px; margin-bottom: 10px; }
+  .research-status-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; color: #fff; }
+  .research-status-badge.pending { background: #f59e0b; }
+  .research-status-badge.processing { background: #3b82f6; }
+  .research-status-badge.completed { background: #10b981; }
+  .research-status-badge.failed { background: #ef4444; }
+  .research-focus { font-size: 15px; font-weight: 600; color: #1a1a2e; margin: 8px 0 4px; }
+  .research-summary { font-size: 14px; color: #555; line-height: 1.7; margin: 6px 0; }
+  .research-link { display: inline-block; margin-top: 8px; color: #8b5cf6; font-size: 13px; text-decoration: none; font-weight: 600; }
+  .research-notebook-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 8px; background: #f3f0ff; color: #8b5cf6; font-weight: 600; margin-top: 6px; }
+  .research-date { font-size: 11px; color: #aaa; margin-top: 6px; }
+  .research-badge { font-size: 14px; margin-left: 4px; }
+
+  /* Toast */
+  .toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 200; white-space: nowrap; }
+  .toast.show { display: block; }
 </style>
 </head>
 <body>
@@ -155,6 +179,7 @@
   <button class="back-btn" onclick="showList()">← 戻る</button>
   <a class="ext-link" id="extLink" href="#" target="_blank" style="display:none">原文を開く</a>
   <div class="article-content" id="articleContent"></div>
+  <div id="researchResults"></div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
@@ -201,6 +226,33 @@
   </div>
 </div>
 
+<!-- Deep Research FAB -->
+<button class="deep-research-fab" id="deepResearchFab" onclick="openDeepResearchModal()">🔬</button>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Deep Research Modal -->
+<div class="modal-overlay" id="deepResearchModalOverlay" onclick="closeDeepResearchModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>🔬 この記事について深掘りリクエスト</h3>
+    <label>深掘りポイント *</label>
+    <textarea id="drFocusPoint" placeholder="例: EYのAI監査の具体的な実装方法を知りたい"></textarea>
+    <label>追加の文脈（任意）</label>
+    <textarea id="drAdditionalContext" placeholder="追加の質問や知りたい観点"></textarea>
+    <label>優先度</label>
+    <select id="drPriority">
+      <option value="1">高</option>
+      <option value="5" selected>中</option>
+      <option value="9">低</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('deepResearchModalOverlay').classList.remove('show')">キャンセル</button>
+      <button class="btn-submit" style="background:#8b5cf6" onclick="submitDeepResearch()">リクエスト送信</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://swgdzytwyvkwvncaqjks.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3Z2R6eXR3eXZrd3ZuY2FxamtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NzM2NTAsImV4cCI6MjA4MzU0OTY1MH0.ENvRrnMvvrYECscFNleKI2lBydZ6_aQ621V28bMwcCE";
@@ -214,6 +266,8 @@ let allTags = [];
 let articleTagsMap = {};
 let currentUser = null;
 let filters = { status: 'all', category: null, tagL1: null, tagL2: null };
+let deepResearchMap = {};
+let currentArticleId = null;
 
 const TAG_COLORS = {
   'accounting': '#3b82f6',
@@ -287,6 +341,16 @@ async function loadData() {
     articleTagsMap[at.article_id].push(at.tag_id);
   });
 
+  // 深掘りリクエスト一覧を取得してマッピング
+  const drRes = await fetch(SUPABASE_URL + "/rest/v1/deep_research_requests?select=article_id,status&order=created_at.desc", {
+    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept-Profile": "research" }
+  });
+  const drData = await drRes.json();
+  deepResearchMap = {};
+  if (Array.isArray(drData)) {
+    drData.forEach(dr => { deepResearchMap[dr.article_id] = true; });
+  }
+
   renderFilters();
   renderList(allArticles);
 }
@@ -297,7 +361,8 @@ function renderFilters() {
   const statuses = [
     { key: 'all', label: 'すべて' },
     { key: 'unread', label: '未読' },
-    { key: 'clipped', label: '📌 クリップ' }
+    { key: 'clipped', label: '📌 クリップ' },
+    { key: 'deep', label: '🔬 深掘り' }
   ];
   document.getElementById('statusFilters').innerHTML = statuses.map(s =>
     `<button class="fbtn ${filters.status === s.key ? 'active' : ''}" onclick="setFilter('status','${s.key}',this)">${s.label}</button>`
@@ -378,6 +443,7 @@ function getFiltered() {
   if (q) list = list.filter(a => ((a.title_ja || '') + (a.summary || '')).toLowerCase().includes(q));
   if (filters.status === 'unread') list = list.filter(a => !a.is_read);
   if (filters.status === 'clipped') list = list.filter(a => a.is_clipped);
+  if (filters.status === 'deep') list = list.filter(a => deepResearchMap[a.id]);
   if (filters.category) list = list.filter(a => a.categories?.name === filters.category);
 
   if (filters.tagL1 || filters.tagL2) {
@@ -418,6 +484,7 @@ function renderList(articles) {
     const urlIcon = a.external_url ? getUrlIcon(a.external_url) : '📝';
     const srcBadge = a.source_type === 'manual_clip' || a.source_type === 'manual_note'
       ? `<span class="source-badge">${urlIcon} 手動</span>` : '';
+    const deepBadge = deepResearchMap[a.id] ? `<span class="research-badge">🔬</span>` : '';
 
     // Tag badges
     const aTags = (articleTagsMap[a.id] || []).map(tid => allTags.find(t => t.id === tid)).filter(Boolean);
@@ -436,9 +503,9 @@ function renderList(articles) {
         <button class="flag-btn ${a.is_clipped ? 'on' : ''}" onclick="event.stopPropagation();toggleFlag('${a.id}','clipped')" title="クリップ">📌</button>
       </div>` : '';
 
-    return `<div class="card${readClass}${clipClass}" onclick="showArticle('${a.slug}','${a.external_url || ''}')">
+    return `<div class="card${readClass}${clipClass}" onclick="showArticle('${a.slug}','${a.external_url || ''}','${a.id}')">
       ${flagBtns}
-      <div class="meta"><div class="meta-left">${cat} | ${date} ${srcBadge}</div></div>
+      <div class="meta"><div class="meta-left">${cat} | ${date} ${srcBadge}${deepBadge}</div></div>
       <div class="title">${a.title_ja || ''}</div>
       <div class="summary">${summary}...</div>
       ${tagBadges ? `<div class="tags-row">${tagBadges}</div>` : ''}
@@ -471,10 +538,15 @@ async function toggleFlag(articleId, flag) {
 }
 
 // ===== Show Article =====
-async function showArticle(slug, extUrl) {
+async function showArticle(slug, extUrl, articleId) {
+  currentArticleId = articleId || null;
   document.getElementById('listView').classList.add('hide');
   document.getElementById('articleView').classList.add('show');
   document.getElementById('articleContent').innerHTML = '<div class="loading">読み込み中...</div>';
+  document.getElementById('researchResults').innerHTML = '';
+  if (currentUser && articleId) {
+    document.getElementById('deepResearchFab').classList.add('show');
+  }
 
   const extLink = document.getElementById('extLink');
   if (extUrl && extUrl !== 'null' && extUrl !== '') {
@@ -498,11 +570,13 @@ async function showArticle(slug, extUrl) {
   } else {
     document.getElementById('articleContent').innerHTML = '<div class="loading">記事が見つかりません</div>';
   }
+  if (articleId) loadArticleResearch(articleId);
 }
 
 function showList() {
   document.getElementById('listView').classList.remove('hide');
   document.getElementById('articleView').classList.remove('show');
+  document.getElementById('deepResearchFab').classList.remove('show');
   window.scrollTo(0, 0);
 }
 
@@ -641,6 +715,104 @@ function updateUrlBadge(inputId, badgeId) {
   } else {
     badge.style.display = 'none';
   }
+}
+
+// ===== Deep Research =====
+function openDeepResearchModal() {
+  document.getElementById('deepResearchModalOverlay').classList.add('show');
+}
+
+function closeDeepResearchModal(e) {
+  if (e.target === document.getElementById('deepResearchModalOverlay')) {
+    document.getElementById('deepResearchModalOverlay').classList.remove('show');
+  }
+}
+
+async function submitDeepResearch() {
+  const focusPoint = document.getElementById('drFocusPoint').value.trim();
+  if (!focusPoint) { alert('深掘りポイントは必須です'); return; }
+  const additionalContext = document.getElementById('drAdditionalContext').value.trim() || null;
+  const priority = parseInt(document.getElementById('drPriority').value);
+
+  const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/create_deep_research_request", {
+    method: 'POST',
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      p_article_id: currentArticleId,
+      p_focus_point: focusPoint,
+      p_additional_context: additionalContext,
+      p_priority: priority
+    })
+  });
+
+  if (res.ok) {
+    document.getElementById('deepResearchModalOverlay').classList.remove('show');
+    document.getElementById('drFocusPoint').value = '';
+    document.getElementById('drAdditionalContext').value = '';
+    document.getElementById('drPriority').value = '5';
+    deepResearchMap[currentArticleId] = true;
+    showToast('深掘りリクエストを登録しました');
+    loadArticleResearch(currentArticleId);
+  } else {
+    const err = await res.text();
+    alert('送信エラー: ' + err);
+  }
+}
+
+async function loadArticleResearch(articleId) {
+  const section = document.getElementById('researchResults');
+  const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/get_article_research", {
+    method: 'POST',
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ p_article_id: articleId })
+  });
+  if (!res.ok) { section.innerHTML = ''; return; }
+  const data = await res.json();
+  if (!Array.isArray(data) || !data.length) { section.innerHTML = ''; return; }
+  renderResearchResults(data, section);
+}
+
+function renderResearchResults(data, section) {
+  const statusLabels = { pending: '待機中', processing: '処理中', completed: '完了', failed: 'エラー' };
+  const notebookLabels = {
+    not_started: '未開始',
+    doc_ready: '📄 Doc準備済',
+    audio_ready: '🎧 音声生成済',
+    slides_ready: '📊 スライド生成済'
+  };
+
+  const cardsHtml = data.map(r => {
+    const statusLabel = statusLabels[r.status] || r.status;
+    const date = r.completed_at
+      ? '完了: ' + new Date(r.completed_at).toLocaleDateString('ja-JP')
+      : '登録: ' + new Date(r.created_at).toLocaleDateString('ja-JP');
+    return `
+      <div class="research-card">
+        <span class="research-status-badge ${r.status}">${statusLabel}</span>
+        <div class="research-focus">${r.focus_point || ''}</div>
+        ${r.status === 'completed' && r.result_summary ? `<div class="research-summary">${r.result_summary}</div>` : ''}
+        ${r.result_doc_url ? `<a class="research-link" href="${r.result_doc_url}" target="_blank">📄 Googleドキュメントを開く</a>` : ''}
+        ${r.notebook_lm_status ? `<div><span class="research-notebook-badge">🎧 NotebookLM: ${notebookLabels[r.notebook_lm_status] || r.notebook_lm_status}</span></div>` : ''}
+        <div class="research-date">${date}</div>
+      </div>`;
+  }).join('');
+
+  section.innerHTML = `<div class="research-section"><h3>🔬 深掘りリサーチ結果</h3>${cardsHtml}</div>`;
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
 // ===== Init =====
