@@ -137,7 +137,11 @@
   .research-status-badge.completed { background: #10b981; }
   .research-status-badge.failed { background: #ef4444; }
   .research-focus { font-size: 15px; font-weight: 600; color: #1a1a2e; margin: 8px 0 4px; }
-  .research-summary { font-size: 14px; color: #555; line-height: 1.7; margin: 6px 0; }
+  .research-pending-note { font-size: 13px; color: #888; margin-top: 8px; }
+  .research-summary { background: #fff8f0; border-left: 4px solid #8b5cf6; padding: 14px 18px; border-radius: 0 8px 8px 0; font-size: 15px; line-height: 1.8; color: #333; margin: 10px 0 12px; }
+  .research-expand-btn { background: none; border: 1.5px solid #8b5cf6; color: #8b5cf6; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; margin-bottom: 8px; }
+  .research-body { background: #fafafa; padding: 16px; border-radius: 8px; font-size: 14px; line-height: 1.85; white-space: pre-wrap; display: none; margin-bottom: 12px; }
+  .research-body.show { display: block; }
   .research-link { display: inline-block; margin-top: 8px; color: #8b5cf6; font-size: 13px; text-decoration: none; font-weight: 600; }
   .research-notebook-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 8px; background: #f3f0ff; color: #8b5cf6; font-weight: 600; margin-top: 6px; }
   .research-date { font-size: 11px; color: #aaa; margin-top: 6px; }
@@ -780,6 +784,24 @@ async function loadArticleResearch(articleId) {
   renderResearchResults(data, section);
 }
 
+function renderMarkdown(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/https?:\/\/[^\s<>"]+/g, '<a href="$&" target="_blank" style="color:#8b5cf6">$&</a>')
+    .replace(/\n/g, '<br>');
+}
+
+function toggleResearchBody(index) {
+  const body = document.getElementById('researchBody' + index);
+  const btn = body.previousElementSibling;
+  body.classList.toggle('show');
+  btn.textContent = body.classList.contains('show') ? '📖 全文を折りたたむ' : '📖 全文を読む';
+}
+
 function renderResearchResults(data, section) {
   const statusLabels = { pending: '待機中', processing: '処理中', completed: '完了', failed: 'エラー' };
   const notebookLabels = {
@@ -789,18 +811,36 @@ function renderResearchResults(data, section) {
     slides_ready: '📊 スライド生成済'
   };
 
-  const cardsHtml = data.map(r => {
+  const cardsHtml = data.map((r, i) => {
     const statusLabel = statusLabels[r.status] || r.status;
     const date = r.completed_at
       ? '完了: ' + new Date(r.completed_at).toLocaleDateString('ja-JP')
       : '登録: ' + new Date(r.created_at).toLocaleDateString('ja-JP');
+
+    let bodyHtml = '';
+    if (r.status === 'completed') {
+      if (r.result_summary) {
+        bodyHtml += `<div class="research-summary">${renderMarkdown(r.result_summary)}</div>`;
+      }
+      if (r.result_body) {
+        bodyHtml += `<button class="research-expand-btn" onclick="toggleResearchBody(${i})">📖 全文を読む</button>
+          <div class="research-body" id="researchBody${i}">${renderMarkdown(r.result_body)}</div>`;
+      }
+      if (r.result_doc_url) {
+        bodyHtml += `<a class="research-link" href="${r.result_doc_url}" target="_blank">📄 Googleドキュメントを開く</a>`;
+      }
+      if (r.notebook_lm_status) {
+        bodyHtml += `<div><span class="research-notebook-badge">🎧 NotebookLM: ${notebookLabels[r.notebook_lm_status] || r.notebook_lm_status}</span></div>`;
+      }
+    } else {
+      bodyHtml += `<div class="research-pending-note">処理中...平日深夜3時に実行されます</div>`;
+    }
+
     return `
       <div class="research-card">
         <span class="research-status-badge ${r.status}">${statusLabel}</span>
         <div class="research-focus">${r.focus_point || ''}</div>
-        ${r.status === 'completed' && r.result_summary ? `<div class="research-summary">${r.result_summary}</div>` : ''}
-        ${r.result_doc_url ? `<a class="research-link" href="${r.result_doc_url}" target="_blank">📄 Googleドキュメントを開く</a>` : ''}
-        ${r.notebook_lm_status ? `<div><span class="research-notebook-badge">🎧 NotebookLM: ${notebookLabels[r.notebook_lm_status] || r.notebook_lm_status}</span></div>` : ''}
+        ${bodyHtml}
         <div class="research-date">${date}</div>
       </div>`;
   }).join('');
