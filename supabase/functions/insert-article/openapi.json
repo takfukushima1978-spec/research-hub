@@ -1,0 +1,121 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Research Hub - Article Insert API",
+    "description": "デイリーリサーチ記事をSupabase Research DBに登録するAPI",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://swgdzytwyvkwvncaqjks.supabase.co/functions/v1"
+    }
+  ],
+  "paths": {
+    "/insert-article": {
+      "post": {
+        "operationId": "insertArticle",
+        "summary": "リサーチ記事を登録する",
+        "description": "デイリーリサーチの結果をResearch DBに1件登録する。カテゴリ名は既存のものを指定すること（ai_accounting / claude_code / claude_code_official）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "slug", "category_name", "body_html", "body_text", "summary", "source_date"],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "記事タイトル（日本語）"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "description": "URLスラッグ（英数字・ハイフン、例: ai-accounting-trends-2026-04-15）"
+                  },
+                  "category_name": {
+                    "type": "string",
+                    "enum": ["ai_accounting", "claude_code", "claude_code_official"],
+                    "description": "カテゴリ名"
+                  },
+                  "body_html": {
+                    "type": "string",
+                    "description": "記事本文（HTML形式）"
+                  },
+                  "body_text": {
+                    "type": "string",
+                    "description": "記事本文（プレーンテキスト）"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "記事の要約（1〜3文）"
+                  },
+                  "source_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "情報の日付（YYYY-MM-DD）"
+                  },
+                  "tag_names": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "タグ名の配列（既存タグのみマッチ）"
+                  },
+                  "source_urls": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["url", "title", "domain"],
+                      "properties": {
+                        "url": { "type": "string", "description": "ソースURL" },
+                        "title": { "type": "string", "description": "ソース記事タイトル" },
+                        "domain": { "type": "string", "description": "ドメイン名（例: example.com）" }
+                      }
+                    },
+                    "description": "参照元URLの配列"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "登録成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "登録された記事のUUID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "バリデーションエラーまたはRPCエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証エラー（トークン不正）"
+          },
+          "429": {
+            "description": "レートリミット超過"
+          }
+        }
+      }
+    }
+  }
+}
