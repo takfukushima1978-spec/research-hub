@@ -105,46 +105,30 @@
           "content": {
             "application/json": {
               "schema": {
-                "oneOf": [
-                  {
-                    "type": "object",
-                    "required": ["action"],
-                    "properties": {
-                      "action": {
-                        "type": "string",
-                        "enum": ["list_pending"],
-                        "description": "未処理の深掘りリクエスト一覧を取得"
-                      }
-                    }
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "description": "list_pending: 未処理リクエスト一覧を取得。complete: 調査結果を登録。"
                   },
-                  {
-                    "type": "object",
-                    "required": ["action", "request_id", "result_summary", "result_body"],
-                    "properties": {
-                      "action": {
-                        "type": "string",
-                        "enum": ["complete"],
-                        "description": "深掘り調査の結果を登録"
-                      },
-                      "request_id": {
-                        "type": "string",
-                        "description": "対象のリクエストID（list_pendingで取得したrequest_id）"
-                      },
-                      "result_summary": {
-                        "type": "string",
-                        "description": "調査結果の要約（1-3文）"
-                      },
-                      "result_body": {
-                        "type": "string",
-                        "description": "調査結果の全文（Markdown形式推奨）"
-                      },
-                      "result_doc_url": {
-                        "type": "string",
-                        "description": "関連ドキュメントURL（省略可）"
-                      }
-                    }
+                  "request_id": {
+                    "type": "string",
+                    "description": "complete時必須。対象のリクエストID（list_pendingで取得したrequest_id）"
+                  },
+                  "result_summary": {
+                    "type": "string",
+                    "description": "complete時必須。調査結果の要約（1-3文）"
+                  },
+                  "result_body": {
+                    "type": "string",
+                    "description": "complete時必須。調査結果の全文（Markdown形式推奨）"
+                  },
+                  "result_doc_url": {
+                    "type": "string",
+                    "description": "complete時の関連ドキュメントURL（省略可）"
                   }
-                ]
+                }
               }
             }
           }
