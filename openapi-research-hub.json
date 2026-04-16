@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Research Hub API",
-    "description": "AI Research Hubに記事投入・Deep Research結果を登録するAPI",
+    "description": "AI Research Hubの記事投入・Deep Research API",
     "version": "3.0"
   },
   "servers": [
@@ -29,7 +29,7 @@
                   },
                   "category_name": {
                     "type": "string",
-                    "description": "カテゴリ識別子。claude_code / ai_accounting / claude_code_official。未知の値は自動作成される。"
+                    "description": "カテゴリ識別子。claude_code / ai_accounting / claude_code_official"
                   },
                   "body_html": {
                     "type": "string",
@@ -99,7 +99,6 @@
       "post": {
         "operationId": "deepResearch",
         "summary": "Deep Researchの未処理リクエスト取得または結果登録",
-        "description": "action=list_pendingで未処理リクエスト一覧を取得。action=completeで調査結果を登録。",
         "requestBody": {
           "required": true,
           "content": {
@@ -114,7 +113,7 @@
                   },
                   "request_id": {
                     "type": "string",
-                    "description": "complete時必須。対象のリクエストID（list_pendingで取得したrequest_id）"
+                    "description": "complete時必須。対象のリクエストID"
                   },
                   "result_summary": {
                     "type": "string",
@@ -126,7 +125,7 @@
                   },
                   "result_doc_url": {
                     "type": "string",
-                    "description": "complete時の関連ドキュメントURL（省略可）"
+                    "description": "関連ドキュメントURL（省略可）"
                   }
                 }
               }
@@ -143,7 +142,7 @@
                   "properties": {
                     "requests": {
                       "type": "array",
-                      "description": "list_pending時: 未処理リクエスト一覧",
+                      "description": "list_pending時の未処理リクエスト一覧",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -156,7 +155,7 @@
                         }
                       }
                     },
-                    "id": { "type": "string", "description": "complete時: 完了したリクエストID" },
+                    "id": { "type": "string", "description": "complete時の完了リクエストID" },
                     "status": { "type": "string", "description": "complete時: completed" }
                   }
                 }
