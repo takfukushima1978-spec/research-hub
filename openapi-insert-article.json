@@ -1,0 +1,188 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Research Hub API",
+    "description": "AI Research Hubに記事投入・Deep Research結果を登録するAPI",
+    "version": "3.0"
+  },
+  "servers": [
+    {
+      "url": "https://swgdzytwyvkwvncaqjks.supabase.co/functions/v1"
+    }
+  ],
+  "paths": {
+    "/insert-article": {
+      "post": {
+        "operationId": "insertArticle",
+        "summary": "リサーチ記事をResearch Hubに投入する",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "category_name", "body_html", "summary", "source_date"],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "記事タイトル（日本語）"
+                  },
+                  "category_name": {
+                    "type": "string",
+                    "description": "カテゴリ識別子。claude_code / ai_accounting / claude_code_official。未知の値は自動作成される。"
+                  },
+                  "body_html": {
+                    "type": "string",
+                    "description": "記事本文（HTML形式）"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "記事の要約（1-3文）"
+                  },
+                  "source_date": {
+                    "type": "string",
+                    "description": "記事の日付（YYYY-MM-DD形式）"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "description": "URL用スラッグ（省略時は自動生成）"
+                  },
+                  "body_text": {
+                    "type": "string",
+                    "description": "プレーンテキスト版本文（省略時は自動生成）"
+                  },
+                  "tag_names": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "タグ名の配列（省略可）"
+                  },
+                  "source_urls": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["url"],
+                      "properties": {
+                        "url": { "type": "string" },
+                        "title": { "type": "string" },
+                        "domain": { "type": "string" }
+                      }
+                    },
+                    "description": "参照元URL一覧（省略可）"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "記事投入成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "description": "記事ID" },
+                    "slug": { "type": "string", "description": "記事スラッグ" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "バリデーションエラー" },
+          "401": { "description": "認証エラー" },
+          "429": { "description": "レートリミット超過" }
+        }
+      }
+    },
+    "/deep-research": {
+      "post": {
+        "operationId": "deepResearch",
+        "summary": "Deep Researchの未処理リクエスト取得または結果登録",
+        "description": "action=list_pendingで未処理リクエスト一覧を取得。action=completeで調査結果を登録。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": ["action"],
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "enum": ["list_pending"],
+                        "description": "未処理の深掘りリクエスト一覧を取得"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": ["action", "request_id", "result_summary", "result_body"],
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "enum": ["complete"],
+                        "description": "深掘り調査の結果を登録"
+                      },
+                      "request_id": {
+                        "type": "string",
+                        "description": "対象のリクエストID（list_pendingで取得したrequest_id）"
+                      },
+                      "result_summary": {
+                        "type": "string",
+                        "description": "調査結果の要約（1-3文）"
+                      },
+                      "result_body": {
+                        "type": "string",
+                        "description": "調査結果の全文（Markdown形式推奨）"
+                      },
+                      "result_doc_url": {
+                        "type": "string",
+                        "description": "関連ドキュメントURL（省略可）"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requests": {
+                      "type": "array",
+                      "description": "list_pending時: 未処理リクエスト一覧",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "request_id": { "type": "string" },
+                          "article_id": { "type": "string" },
+                          "article_title": { "type": "string" },
+                          "focus_point": { "type": "string" },
+                          "additional_context": { "type": "string" },
+                          "priority": { "type": "integer" }
+                        }
+                      }
+                    },
+                    "id": { "type": "string", "description": "complete時: 完了したリクエストID" },
+                    "status": { "type": "string", "description": "complete時: completed" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "バリデーションエラー" },
+          "401": { "description": "認証エラー" }
+        }
+      }
+    }
+  }
+}
