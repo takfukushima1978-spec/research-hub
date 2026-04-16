@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-Internal-Token",
+    "Access-Control-Allow-Headers": "Content-Type, X-Internal-Token, Authorization",
   };
 
   // CORSプリフライト
@@ -143,8 +143,10 @@ Deno.serve(async (req) => {
     });
   }
 
-  // トークン検証
-  const token = req.headers.get("X-Internal-Token");
+  // トークン検証（X-Internal-Token または Authorization: Bearer の両方に対応）
+  const token = req.headers.get("X-Internal-Token")
+    || req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "")
+    || null;
   if (!token || token !== INTERNAL_TOKEN) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
