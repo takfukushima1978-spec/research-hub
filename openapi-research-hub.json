@@ -3,7 +3,7 @@
   "info": {
     "title": "Research Hub API",
     "description": "AI Research Hubの記事投入・Deep Research API",
-    "version": "3.0"
+    "version": "3.1"
   },
   "servers": [
     {
@@ -49,12 +49,14 @@
                   },
                   "body_text": {
                     "type": "string",
-                    "description": "プレーンテキスト版本文（省略時は自動生成）"
+                    "minLength": 1500,
+                    "description": "プレーンテキスト版本文（省略時はbody_htmlから自動生成）。品質ノルマ: 1500文字以上 (auto-research-collectでは1500-2500字推奨)。quality_override:true 時は無視。"
                   },
                   "tag_names": {
                     "type": "array",
                     "items": { "type": "string" },
-                    "description": "タグ名の配列（省略可）"
+                    "minItems": 4,
+                    "description": "タグ名の配列。品質ノルマ: 4件以上必須。quality_override:true 時は無視。"
                   },
                   "source_urls": {
                     "type": "array",
@@ -67,7 +69,12 @@
                         "domain": { "type": "string" }
                       }
                     },
-                    "description": "参照元URL一覧（省略可）"
+                    "minItems": 3,
+                    "description": "参照元URL一覧。品質ノルマ: 一次ソース3件以上必須。quality_override:true 時は無視。"
+                  },
+                  "quality_override": {
+                    "type": "boolean",
+                    "description": "true を指定すると body_text/source_urls/tag_names の品質ノルマ検証をスキップ。手動投入の緊急回避用。auto-research-collectでは使用しない。"
                   }
                 }
               }
