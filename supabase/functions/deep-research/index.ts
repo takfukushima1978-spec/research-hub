@@ -51,6 +51,51 @@ Deno.serve(async (req) => {
   const action = body.action as string;
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // === action: request — 新規Deep Researchリクエスト登録 ===
+  // auto-research-collect スケジュールタスクが重要記事に対して自動発火する用途
+  if (action === "request") {
+    const articleId = body.article_id as string;
+    const focusPoint = (body.focus_point as string) ?? "";
+    const additionalContext = (body.additional_context as string) ?? null;
+    const priorityRaw = body.priority;
+    const priority = typeof priorityRaw === "number" ? priorityRaw : 2;
+
+    if (!articleId) {
+      return new Response(JSON.stringify({ error: "article_id は必須です" }), {
+        status: 400, headers: jsonHeaders,
+      });
+    }
+    if (!focusPoint || focusPoint.trim() === "") {
+      return new Response(JSON.stringify({ error: "focus_point は必須です" }), {
+        status: 400, headers: jsonHeaders,
+      });
+    }
+    if (![1, 2, 3].includes(priority)) {
+      return new Response(JSON.stringify({ error: "priority は 1/2/3 のいずれかで指定してください" }), {
+        status: 400, headers: jsonHeaders,
+      });
+    }
+
+    const { data, error } = await supabase.rpc("create_deep_research_request", {
+      p_article_id: articleId,
+      p_focus_point: focusPoint,
+      p_additional_context: additionalContext,
+      p_priority: priority,
+    });
+
+    if (error) {
+      console.error("create_deep_research_request error:", error.message);
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400, headers: jsonHeaders,
+      });
+    }
+
+    console.log("Deep research requested:", data, "for article:", articleId);
+    return new Response(JSON.stringify({ request_id: data, status: "pending" }), {
+      status: 201, headers: jsonHeaders,
+    });
+  }
+
   // === action: list_pending — 未処理リクエスト一覧 ===
   if (action === "list_pending") {
     const { data, error } = await supabase.rpc("get_pending_deep_research");
@@ -102,7 +147,7 @@ Deno.serve(async (req) => {
     });
   }
 
-  return new Response(JSON.stringify({ error: "不明なactionです。list_pending または complete を指定してください" }), {
+  return new Response(JSON.stringify({ error: "不明なactionです。request / list_pending / complete のいずれかを指定してください" }), {
     status: 400, headers: jsonHeaders,
   });
 });

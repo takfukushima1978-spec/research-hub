@@ -57,6 +57,10 @@ interface ArticlePayload {
   tag_names?: string[];
   source_urls?: { url: string; title: string; domain: string }[];
   quality_override?: boolean;
+  embedding?: number[];
+  similarity_threshold?: number;
+  similarity_days?: number;
+  force_insert?: boolean;
 }
 
 function validatePayload(body: unknown): { ok: true; data: ArticlePayload } | { ok: false; error: string } {
@@ -114,6 +118,32 @@ function validatePayload(body: unknown): { ok: true; data: ArticlePayload } | { 
   // quality_override: 省略可（true の場合、品質ノルマチェックをスキップ）
   if (b.quality_override !== undefined && b.quality_override !== null && typeof b.quality_override !== "boolean") {
     return { ok: false, error: "quality_override は boolean で指定してください" };
+  }
+
+  // embedding: 省略可（指定時は数値配列）
+  if (b.embedding !== undefined && b.embedding !== null) {
+    if (!Array.isArray(b.embedding) || !b.embedding.every((v: unknown) => typeof v === "number" && Number.isFinite(v))) {
+      return { ok: false, error: "embedding は数値の配列で指定してください" };
+    }
+  }
+
+  // similarity_threshold: 省略可（0〜1の数値）
+  if (b.similarity_threshold !== undefined && b.similarity_threshold !== null) {
+    if (typeof b.similarity_threshold !== "number" || b.similarity_threshold < 0 || b.similarity_threshold > 1) {
+      return { ok: false, error: "similarity_threshold は 0〜1 の数値で指定してください" };
+    }
+  }
+
+  // similarity_days: 省略可（正の整数）
+  if (b.similarity_days !== undefined && b.similarity_days !== null) {
+    if (typeof b.similarity_days !== "number" || !Number.isInteger(b.similarity_days) || b.similarity_days < 1) {
+      return { ok: false, error: "similarity_days は正の整数で指定してください" };
+    }
+  }
+
+  // force_insert: 省略可（true の場合、類似度判定をスキップ）
+  if (b.force_insert !== undefined && b.force_insert !== null && typeof b.force_insert !== "boolean") {
+    return { ok: false, error: "force_insert は boolean で指定してください" };
   }
 
   // source_urls: 省略可
@@ -240,6 +270,34 @@ Deno.serve(async (req) => {
 
   // SupabaseクライアントでRPC呼び出し
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // embedding ベース重複検知 (opt-in: embedding が送られてきた場合のみ)
+  // force_insert:true でスキップ可能
+  if (data.embedding && data.embedding.length > 0 && !data.force_insert) {
+    const threshold = data.similarity_threshold ?? 0.85;
+    const days = data.similarity_days ?? 30;
+    const { data: similar, error: simError } = await supabase.rpc("find_similar_articles_by_embedding", {
+      p_embedding: data.embedding,
+      p_threshold: threshold,
+      p_days: days,
+      p_limit: 5,
+    });
+    if (simError) {
+      // RPC 未デプロイ等は致命的にせず、ログだけ残してスキップ (後方互換性)
+      console.warn("find_similar_articles_by_embedding skipped:", simError.message);
+    } else if (Array.isArray(similar) && similar.length > 0) {
+      console.warn("Similar article detected, rejecting insert:", similar);
+      return new Response(
+        JSON.stringify({
+          error: "類似する既存記事が存在します",
+          similar_articles: similar,
+          hint: `閾値 ${threshold} 以上の類似度の既存記事を検出。別アングルで書き直すか、force_insert:true で強制投入してください。`,
+        }),
+        { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+  }
+
   const { data: articleId, error } = await supabase.rpc("insert_research_article", {
     p_title: data.title,
     p_slug: slug,
@@ -261,8 +319,22 @@ Deno.serve(async (req) => {
     });
   }
 
-  console.log("Article inserted:", articleId, "slug:", slug);
-  return new Response(JSON.stringify({ id: articleId, slug: slug }), {
+  // embedding が送られていれば書き戻す (失敗しても投入自体は成功扱い)
+  let embeddingStored = false;
+  if (data.embedding && data.embedding.length > 0) {
+    const { error: embError } = await supabase.rpc("update_article_embedding", {
+      p_article_id: articleId,
+      p_embedding: data.embedding,
+    });
+    if (embError) {
+      console.warn("update_article_embedding failed:", embError.message);
+    } else {
+      embeddingStored = true;
+    }
+  }
+
+  console.log("Article inserted:", articleId, "slug:", slug, "embedding_stored:", embeddingStored);
+  return new Response(JSON.stringify({ id: articleId, slug: slug, embedding_stored: embeddingStored }), {
     status: 201,
     headers: { "Content-Type": "application/json", ...corsHeaders },
   });

@@ -36,6 +36,39 @@ curl -X POST "$SUPABASE_URL/rest/v1/rpc/get_recent_article_digests" \
 - tags が 3 件以上一致 → 除外
 
 のいずれかを満たす候補は採用しない。
+ただし下記 Step 1.5 の「公式ニュース最優先」に該当する場合は、別アングルで必ず記事化する (重複回避より優先)。
+
+---
+
+## Step 1.5. 公式ニュース最優先ルール (絶対遵守)
+
+過去 24〜48 時間以内に **以下の公式ソース** から新規リリース・発表があった場合は、
+当日の軸 (Step 2) とは **別枠で必ず 1 記事** 作成する。
+当日の軸記事と公式ニュース記事の **両方** を投入すること。
+
+### 監視対象の公式ソース
+
+| カテゴリ | ソース |
+| --- | --- |
+| AI ラボ公式ブログ | Anthropic news, OpenAI blog/news, Google DeepMind blog, Meta AI blog, xAI announcements, Mistral AI news, Cohere blog |
+| プラットフォーマー公式 | Microsoft AI blog, Apple Newsroom (AI関連), AWS AI/ML blog, Google Cloud AI blog |
+| ハードウェア公式 | NVIDIA blog/newsroom, AMD AI press, Intel AI press |
+| 規制・公的機関 | EU AI Act 公式更新, US AI Safety Institute (AISI), NIST AI RMF, 英国 AISI, 日本AI制度研究会等 |
+| 学術プレプリント | arXiv cs.AI / cs.CL / cs.LG の Trending、主要会議 (NeurIPS/ICML/ICLR/ACL) のアクセプト発表 |
+| 主要 OSS リリース | LangChain, LlamaIndex, vLLM, Ollama, Hugging Face Transformers のメジャーバージョンリリース |
+
+### 該当判定
+
+- **新モデル発表** / **新API・新機能リリース** / **価格改定** / **重大な政策発表** / **規制発効** のいずれか
+- 公式アナウンスが一次ソースとして存在すること (リーク・噂は除外)
+
+### 既存記事と重複する場合
+
+公式ニュース対象テーマが既に直近で記事化済みの場合でも、**別アングル** で再記事化する:
+- 技術詳細の深掘り (アーキテクチャ / ベンチマーク数値)
+- 競合比較 (他社同等プロダクトとの並列分析)
+- 業界インパクト分析 (誰が得をして誰が損をするか)
+- 反対意見 / 批判的論考 / リスク評価
 
 ---
 
@@ -128,6 +161,37 @@ curl -X POST "$SUPABASE_URL/functions/v1/insert-article" \
 - 400 が返り `details` に「本文が短すぎます」「source_urls が不足」等が含まれる場合、
   該当セクションを補強して再投入する (3 リトライまで)
 - 連日重複と判定されたテーマは別軸 (Step 2 の表) から再選定
+
+---
+
+## Step 7. 重要記事の自動 Deep Research 起動
+
+投入直後に重要度を自己評価し、以下のいずれかを満たす場合は **Deep Research を自動起動** する。
+
+### 自動 Deep Research の発火条件 (いずれか)
+
+- Step 1.5 の **公式ニュース最優先** で記事化したもの (=ほぼ全件)
+- 新モデル / 新製品 / 新規制発表で業界インパクトが大きいと判断したもの
+- 自分の業務 (Claude Code / AI会計 / プロダクト開発) に直接影響しうるもの
+
+### 起動方法
+
+`deep-research` Edge Function に `action: "request"` で POST する:
+
+```bash
+curl -X POST "$SUPABASE_URL/functions/v1/deep-research" \
+  -H "X-Internal-Token: $INTERNAL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "request",
+    "article_id": "<insert-article のレスポンスID>",
+    "focus_point": "技術詳細とベンチマーク、競合比較",
+    "additional_context": "公式リリースの一次ソースを優先、業務影響を分析",
+    "priority": 2
+  }'
+```
+
+`priority`: 1=低 / 2=通常 / 3=高。公式メジャーリリースは 3。
 
 ---
 
