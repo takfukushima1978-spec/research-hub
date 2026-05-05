@@ -13,6 +13,13 @@ const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 10;
 
+// 記事品質ノルマ（Deep / Wide な記事のみを許容）
+// 環境変数で上書き可能: MIN_BODY_TEXT_LENGTH / MIN_SOURCE_URLS / MIN_TAG_NAMES
+// quality_override: true をペイロードに含めると個別にスキップ可能（手動投入用）
+const MIN_BODY_TEXT_LENGTH = parseInt(Deno.env.get("MIN_BODY_TEXT_LENGTH") ?? "1500", 10);
+const MIN_SOURCE_URLS = parseInt(Deno.env.get("MIN_SOURCE_URLS") ?? "3", 10);
+const MIN_TAG_NAMES = parseInt(Deno.env.get("MIN_TAG_NAMES") ?? "4", 10);
+
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   const entry = rateLimitMap.get(ip);
@@ -49,6 +56,11 @@ interface ArticlePayload {
   css_template_id?: string | null;
   tag_names?: string[];
   source_urls?: { url: string; title: string; domain: string }[];
+  quality_override?: boolean;
+  embedding?: number[];
+  similarity_threshold?: number;
+  similarity_days?: number;
+  force_insert?: boolean;
 }
 
 function validatePayload(body: unknown): { ok: true; data: ArticlePayload } | { ok: false; error: string } {
@@ -101,6 +113,37 @@ function validatePayload(body: unknown): { ok: true; data: ArticlePayload } | { 
     if (!Array.isArray(b.tag_names) || !b.tag_names.every((t: unknown) => typeof t === "string")) {
       return { ok: false, error: "tag_names は文字列の配列で指定してください" };
     }
+  }
+
+  // quality_override: 省略可（true の場合、品質ノルマチェックをスキップ）
+  if (b.quality_override !== undefined && b.quality_override !== null && typeof b.quality_override !== "boolean") {
+    return { ok: false, error: "quality_override は boolean で指定してください" };
+  }
+
+  // embedding: 省略可（指定時は数値配列）
+  if (b.embedding !== undefined && b.embedding !== null) {
+    if (!Array.isArray(b.embedding) || !b.embedding.every((v: unknown) => typeof v === "number" && Number.isFinite(v))) {
+      return { ok: false, error: "embedding は数値の配列で指定してください" };
+    }
+  }
+
+  // similarity_threshold: 省略可（0〜1の数値）
+  if (b.similarity_threshold !== undefined && b.similarity_threshold !== null) {
+    if (typeof b.similarity_threshold !== "number" || b.similarity_threshold < 0 || b.similarity_threshold > 1) {
+      return { ok: false, error: "similarity_threshold は 0〜1 の数値で指定してください" };
+    }
+  }
+
+  // similarity_days: 省略可（正の整数）
+  if (b.similarity_days !== undefined && b.similarity_days !== null) {
+    if (typeof b.similarity_days !== "number" || !Number.isInteger(b.similarity_days) || b.similarity_days < 1) {
+      return { ok: false, error: "similarity_days は正の整数で指定してください" };
+    }
+  }
+
+  // force_insert: 省略可（true の場合、類似度判定をスキップ）
+  if (b.force_insert !== undefined && b.force_insert !== null && typeof b.force_insert !== "boolean") {
+    return { ok: false, error: "force_insert は boolean で指定してください" };
   }
 
   // source_urls: 省略可
@@ -192,8 +235,69 @@ Deno.serve(async (req) => {
   // body_text自動生成（未指定時）
   const bodyText = data.body_text?.trim() || stripHtml(data.body_html);
 
+  // 品質ノルマ検証（quality_override:true でスキップ可能）
+  if (!data.quality_override) {
+    const qualityErrors: string[] = [];
+    if (bodyText.length < MIN_BODY_TEXT_LENGTH) {
+      qualityErrors.push(
+        `本文が短すぎます (${bodyText.length} 文字)。最低 ${MIN_BODY_TEXT_LENGTH} 文字必要です。背景・事実データ・比較・インパクト分析・アクションアイテムを含めて拡充してください。`,
+      );
+    }
+    const sourceCount = data.source_urls?.length ?? 0;
+    if (sourceCount < MIN_SOURCE_URLS) {
+      qualityErrors.push(
+        `source_urls が不足しています (${sourceCount} 件)。最低 ${MIN_SOURCE_URLS} 件の一次ソースを含めてください。`,
+      );
+    }
+    const tagCount = data.tag_names?.length ?? 0;
+    if (tagCount < MIN_TAG_NAMES) {
+      qualityErrors.push(
+        `tag_names が不足しています (${tagCount} 件)。最低 ${MIN_TAG_NAMES} 件のタグを付けてください。`,
+      );
+    }
+    if (qualityErrors.length > 0) {
+      console.warn("Quality check failed:", qualityErrors.join(" / "));
+      return new Response(
+        JSON.stringify({
+          error: "記事品質ノルマを満たしていません",
+          details: qualityErrors,
+          hint: "auto-research-collect では body_text 1500-2500字 / source_urls 3件以上 / tag_names 4件以上 が必須です。手動投入時のみ quality_override:true で回避可能。",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+  }
+
   // SupabaseクライアントでRPC呼び出し
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // embedding ベース重複検知 (opt-in: embedding が送られてきた場合のみ)
+  // force_insert:true でスキップ可能
+  if (data.embedding && data.embedding.length > 0 && !data.force_insert) {
+    const threshold = data.similarity_threshold ?? 0.85;
+    const days = data.similarity_days ?? 30;
+    const { data: similar, error: simError } = await supabase.rpc("find_similar_articles_by_embedding", {
+      p_embedding: data.embedding,
+      p_threshold: threshold,
+      p_days: days,
+      p_limit: 5,
+    });
+    if (simError) {
+      // RPC 未デプロイ等は致命的にせず、ログだけ残してスキップ (後方互換性)
+      console.warn("find_similar_articles_by_embedding skipped:", simError.message);
+    } else if (Array.isArray(similar) && similar.length > 0) {
+      console.warn("Similar article detected, rejecting insert:", similar);
+      return new Response(
+        JSON.stringify({
+          error: "類似する既存記事が存在します",
+          similar_articles: similar,
+          hint: `閾値 ${threshold} 以上の類似度の既存記事を検出。別アングルで書き直すか、force_insert:true で強制投入してください。`,
+        }),
+        { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
+  }
+
   const { data: articleId, error } = await supabase.rpc("insert_research_article", {
     p_title: data.title,
     p_slug: slug,
@@ -215,8 +319,22 @@ Deno.serve(async (req) => {
     });
   }
 
-  console.log("Article inserted:", articleId, "slug:", slug);
-  return new Response(JSON.stringify({ id: articleId, slug: slug }), {
+  // embedding が送られていれば書き戻す (失敗しても投入自体は成功扱い)
+  let embeddingStored = false;
+  if (data.embedding && data.embedding.length > 0) {
+    const { error: embError } = await supabase.rpc("update_article_embedding", {
+      p_article_id: articleId,
+      p_embedding: data.embedding,
+    });
+    if (embError) {
+      console.warn("update_article_embedding failed:", embError.message);
+    } else {
+      embeddingStored = true;
+    }
+  }
+
+  console.log("Article inserted:", articleId, "slug:", slug, "embedding_stored:", embeddingStored);
+  return new Response(JSON.stringify({ id: articleId, slug: slug, embedding_stored: embeddingStored }), {
     status: 201,
     headers: { "Content-Type": "application/json", ...corsHeaders },
   });
