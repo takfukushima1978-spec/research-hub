@@ -44,7 +44,7 @@ RETURNS TABLE (
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public, research
+SET search_path = public, research, urawa_log
 AS $$
   SELECT
     a.id,
@@ -77,7 +77,7 @@ RETURNS void
 LANGUAGE sql
 VOLATILE
 SECURITY DEFINER
-SET search_path = public, research
+SET search_path = public, research, urawa_log
 AS $$
   UPDATE research.articles
      SET embedding = p_embedding
