@@ -1,0 +1,1446 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Architecture Note — Review Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1614;
+    --ink-soft: #4a4239;
+    --ink-faint: #7a6f63;
+    --paper: #faf6ef;
+    --paper-soft: #f3ecdf;
+    --rule: #d9cfbe;
+    --accent: #b1411e;
+    --accent-soft: #e07a4e;
+
+    --good: #4a7a3a;
+    --good-bg: #e3eedb;
+    --improve: #c75a2a;
+    --improve-bg: #f7e3d3;
+
+    --flag-skill: #4a6da8;       /* 🌱 */
+    --flag-skill-bg: #d8e2f0;
+    --flag-fix: #8a5a16;          /* 🔧 */
+    --flag-fix-bg: #f3e6c4;
+    --flag-hold: #6b5f73;         /* ❓ */
+    --flag-hold-bg: #e3dce8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter Tight', -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 32px 96px; }
+
+  /* ── Side TOC ── */
+  .side-toc {
+    position: fixed;
+    top: 48px;
+    right: max(16px, calc((100vw - 880px) / 2 - 220px));
+    width: 200px;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    padding: 16px 0;
+    border-left: 2px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    z-index: 50;
+  }
+  .side-toc-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0 16px;
+    margin-bottom: 10px;
+  }
+  .side-toc ol { list-style: none; padding: 0; margin: 0; counter-reset: stoc; }
+  .side-toc li {
+    counter-increment: stoc;
+    border-left: 2px solid transparent;
+    margin-left: -2px;
+  }
+  .side-toc a {
+    display: block;
+    padding: 6px 16px;
+    color: var(--ink-faint);
+    text-decoration: none;
+    line-height: 1.4;
+  }
+  .side-toc a::before {
+    content: counter(stoc, decimal-leading-zero);
+    color: var(--rule);
+    margin-right: 8px;
+    font-size: 10px;
+  }
+  .side-toc a:hover { color: var(--ink); }
+  .side-toc li.active { border-left-color: var(--accent); background: var(--paper-soft); }
+  .side-toc li.active a { color: var(--accent); font-weight: 600; }
+  .side-toc li.active a::before { color: var(--accent); }
+
+  /* ── Mobile TOC ── */
+  .mobile-toc-btn {
+    display: none;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    z-index: 100;
+    font-size: 18px;
+  }
+  .mobile-toc-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,22,20,0.92);
+    z-index: 99;
+    padding: 80px 24px 24px;
+    overflow-y: auto;
+  }
+  .mobile-toc-overlay.open { display: block; }
+  .mobile-toc-overlay ol { list-style: none; padding: 0; margin: 0; counter-reset: mtoc; }
+  .mobile-toc-overlay li {
+    counter-increment: mtoc;
+    padding: 14px 0;
+    border-bottom: 1px solid #3a322c;
+  }
+  .mobile-toc-overlay a {
+    color: var(--paper);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  .mobile-toc-overlay a::before {
+    content: counter(mtoc, decimal-leading-zero) " · ";
+    color: var(--accent-soft);
+  }
+
+  /* ── Masthead ── */
+  .masthead {
+    border-top: 4px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 28px 0 32px;
+    margin-bottom: 40px;
+  }
+  .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 16px;
+  }
+  .kicker .dot { color: var(--accent); }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(36px, 5.4vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+  .deck {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic;
+    font-size: 19px;
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  /* ── Meta chips ── */
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin-top: 32px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .meta-cell {
+    padding: 14px 16px;
+    border-right: 1px solid var(--rule);
+    background: var(--paper-soft);
+  }
+  .meta-cell:last-child { border-right: none; }
+  .meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .meta-value { font-size: 14px; font-weight: 500; }
+  .meta-value code {
+    font-family: 'JetBrains Mono', monospace;
+    background: white;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 12px;
+  }
+
+  /* ── Progress bar ── */
+  .progress {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .progress-track {
+    display: flex;
+    height: 6px;
+    background: var(--paper-soft);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--rule);
+  }
+  .progress-seg { transition: width 0.3s; }
+  .progress-seg.good { background: var(--good); }
+  .progress-seg.improve { background: var(--improve); }
+  .progress-seg.hold { background: var(--flag-hold); }
+  .progress-meta {
+    display: flex;
+    gap: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    flex-wrap: wrap;
+  }
+  .progress-meta span strong { color: var(--ink); }
+
+  /* ── Sections ── */
+  section { margin: 64px 0; scroll-margin-top: 24px; }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: 30px;
+    letter-spacing: -0.01em;
+    margin: 4px 0 24px;
+    line-height: 1.2;
+  }
+  .section-intro {
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+
+  /* ── How-to flags legend ── */
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .legend-card {
+    padding: 14px 16px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: white;
+  }
+  .legend-card .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .legend-card.skill .badge { background: var(--flag-skill-bg); color: var(--flag-skill); }
+  .legend-card.fix .badge { background: var(--flag-fix-bg); color: var(--flag-fix); }
+  .legend-card.hold .badge { background: var(--flag-hold-bg); color: var(--flag-hold); }
+  .legend-card p { font-size: 13px; color: var(--ink-soft); margin: 4px 0 0; }
+
+  /* ── Axis dashboard cards ── */
+  .axis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin: 24px 0;
+  }
+  .axis-card {
+    display: block;
+    padding: 18px 20px;
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .axis-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .axis-card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .axis-card-name {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .axis-card-stats {
+    display: flex;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    flex-wrap: wrap;
+  }
+  .axis-card-stats .stat strong {
+    color: var(--ink);
+    font-size: 13px;
+  }
+  .axis-card-flags {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .axis-card-flags span {
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .axis-card-flags .skill { background: var(--flag-skill-bg); color: var(--flag-skill); }
+  .axis-card-flags .fix { background: var(--flag-fix-bg); color: var(--flag-fix); }
+  .axis-card-flags .hold { background: var(--flag-hold-bg); color: var(--flag-hold); }
+
+  /* ── Axis section ── */
+  .axis-section { margin: 56px 0; }
+  .axis-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .axis-header h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .axis-header .axis-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .axis-desc {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  /* Two-column layout */
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .column {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .column-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .column.good .column-header {
+    background: var(--good-bg);
+    color: var(--good);
+  }
+  .column.improve .column-header {
+    background: var(--improve-bg);
+    color: var(--improve);
+  }
+  .column-count {
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Item card */
+  .item-list {
+    padding: 8px;
+    min-height: 60px;
+  }
+  .item {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .item-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 4px;
+    outline: none;
+    min-height: 18px;
+  }
+  .item-title[contenteditable]:empty::before {
+    content: "タイトル(短く一行)";
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+  .item-detail {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    outline: none;
+    min-height: 14px;
+    margin-top: 6px;
+  }
+  .item-detail[contenteditable]:empty::before {
+    content: "詳細(任意)";
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+  .item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .flag-select {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: white;
+    cursor: pointer;
+    color: var(--ink-soft);
+  }
+  .flag-select.skill { background: var(--flag-skill-bg); color: var(--flag-skill); border-color: var(--flag-skill-bg); }
+  .flag-select.fix { background: var(--flag-fix-bg); color: var(--flag-fix); border-color: var(--flag-fix-bg); }
+  .flag-select.hold { background: var(--flag-hold-bg); color: var(--flag-hold); border-color: var(--flag-hold-bg); }
+  .item-delete {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .item-delete:hover { color: var(--accent); }
+
+  .add-item-btn {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .add-item-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── Skill summary ── */
+  .skill-summary {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 28px 32px;
+    border-radius: 2px;
+  }
+  .skill-summary-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--accent-soft);
+    margin-bottom: 12px;
+  }
+  .skill-summary p {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.55;
+    margin: 0 0 16px;
+  }
+  .skill-summary-list {
+    margin-top: 20px;
+  }
+  .skill-summary-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #3a322c;
+    font-size: 13px;
+  }
+  .skill-summary-item:last-child { border-bottom: none; }
+  .skill-summary-item .axis-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-soft);
+    margin-right: 8px;
+  }
+  .skill-summary-empty {
+    color: var(--ink-faint);
+    font-style: italic;
+    font-family: 'Fraunces', Georgia, serif;
+    padding: 16px 0;
+  }
+
+  /* ── Export ── */
+  .export-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .export-btn {
+    padding: 16px 20px;
+    background: white;
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+  }
+  .export-btn:hover { background: var(--ink); color: var(--paper); }
+  .export-btn-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .export-btn-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    line-height: 1.4;
+  }
+  .export-btn:hover .export-btn-desc { color: var(--accent-soft); }
+
+  /* ── Modal ── */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,22,20,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--paper);
+    border-radius: 4px;
+    padding: 24px;
+    max-width: 720px;
+    width: 100%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .modal-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--ink-soft);
+  }
+  .modal textarea {
+    flex: 1;
+    width: 100%;
+    padding: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: white;
+    color: var(--ink);
+    resize: vertical;
+    min-height: 300px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: flex-end;
+  }
+  .modal-btn {
+    padding: 8px 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .modal-btn.secondary {
+    background: white;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+  }
+
+  /* ── Save indicator ── */
+  .save-indicator {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 8px 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 150;
+    pointer-events: none;
+  }
+  .save-indicator.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── Reset button ── */
+  .reset-row {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .reset-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .reset-btn {
+    background: white;
+    border: 1px solid var(--rule);
+    padding: 6px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── Mobile ── */
+  @media (min-width: 1100px) {
+    /* desktop: side toc visible */
+  }
+  @media (max-width: 1099px) {
+    .side-toc { display: none; }
+  }
+  @media (max-width: 720px) {
+    .wrap { padding: 32px 20px 64px; }
+    h1 { font-size: 32px; }
+    .columns { grid-template-columns: 1fr; }
+    .mobile-toc-btn { display: flex; align-items: center; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="side-toc" aria-label="目次">
+  <div class="side-toc-label">Sections</div>
+  <ol>
+    <li><a href="#howto">使い方</a></li>
+    <li><a href="#dashboard">評価軸ダッシュボード</a></li>
+    <li><a href="#axis-01">軸01 · 読みやすさ</a></li>
+    <li><a href="#axis-02">軸02 · 構造の正しさ</a></li>
+    <li><a href="#axis-03">軸03 · 内容の精度</a></li>
+    <li><a href="#axis-04">軸04 · ワークフロー</a></li>
+    <li><a href="#axis-05">軸05 · ドリルダウン体験</a></li>
+    <li><a href="#skill-summary">skill化論点</a></li>
+    <li><a href="#export">Export</a></li>
+  </ol>
+</aside>
+
+<button class="mobile-toc-btn" aria-label="目次" id="mobile-toc-btn">☰</button>
+<div class="mobile-toc-overlay" id="mobile-toc-overlay">
+  <ol>
+    <li><a href="#howto">使い方</a></li>
+    <li><a href="#dashboard">評価軸ダッシュボード</a></li>
+    <li><a href="#axis-01">軸01 · 読みやすさ</a></li>
+    <li><a href="#axis-02">軸02 · 構造の正しさ</a></li>
+    <li><a href="#axis-03">軸03 · 内容の精度</a></li>
+    <li><a href="#axis-04">軸04 · ワークフロー</a></li>
+    <li><a href="#axis-05">軸05 · ドリルダウン体験</a></li>
+    <li><a href="#skill-summary">skill化論点</a></li>
+    <li><a href="#export">Export</a></li>
+  </ol>
+</div>
+
+<div class="wrap">
+
+  <!-- ═══════════════════════════════════════════════════
+       MASTHEAD
+       ═══════════════════════════════════════════════════ -->
+  <header class="masthead">
+    <div class="kicker">Architecture Note <span class="dot">·</span> Review Sheet <span class="dot">·</span> 内部評価</div>
+    <h1>Research Hub v2 <em>Review</em></h1>
+    <p class="deck">architecture noteを使ってみた感触を5軸で記録し、skill化に持ち込むべきパターンを見極める。</p>
+
+    <div class="meta">
+      <div class="meta-cell">
+        <div class="meta-label">評価対象</div>
+        <div class="meta-value"><code>research-hub-v2-architecture-note.html</code></div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">レビュー開始日</div>
+        <div class="meta-value">2026-05-11</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">最終更新</div>
+        <div class="meta-value" id="last-updated">未保存</div>
+      </div>
+    </div>
+
+    <div class="progress">
+      <div class="progress-track">
+        <div class="progress-seg good" id="progress-good" style="width: 0%"></div>
+        <div class="progress-seg improve" id="progress-improve" style="width: 0%"></div>
+        <div class="progress-seg hold" id="progress-hold" style="width: 0%"></div>
+      </div>
+      <div class="progress-meta">
+        <span>合計 <strong id="total-count">0</strong> 件</span>
+        <span style="color: var(--good)">良 <strong id="good-count">0</strong></span>
+        <span style="color: var(--improve)">改善 <strong id="improve-count">0</strong></span>
+        <span style="color: var(--flag-skill)">🌱 <strong id="skill-count">0</strong></span>
+        <span style="color: var(--flag-fix)">🔧 <strong id="fix-count">0</strong></span>
+        <span style="color: var(--flag-hold)">❓ <strong id="hold-count">0</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════
+       01 · How to use
+       ═══════════════════════════════════════════════════ -->
+  <section id="howto">
+    <div class="section-num">01</div>
+    <h2>使い方</h2>
+    <p class="section-intro">
+      architecture noteを実際に使いながら、思いついた良かった点・改善点を5軸に分けて追記していく。各項目には3種類のフラグのうちひとつを付ける。入力内容はブラウザに自動保存され、複数セッションにまたがって追記できる。Exportで Claude Code に渡せる形に書き出せる。
+    </p>
+
+    <div class="legend-grid">
+      <div class="legend-card skill">
+        <div class="badge">🌱 skill化したい</div>
+        <p>このHTML固有の話ではなく、他のarchitecture noteでも使えるパターンとして抽出したい要素。</p>
+      </div>
+      <div class="legend-card fix">
+        <div class="badge">🔧 このHTML固有の修正</div>
+        <p>今のresearch-hub-v2のnoteだけで起きている問題で、直したいが汎用化はしない。</p>
+      </div>
+      <div class="legend-card hold">
+        <div class="badge">❓ 判断保留</div>
+        <p>良し悪しを判断するのに材料が足りない、または時間を置きたい項目。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       02 · Dashboard
+       ═══════════════════════════════════════════════════ -->
+  <section id="dashboard">
+    <div class="section-num">02</div>
+    <h2>評価軸ダッシュボード</h2>
+    <p class="section-intro">5つの軸を俯瞰する。カードをクリックすると該当軸セクションにジャンプする。</p>
+
+    <div class="axis-grid" id="axis-grid">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       03-07 · Axis sections (rendered by JS into placeholders)
+       ═══════════════════════════════════════════════════ -->
+  <section id="axes-container">
+    <!-- populated by JS -->
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       08 · Skill summary (auto-aggregated)
+       ═══════════════════════════════════════════════════ -->
+  <section id="skill-summary">
+    <div class="section-num">08</div>
+    <h2>skill化に向けた論点</h2>
+    <p class="section-intro">🌱フラグを付けた項目が自動でここに集まる。skill化の議論に持ち込む素材として。</p>
+
+    <div class="skill-summary">
+      <div class="skill-summary-label">🌱 SKILL CANDIDATES</div>
+      <p>レビューが進むにつれて、ここに「汎用化したい構造要素」が積み上がっていく。最終的にこの一覧を Claude Code に渡して skill 設計を進める。</p>
+      <div class="skill-summary-list" id="skill-summary-list">
+        <div class="skill-summary-empty">まだ🌱フラグが付いた項目はありません。各軸セクションで項目を追加し、🌱フラグを付けてみてください。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       09 · Export
+       ═══════════════════════════════════════════════════ -->
+  <section id="export">
+    <div class="section-num">09</div>
+    <h2>Export</h2>
+    <p class="section-intro">レビュー内容を別の場所に持っていくときに使う。コピーしてClaude Codeなどに貼り付けて。</p>
+
+    <div class="export-grid">
+      <button class="export-btn" data-export="markdown-all">
+        <div class="export-btn-title">Markdown (全体)</div>
+        <div class="export-btn-desc">Copy as Markdown — Claude Codeに「このレビューを踏まえて」と渡す用</div>
+      </button>
+      <button class="export-btn" data-export="markdown-skill">
+        <div class="export-btn-title">🌱項目のみ</div>
+        <div class="export-btn-desc">Copy 🌱 items only — skill化議論のサマリ</div>
+      </button>
+      <button class="export-btn" data-export="json">
+        <div class="export-btn-title">JSON</div>
+        <div class="export-btn-desc">Save as JSON — 機械可読、再インポート可能</div>
+      </button>
+    </div>
+
+    <div class="reset-row">
+      <div class="reset-info">
+        ブラウザのlocalStorageに自動保存されています (キー: <code>tak-review:research-hub-v2-arch-note:v1</code>)
+      </div>
+      <button class="reset-btn" id="reset-btn">すべてリセット</button>
+    </div>
+  </section>
+
+  <footer>
+    Review Sheet · Inherits design from research-hub-v2-architecture-note · v1
+  </footer>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     Export modal
+     ═══════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title">Export</h3>
+      <button class="modal-close" id="modal-close">×</button>
+    </div>
+    <textarea id="modal-textarea" readonly></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" id="modal-close-btn">閉じる</button>
+      <button class="modal-btn" id="modal-copy">クリップボードにコピー</button>
+    </div>
+  </div>
+</div>
+
+<div class="save-indicator" id="save-indicator">保存しました</div>
+
+<script>
+  // ──────────────────────────────────────────────────
+  // Review Sheet — main logic
+  // ──────────────────────────────────────────────────
+
+  const STORAGE_KEY = 'tak-review:research-hub-v2-arch-note:v1';
+
+  const AXES = [
+    {
+      id: 'axis-01',
+      num: '03',
+      label: '軸01',
+      name: '即時の読みやすさ',
+      desc: 'タイポグラフィ、配色、余白、図の見やすさ、スマホでの読みやすさ、スクロールの疲れ具合など、「初見でどう感じたか」を記録する。'
+    },
+    {
+      id: 'axis-02',
+      num: '04',
+      label: '軸02',
+      name: '構造の正しさ',
+      desc: '「半年後の自分が5分で全体像を思い出す」というゴールに対して、セクション順序や情報粒度は正しいか。流動性マーカー、TAK_NOTE、再評価チェックリストなどのTak独自要素は機能しているか。'
+    },
+    {
+      id: 'axis-03',
+      num: '05',
+      label: '軸03',
+      name: '内容の精度',
+      desc: '設計判断の推測内容(Supabase/embedding/RLS/scheduled task)で「全然違う」「方向は合ってるが粒度違い」「ほぼ正解」のどこに着地したか。TAK_NOTE 25箇所の補完作業はスムーズだったか引っかかったか。'
+    },
+    {
+      id: 'axis-04',
+      num: '06',
+      label: '軸04',
+      name: 'ワークフロー全体',
+      desc: 'ブラウザでHTMLを開く→Claude CodeにTAK_NOTE補完を依頼→完成までの摩擦。家PC・会社PC・スマホそれぞれでの体験差。「Markdownだったら何分で済んだか / HTMLで何分かかったか」の体感比較。'
+    },
+    {
+      id: 'axis-05',
+      num: '07',
+      label: '軸05',
+      name: 'ドリルダウン体験',
+      desc: '段階1で入れたサイドTOC、判断カードの折りたたみ、四層図→判断へのジャンプリンクは効果的だったか。「大局俯瞰しつつドリルダウン」要件を満たしているか。マインドマップ的構造化への要望が具体化したら記録する。'
+    }
+  ];
+
+  // ── State ──────────────────────────────────────────
+  function emptyState() {
+    const s = {};
+    AXES.forEach(a => {
+      s[a.id] = { good: [], improve: [] };
+    });
+    s._lastUpdated = null;
+    return s;
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return emptyState();
+      const parsed = JSON.parse(raw);
+      // ensure all axes exist
+      AXES.forEach(a => {
+        if (!parsed[a.id]) parsed[a.id] = { good: [], improve: [] };
+        if (!parsed[a.id].good) parsed[a.id].good = [];
+        if (!parsed[a.id].improve) parsed[a.id].improve = [];
+      });
+      return parsed;
+    } catch (e) {
+      console.error('Failed to load state', e);
+      return emptyState();
+    }
+  }
+
+  function saveState() {
+    state._lastUpdated = new Date().toISOString();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      showSaveIndicator();
+      updateLastUpdated();
+    } catch (e) {
+      console.error('Failed to save', e);
+    }
+  }
+
+  let state = loadState();
+  let saveTimer = null;
+  function queueSave() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 400);
+  }
+
+  function newId() {
+    return 'i_' + Math.random().toString(36).slice(2, 10);
+  }
+
+  function newItem() {
+    return { id: newId(), title: '', detail: '', flag: 'none' };
+  }
+
+  // ── Render ─────────────────────────────────────────
+
+  function render() {
+    renderAxes();
+    renderDashboard();
+    renderSkillSummary();
+    updateProgressMeta();
+    updateLastUpdated();
+  }
+
+  function renderAxes() {
+    const container = document.getElementById('axes-container');
+    container.innerHTML = '';
+    AXES.forEach(axis => {
+      const sec = document.createElement('section');
+      sec.id = axis.id;
+      sec.className = 'axis-section';
+      sec.innerHTML = `
+        <div class="section-num">${axis.num}</div>
+        <div class="axis-header">
+          <span class="axis-id">${axis.label}</span>
+          <h3>${axis.name}</h3>
+        </div>
+        <p class="axis-desc">${axis.desc}</p>
+        <div class="columns">
+          <div class="column good">
+            <div class="column-header">
+              <span>良かった点</span>
+              <span class="column-count" data-col-count="${axis.id}-good">0</span>
+            </div>
+            <div class="item-list" data-axis="${axis.id}" data-side="good"></div>
+            <div style="padding: 0 8px 8px;">
+              <button class="add-item-btn" data-axis="${axis.id}" data-side="good">+ 良かった点を追加</button>
+            </div>
+          </div>
+          <div class="column improve">
+            <div class="column-header">
+              <span>改善したい点</span>
+              <span class="column-count" data-col-count="${axis.id}-improve">0</span>
+            </div>
+            <div class="item-list" data-axis="${axis.id}" data-side="improve"></div>
+            <div style="padding: 0 8px 8px;">
+              <button class="add-item-btn" data-axis="${axis.id}" data-side="improve">+ 改善点を追加</button>
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(sec);
+      renderItems(axis.id, 'good');
+      renderItems(axis.id, 'improve');
+    });
+
+    // wire add buttons
+    container.querySelectorAll('.add-item-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const axisId = btn.dataset.axis;
+        const side = btn.dataset.side;
+        state[axisId][side].push(newItem());
+        queueSave();
+        renderItems(axisId, side);
+        renderDashboard();
+        renderSkillSummary();
+        updateProgressMeta();
+        // focus the new item's title
+        setTimeout(() => {
+          const lists = document.querySelectorAll(`[data-axis="${axisId}"][data-side="${side}"].item-list .item-title`);
+          if (lists.length) lists[lists.length - 1].focus();
+        }, 50);
+      });
+    });
+  }
+
+  function renderItems(axisId, side) {
+    const list = document.querySelector(`.item-list[data-axis="${axisId}"][data-side="${side}"]`);
+    if (!list) return;
+    list.innerHTML = '';
+    const items = state[axisId][side];
+    items.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="item-title" contenteditable="true" spellcheck="false">${escapeHtml(item.title)}</div>
+        <div class="item-detail" contenteditable="true" spellcheck="false">${escapeHtml(item.detail)}</div>
+        <div class="item-footer">
+          <select class="flag-select ${item.flag === 'none' ? '' : item.flag}">
+            <option value="none" ${item.flag === 'none' ? 'selected' : ''}>フラグなし</option>
+            <option value="skill" ${item.flag === 'skill' ? 'selected' : ''}>🌱 skill化したい</option>
+            <option value="fix" ${item.flag === 'fix' ? 'selected' : ''}>🔧 HTML固有の修正</option>
+            <option value="hold" ${item.flag === 'hold' ? 'selected' : ''}>❓ 判断保留</option>
+          </select>
+          <button class="item-delete" title="削除">削除</button>
+        </div>
+      `;
+      const titleEl = div.querySelector('.item-title');
+      const detailEl = div.querySelector('.item-detail');
+      const flagEl = div.querySelector('.flag-select');
+      const delEl = div.querySelector('.item-delete');
+
+      titleEl.addEventListener('input', () => {
+        item.title = titleEl.innerText;
+        queueSave();
+      });
+      detailEl.addEventListener('input', () => {
+        item.detail = detailEl.innerText;
+        queueSave();
+      });
+      flagEl.addEventListener('change', () => {
+        item.flag = flagEl.value;
+        flagEl.className = 'flag-select ' + (item.flag === 'none' ? '' : item.flag);
+        queueSave();
+        renderDashboard();
+        renderSkillSummary();
+        updateProgressMeta();
+      });
+      delEl.addEventListener('click', () => {
+        if (item.title || item.detail) {
+          if (!confirm('この項目を削除しますか?')) return;
+        }
+        const arr = state[axisId][side];
+        const idx = arr.findIndex(x => x.id === item.id);
+        if (idx >= 0) arr.splice(idx, 1);
+        queueSave();
+        renderItems(axisId, side);
+        renderDashboard();
+        renderSkillSummary();
+        updateProgressMeta();
+      });
+
+      list.appendChild(div);
+    });
+    // update count
+    const countEl = document.querySelector(`[data-col-count="${axisId}-${side}"]`);
+    if (countEl) countEl.textContent = items.length;
+  }
+
+  function renderDashboard() {
+    const grid = document.getElementById('axis-grid');
+    grid.innerHTML = '';
+    AXES.forEach(axis => {
+      const good = state[axis.id].good;
+      const improve = state[axis.id].improve;
+      const all = [...good, ...improve];
+      const flags = { skill: 0, fix: 0, hold: 0 };
+      all.forEach(it => { if (flags[it.flag] !== undefined) flags[it.flag]++; });
+
+      const card = document.createElement('a');
+      card.className = 'axis-card';
+      card.href = '#' + axis.id;
+      card.innerHTML = `
+        <div class="axis-card-num">${axis.label}</div>
+        <div class="axis-card-name">${axis.name}</div>
+        <div class="axis-card-stats">
+          <span class="stat">良 <strong>${good.length}</strong></span>
+          <span class="stat">改善 <strong>${improve.length}</strong></span>
+        </div>
+        <div class="axis-card-flags">
+          <span class="skill">🌱 ${flags.skill}</span>
+          <span class="fix">🔧 ${flags.fix}</span>
+          <span class="hold">❓ ${flags.hold}</span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function renderSkillSummary() {
+    const list = document.getElementById('skill-summary-list');
+    const items = [];
+    AXES.forEach(axis => {
+      ['good', 'improve'].forEach(side => {
+        state[axis.id][side].forEach(item => {
+          if (item.flag === 'skill') {
+            items.push({ axis, side, item });
+          }
+        });
+      });
+    });
+    if (items.length === 0) {
+      list.innerHTML = '<div class="skill-summary-empty">まだ🌱フラグが付いた項目はありません。各軸セクションで項目を追加し、🌱フラグを付けてみてください。</div>';
+      return;
+    }
+    list.innerHTML = '';
+    items.forEach(({ axis, side, item }) => {
+      const div = document.createElement('div');
+      div.className = 'skill-summary-item';
+      const sideLabel = side === 'good' ? '良' : '改善';
+      div.innerHTML = `
+        <span class="axis-ref">[${axis.label} / ${sideLabel}]</span>
+        <strong>${escapeHtml(item.title || '(タイトル未記入)')}</strong>
+        ${item.detail ? '<div style="margin-top:4px; color: var(--ink-faint); font-size: 12px;">' + escapeHtml(item.detail) + '</div>' : ''}
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function updateProgressMeta() {
+    let good = 0, improve = 0, skill = 0, fix = 0, hold = 0;
+    AXES.forEach(axis => {
+      good += state[axis.id].good.length;
+      improve += state[axis.id].improve.length;
+      [...state[axis.id].good, ...state[axis.id].improve].forEach(it => {
+        if (it.flag === 'skill') skill++;
+        else if (it.flag === 'fix') fix++;
+        else if (it.flag === 'hold') hold++;
+      });
+    });
+    const total = good + improve;
+    document.getElementById('good-count').textContent = good;
+    document.getElementById('improve-count').textContent = improve;
+    document.getElementById('skill-count').textContent = skill;
+    document.getElementById('fix-count').textContent = fix;
+    document.getElementById('hold-count').textContent = hold;
+    document.getElementById('total-count').textContent = total;
+
+    if (total > 0) {
+      const goodPct = (good / total) * 100;
+      const improvePct = (improve / total) * 100;
+      document.getElementById('progress-good').style.width = goodPct + '%';
+      document.getElementById('progress-improve').style.width = improvePct + '%';
+      document.getElementById('progress-hold').style.width = '0%';
+    } else {
+      document.getElementById('progress-good').style.width = '0%';
+      document.getElementById('progress-improve').style.width = '0%';
+      document.getElementById('progress-hold').style.width = '0%';
+    }
+  }
+
+  function updateLastUpdated() {
+    const el = document.getElementById('last-updated');
+    if (state._lastUpdated) {
+      const d = new Date(state._lastUpdated);
+      el.textContent = d.toLocaleString('ja-JP', { dateStyle: 'short', timeStyle: 'short' });
+    } else {
+      el.textContent = '未保存';
+    }
+  }
+
+  function showSaveIndicator() {
+    const el = document.getElementById('save-indicator');
+    el.classList.add('visible');
+    clearTimeout(showSaveIndicator._t);
+    showSaveIndicator._t = setTimeout(() => el.classList.remove('visible'), 1200);
+  }
+
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // ── Export ─────────────────────────────────────────
+
+  function exportMarkdown(skillOnly) {
+    const lines = [];
+    const title = skillOnly
+      ? '# Architecture Note Review — 🌱 skill化候補のみ'
+      : '# Architecture Note Review — Research Hub v2';
+    lines.push(title);
+    lines.push('');
+    lines.push('評価対象: `research-hub-v2-architecture-note.html`');
+    if (state._lastUpdated) lines.push('最終更新: ' + new Date(state._lastUpdated).toLocaleString('ja-JP'));
+    lines.push('');
+
+    if (skillOnly) {
+      const skillItems = [];
+      AXES.forEach(axis => {
+        ['good', 'improve'].forEach(side => {
+          state[axis.id][side].forEach(item => {
+            if (item.flag === 'skill') skillItems.push({ axis, side, item });
+          });
+        });
+      });
+      if (skillItems.length === 0) {
+        lines.push('_🌱フラグが付いた項目はまだありません。_');
+      } else {
+        lines.push('## skill化したい要素');
+        lines.push('');
+        skillItems.forEach(({ axis, side, item }) => {
+          const sideLabel = side === 'good' ? '良' : '改善';
+          lines.push(`- **[${axis.label} ${axis.name} / ${sideLabel}]** ${item.title || '(タイトル未記入)'}`);
+          if (item.detail) lines.push(`  - ${item.detail.split('\n').join('\n    ')}`);
+        });
+      }
+    } else {
+      AXES.forEach(axis => {
+        const good = state[axis.id].good;
+        const improve = state[axis.id].improve;
+        if (good.length === 0 && improve.length === 0) return;
+        lines.push(`## ${axis.label} · ${axis.name}`);
+        lines.push('');
+        lines.push(`> ${axis.desc}`);
+        lines.push('');
+        if (good.length > 0) {
+          lines.push('### 良かった点');
+          good.forEach(item => {
+            const flagBadge = item.flag === 'skill' ? ' 🌱'
+              : item.flag === 'fix' ? ' 🔧'
+              : item.flag === 'hold' ? ' ❓' : '';
+            lines.push(`- ${item.title || '(未記入)'}${flagBadge}`);
+            if (item.detail) lines.push(`  - ${item.detail.split('\n').join('\n    ')}`);
+          });
+          lines.push('');
+        }
+        if (improve.length > 0) {
+          lines.push('### 改善したい点');
+          improve.forEach(item => {
+            const flagBadge = item.flag === 'skill' ? ' 🌱'
+              : item.flag === 'fix' ? ' 🔧'
+              : item.flag === 'hold' ? ' ❓' : '';
+            lines.push(`- ${item.title || '(未記入)'}${flagBadge}`);
+            if (item.detail) lines.push(`  - ${item.detail.split('\n').join('\n    ')}`);
+          });
+          lines.push('');
+        }
+      });
+    }
+    return lines.join('\n');
+  }
+
+  function exportJSON() {
+    return JSON.stringify(state, null, 2);
+  }
+
+  function openModal(title, content) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-textarea').value = content;
+    document.getElementById('modal-backdrop').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('modal-backdrop').classList.remove('open');
+  }
+
+  document.querySelectorAll('.export-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const kind = btn.dataset.export;
+      if (kind === 'markdown-all') openModal('Markdown (全体)', exportMarkdown(false));
+      else if (kind === 'markdown-skill') openModal('🌱項目のみ Markdown', exportMarkdown(true));
+      else if (kind === 'json') openModal('JSON', exportJSON());
+    });
+  });
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+  document.getElementById('modal-backdrop').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modal-backdrop')) closeModal();
+  });
+  document.getElementById('modal-copy').addEventListener('click', async () => {
+    const text = document.getElementById('modal-textarea').value;
+    try {
+      await navigator.clipboard.writeText(text);
+      const btn = document.getElementById('modal-copy');
+      const orig = btn.textContent;
+      btn.textContent = 'コピーしました';
+      setTimeout(() => btn.textContent = orig, 1500);
+    } catch (e) {
+      // fallback: select the text
+      const ta = document.getElementById('modal-textarea');
+      ta.select();
+      document.execCommand('copy');
+    }
+  });
+
+  // ── Reset ──────────────────────────────────────────
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    if (!confirm('すべての入力内容を削除します。よろしいですか?')) return;
+    if (!confirm('本当によろしいですか? この操作は取り消せません。')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state = emptyState();
+    render();
+  });
+
+  // ── Side TOC active highlighting ───────────────────
+  (function() {
+    const sectionIds = ['howto', 'dashboard', 'axis-01', 'axis-02', 'axis-03', 'axis-04', 'axis-05', 'skill-summary', 'export'];
+    const sideLinks = document.querySelectorAll('.side-toc a');
+    const mobileLinks = document.querySelectorAll('.mobile-toc-overlay a');
+    const sideItems = document.querySelectorAll('.side-toc li');
+    const mobileItems = document.querySelectorAll('.mobile-toc-overlay li');
+
+    function setActive(id) {
+      sideItems.forEach((li, i) => {
+        if (sideLinks[i]) li.classList.toggle('active', sideLinks[i].getAttribute('href') === '#' + id);
+      });
+      mobileItems.forEach((li, i) => {
+        if (mobileLinks[i]) li.classList.toggle('active', mobileLinks[i].getAttribute('href') === '#' + id);
+      });
+    }
+
+    // re-observe after axes render
+    function observeAll() {
+      const observer = new IntersectionObserver((entries) => {
+        let active = null;
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            if (!active || entry.boundingClientRect.top < active.boundingClientRect.top) {
+              active = entry;
+            }
+          }
+        });
+        if (active) setActive(active.target.id);
+      }, {
+        rootMargin: '-20% 0px -60% 0px',
+        threshold: 0
+      });
+      sectionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
+      });
+    }
+    // initial render done before this script; just observe
+    observeAll();
+  })();
+
+  // ── Mobile TOC ─────────────────────────────────────
+  (function() {
+    const btn = document.getElementById('mobile-toc-btn');
+    const overlay = document.getElementById('mobile-toc-overlay');
+    if (!btn || !overlay) return;
+    btn.addEventListener('click', () => {
+      const isOpen = overlay.classList.toggle('open');
+      btn.textContent = isOpen ? '×' : '☰';
+    });
+    overlay.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        overlay.classList.remove('open');
+        btn.textContent = '☰';
+      });
+    });
+  })();
+
+  // ── Initial render ─────────────────────────────────
+  render();
+</script>
+
+</body>
+</html>

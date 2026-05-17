@@ -1,0 +1,1576 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Research Hub v2 — Architecture Note</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1614;
+    --ink-soft: #4a4239;
+    --ink-faint: #7a6f63;
+    --paper: #faf6ef;
+    --paper-soft: #f3ecdf;
+    --rule: #d9cfbe;
+    --accent: #b1411e;       /* 浦和レッズの赤に近い */
+    --accent-soft: #e07a4e;
+    --stable: #4a7a3a;       /* 緑: 安定 */
+    --evolving: #c98a2a;     /* 黄土: 進化中 */
+    --experimental: #a23a5e; /* 赤紫: 実験中 */
+    --tak-note-bg: #fff4d6;
+    --tak-note-border: #e0b94a;
+    --code-bg: #2a2420;
+    --code-ink: #ebe0cc;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter Tight', -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 32px 96px; }
+
+  /* ── Masthead ── */
+  .masthead {
+    border-top: 4px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 28px 0 32px;
+    margin-bottom: 40px;
+  }
+  .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 16px;
+  }
+  .kicker .dot { color: var(--accent); }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(36px, 5.4vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+    color: var(--ink);
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .deck {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic;
+    font-size: 19px;
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  /* ── Meta badges ── */
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0;
+    margin-top: 32px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .meta-cell {
+    padding: 14px 16px;
+    border-right: 1px solid var(--rule);
+    background: var(--paper-soft);
+  }
+  .meta-cell:last-child { border-right: none; }
+  .meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .meta-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .meta-value.next-review {
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    margin: 40px 0 56px;
+    padding: 20px 24px;
+    background: var(--paper-soft);
+    border-left: 3px solid var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  .toc-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  .toc ol { margin: 0; padding-left: 0; list-style: none; counter-reset: toc; }
+  .toc li {
+    counter-increment: toc;
+    padding: 4px 0;
+  }
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero) " · ";
+    color: var(--ink-faint);
+  }
+  .toc a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px dashed transparent;
+  }
+  .toc a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+  /* ── Sections ── */
+  section { margin: 64px 0; scroll-margin-top: 24px; }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: 30px;
+    letter-spacing: -0.01em;
+    margin: 4px 0 24px;
+    line-height: 1.2;
+  }
+  h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 19px;
+    margin: 28px 0 10px;
+  }
+  p { margin: 0 0 14px; }
+
+  /* ── TL;DR ── */
+  .tldr {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 28px 32px;
+    border-radius: 2px;
+    position: relative;
+  }
+  .tldr-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--accent-soft);
+    margin-bottom: 12px;
+  }
+  .tldr p {
+    margin: 0;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.55;
+  }
+  .tldr p + p { margin-top: 12px; }
+
+  /* ── Layer diagram ── */
+  .layer-stack {
+    margin: 24px 0;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    overflow: hidden;
+    background: white;
+  }
+  .layer {
+    display: grid;
+    grid-template-columns: 80px 1fr 130px;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .layer:last-child { border-bottom: none; }
+  .layer-num {
+    background: var(--paper-soft);
+    border-right: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--ink-faint);
+  }
+  .layer-body { padding: 18px 22px; }
+  .layer-name {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .layer-desc {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .layer-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    background: var(--paper-soft);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    color: var(--ink-soft);
+  }
+  .layer-status {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 18px;
+    border-left: 1px solid var(--rule);
+    background: var(--paper-soft);
+  }
+  .status-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .status-pill.stable { background: #e3eedb; color: var(--stable); }
+  .status-pill.evolving { background: #f6e8c4; color: var(--evolving); }
+  .status-pill.experimental { background: #f3d8e0; color: var(--experimental); }
+  .status-note {
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-align: center;
+    margin-top: 6px;
+    line-height: 1.3;
+  }
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .legend-dot.stable { background: var(--stable); }
+  .legend-dot.evolving { background: var(--evolving); }
+  .legend-dot.experimental { background: var(--experimental); }
+
+  /* ── Flow diagram ── */
+  .flow {
+    margin: 24px 0;
+    padding: 24px;
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    overflow-x: auto;
+  }
+  .flow svg { display: block; max-width: 100%; height: auto; }
+  .flow-legend {
+    margin-top: 16px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .flow-legend-line {
+    display: inline-block;
+    width: 28px;
+    height: 0;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  .flow-legend-line.solid { border-top: 2px solid var(--ink); }
+  .flow-legend-line.dashed { border-top: 2px dashed var(--accent); }
+
+  /* ── Decision cards ── */
+  .decision {
+    margin: 32px 0;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: white;
+    overflow: hidden;
+  }
+  .decision-header {
+    padding: 18px 24px;
+    background: var(--paper-soft);
+    border-bottom: 1px solid var(--rule);
+  }
+  .decision-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .decision-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+  }
+  .decision-conclusion {
+    margin: 8px 0 0;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+  .decision-grid {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 0;
+  }
+  .decision-grid > dt {
+    padding: 14px 24px;
+    background: var(--paper-soft);
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .decision-grid > dd {
+    margin: 0;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 14px;
+  }
+  .decision-grid > dt:last-of-type,
+  .decision-grid > dd:last-of-type {
+    border-bottom: none;
+  }
+  .decision-grid dd ul {
+    margin: 0; padding-left: 18px;
+  }
+  .decision-grid dd li { margin: 4px 0; }
+  .decision-grid dd li strong { color: var(--ink); }
+
+  /* ── TAK_NOTE marker ── */
+  .tak-note {
+    display: inline-block;
+    background: var(--tak-note-bg);
+    border: 1px dashed var(--tak-note-border);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #8a6a16;
+    margin: 2px 0;
+  }
+  .tak-note::before {
+    content: "✎ ";
+    color: var(--tak-note-border);
+    font-weight: 700;
+  }
+  .tak-note.block {
+    display: block;
+    margin: 8px 0;
+    padding: 10px 14px;
+  }
+
+  /* ── Embedding explainer (special inside 04-B) ── */
+  .explainer {
+    margin: 16px 0;
+    padding: 20px 24px;
+    background: var(--paper-soft);
+    border-left: 3px solid var(--ink-soft);
+    border-radius: 2px;
+  }
+  .explainer-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .explainer h4 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+    margin: 12px 0 6px;
+  }
+  .explainer h4:first-of-type { margin-top: 0; }
+  .explainer p { font-size: 14px; margin: 0 0 10px; }
+
+  /* ── Gotchas ── */
+  .gotcha-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  .gotcha-list li {
+    padding: 14px 0 14px 32px;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .gotcha-list li::before {
+    content: "⚠";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    color: var(--accent);
+    font-size: 16px;
+  }
+  .gotcha-list li:last-child { border-bottom: none; }
+  .gotcha-list strong {
+    display: block;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .gotcha-list .gotcha-detail { font-size: 14px; color: var(--ink-soft); }
+
+  /* ── Re-eval checklist ── */
+  .checklist {
+    margin: 16px 0;
+    padding: 24px;
+    border: 2px solid var(--ink);
+    background: white;
+    border-radius: 2px;
+  }
+  .checklist-intro {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+  .checklist ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .checklist li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--rule);
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: var(--accent);
+  }
+  .checklist label { font-size: 14px; line-height: 1.5; cursor: pointer; }
+  .checklist label .ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-left: 6px;
+  }
+
+  /* ── Links ── */
+  .links {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  .links li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .links li:last-child { border-bottom: none; }
+  .links code {
+    background: var(--paper-soft);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 13px;
+  }
+
+  /* ── Misc ── */
+  details summary {
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  details[open] summary { margin-bottom: 14px; }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+
+  /* ══════════════════════════════════════════════════
+     Drill-down enhancements (Phase 1)
+     ══════════════════════════════════════════════════ */
+
+  /* Side TOC (desktop only) */
+  .side-toc {
+    position: fixed;
+    top: 48px;
+    right: max(16px, calc((100vw - 880px) / 2 - 220px));
+    width: 200px;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    padding: 16px 0;
+    border-left: 2px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    z-index: 50;
+    transition: opacity 0.2s;
+  }
+  .side-toc-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0 16px;
+    margin-bottom: 10px;
+  }
+  .side-toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: stoc;
+  }
+  .side-toc li {
+    counter-increment: stoc;
+    border-left: 2px solid transparent;
+    margin-left: -2px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .side-toc a {
+    display: block;
+    padding: 6px 16px;
+    color: var(--ink-faint);
+    text-decoration: none;
+    line-height: 1.4;
+    transition: color 0.2s;
+  }
+  .side-toc a::before {
+    content: counter(stoc, decimal-leading-zero);
+    color: var(--rule);
+    margin-right: 8px;
+    font-size: 10px;
+  }
+  .side-toc a:hover {
+    color: var(--ink);
+  }
+  .side-toc li.active {
+    border-left-color: var(--accent);
+    background: var(--paper-soft);
+  }
+  .side-toc li.active a {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .side-toc li.active a::before {
+    color: var(--accent);
+  }
+
+  /* Mobile TOC button (hidden on desktop) */
+  .mobile-toc-btn {
+    display: none;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    z-index: 100;
+    font-size: 18px;
+  }
+  .mobile-toc-btn:active { transform: scale(0.96); }
+  .mobile-toc-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,22,20,0.92);
+    z-index: 99;
+    padding: 80px 24px 24px;
+    overflow-y: auto;
+  }
+  .mobile-toc-overlay.open {
+    display: block;
+  }
+  .mobile-toc-overlay ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: mtoc;
+  }
+  .mobile-toc-overlay li {
+    counter-increment: mtoc;
+    padding: 14px 0;
+    border-bottom: 1px solid #3a322c;
+  }
+  .mobile-toc-overlay a {
+    color: var(--paper);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  .mobile-toc-overlay a::before {
+    content: counter(mtoc, decimal-leading-zero) " · ";
+    color: var(--accent-soft);
+  }
+  .mobile-toc-overlay li.active a {
+    color: var(--accent-soft);
+  }
+
+  /* Decision card collapsible */
+  .decision-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: 16px 0 8px;
+  }
+  .toolbar-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .toolbar-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  details.decision {
+    /* override default details summary marker */
+  }
+  details.decision > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+  }
+  details.decision > summary::-webkit-details-marker {
+    display: none;
+  }
+  details.decision > summary .decision-header {
+    position: relative;
+    padding-right: 56px;
+    transition: background 0.15s;
+  }
+  details.decision > summary:hover .decision-header {
+    background: #ebe0cc;
+  }
+  details.decision > summary .toggle-icon {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  details.decision[open] > summary .toggle-icon {
+    transform: translateY(-50%) rotate(45deg);
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+  }
+
+  /* Layer → decision jump links */
+  .layer-jumps {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .layer-jumps-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-right: 4px;
+  }
+  .jump-link {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    background: white;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    color: var(--accent);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .jump-link::after {
+    content: " ↓";
+    margin-left: 3px;
+    opacity: 0.7;
+  }
+  .jump-link:hover {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  /* Decision card jump-flash highlight */
+  details.decision.flash > summary .decision-header {
+    animation: flash-highlight 1.4s ease-out;
+  }
+  @keyframes flash-highlight {
+    0% { background: var(--accent-soft); }
+    100% { background: var(--paper-soft); }
+  }
+
+  /* Hide top TOC on desktop when side-TOC is shown */
+  @media (min-width: 1100px) {
+    .toc { display: none; }
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 1099px) {
+    .side-toc { display: none; }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 32px 20px 64px; }
+    h1 { font-size: 32px; }
+    .layer { grid-template-columns: 56px 1fr; }
+    .layer-status {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 12px;
+      border-left: none;
+      border-top: 1px solid var(--rule);
+      padding: 10px 22px;
+    }
+    .status-note { text-align: left; margin-top: 0; }
+    .decision-grid { grid-template-columns: 1fr; }
+    .decision-grid > dt { border-right: none; }
+    .mobile-toc-btn { display: flex; align-items: center; justify-content: center; }
+    details.decision > summary .decision-header { padding-right: 48px; }
+    details.decision > summary .toggle-icon { right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     Side TOC (desktop) and Mobile menu
+     ═══════════════════════════════════════════════════ -->
+<aside class="side-toc" aria-label="目次">
+  <div class="side-toc-label">Sections</div>
+  <ol>
+    <li><a href="#tldr">TL;DR</a></li>
+    <li><a href="#layers">四層アーキテクチャ</a></li>
+    <li><a href="#flow">1日のデータフロー</a></li>
+    <li><a href="#decisions">設計判断の根拠</a></li>
+    <li><a href="#gotchas">既知の落とし穴</a></li>
+    <li><a href="#review">再評価チェックリスト</a></li>
+    <li><a href="#links">関連リンク</a></li>
+  </ol>
+</aside>
+
+<button class="mobile-toc-btn" aria-label="目次を開く" id="mobile-toc-btn">☰</button>
+<div class="mobile-toc-overlay" id="mobile-toc-overlay" role="dialog" aria-modal="true">
+  <ol>
+    <li><a href="#tldr">TL;DR — 30秒で思い出す</a></li>
+    <li><a href="#layers">四層アーキテクチャ</a></li>
+    <li><a href="#flow">1日のデータフロー</a></li>
+    <li><a href="#decisions">設計判断の根拠</a></li>
+    <li><a href="#gotchas">既知の落とし穴</a></li>
+    <li><a href="#review">再評価チェックリスト</a></li>
+    <li><a href="#links">関連リンク</a></li>
+  </ol>
+</div>
+
+<div class="wrap">
+
+  <!-- ═══════════════════════════════════════════════════
+       MASTHEAD
+       ═══════════════════════════════════════════════════ -->
+  <header class="masthead">
+    <div class="kicker">My-Profile-and-Memory <span class="dot">·</span> Architecture Note <span class="dot">·</span> 内部参照用</div>
+    <h1>Research Hub <em>v2</em></h1>
+    <p class="deck">半年後の自分が、このシステムを5分で思い出すためのノート。実装の詳細ではなく、なぜこうなっているかを残す。</p>
+
+    <div class="meta">
+      <div class="meta-cell">
+        <div class="meta-label">Snapshot</div>
+        <div class="meta-value">2026-05-11</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">所属</div>
+        <div class="meta-value">My-Profile-and-Memory</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">稼働中の構成</div>
+        <div class="meta-value">Supabase + daily-research</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">次回再評価</div>
+        <div class="meta-value next-review">2026-11-11</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-label">目次</div>
+    <ol>
+      <li><a href="#tldr">TL;DR — 30秒で思い出す</a></li>
+      <li><a href="#layers">四層アーキテクチャ</a></li>
+      <li><a href="#flow">1日のデータフロー</a></li>
+      <li><a href="#decisions">設計判断の根拠</a></li>
+      <li><a href="#gotchas">既知の落とし穴</a></li>
+      <li><a href="#review">再評価チェックリスト</a></li>
+      <li><a href="#links">関連リンク</a></li>
+    </ol>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════
+       01 · TL;DR
+       ═══════════════════════════════════════════════════ -->
+  <section id="tldr">
+    <div class="section-num">01</div>
+    <h2>TL;DR — 30秒で思い出す</h2>
+    <div class="tldr">
+      <div class="tldr-label">この一段落だけ読めば足りる</div>
+      <p>Research Hub v2は、毎朝Claude Codeのscheduled task <code>daily-research</code> がClaude Codeとリサーチ領域の最新情報を集め、Supabaseに構造化して保存し、ChatGPT Custom GPTとClaudeから両方検索可能にする個人用のリサーチ自動化基盤。</p>
+      <p>収集→保存→セマンティック検索→AIツール統合の四層構造。Markdown的な単純さよりも「半年後の自分が判断を再評価できる構造」を優先して設計してある。</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       02 · 四層アーキテクチャ
+       ═══════════════════════════════════════════════════ -->
+  <section id="layers">
+    <div class="section-num">02</div>
+    <h2>四層アーキテクチャ</h2>
+    <p>各層に「流動性マーカー」が付いている。半年後に開いたとき、<strong>どこが進化していて、どこが安定しているか</strong>を一目で確認するためのもの。<span class="tak-note">TAK_NOTE: スナップショット時点での流動性評価。再評価時に色が変わっているはず</span></p>
+
+    <div class="layer-stack">
+
+      <div class="layer">
+        <div class="layer-num">1</div>
+        <div class="layer-body">
+          <div class="layer-name">収集 / Collection</div>
+          <div class="layer-desc">外部の情報源から記事メタデータを取り込む層。</div>
+          <div class="layer-tech">
+            <span class="chip">Web検索 (daily-research)</span>
+            <span class="chip">Gmail下書き</span>
+            <span class="chip">add_manual_article RPC</span>
+            <span class="chip">+α 追加予定</span>
+          </div>
+          <div class="layer-jumps">
+            <span class="layer-jumps-label">関連判断</span>
+            <a class="jump-link" href="#decision-d" data-target="decision-d">04-D · scheduled task</a>
+            <a class="jump-link" href="#decision-a" data-target="decision-a">04-A · Supabase</a>
+          </div>
+        </div>
+        <div class="layer-status">
+          <div class="status-pill evolving">進化中</div>
+          <div class="status-note">ソースが増減する前提</div>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">2</div>
+        <div class="layer-body">
+          <div class="layer-name">保存 / Storage</div>
+          <div class="layer-desc">記事・タグ・既読状態を構造化して永続化する層。</div>
+          <div class="layer-tech">
+            <span class="chip">Supabase (Postgres)</span>
+            <span class="chip">research.articles</span>
+            <span class="chip">research.tags (階層)</span>
+            <span class="chip">RLS</span>
+          </div>
+          <div class="layer-jumps">
+            <span class="layer-jumps-label">関連判断</span>
+            <a class="jump-link" href="#decision-a" data-target="decision-a">04-A · Supabase</a>
+            <a class="jump-link" href="#decision-c" data-target="decision-c">04-C · RLS設計</a>
+          </div>
+        </div>
+        <div class="layer-status">
+          <div class="status-pill stable">安定</div>
+          <div class="status-note">スキーマ凍結済み</div>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">3</div>
+        <div class="layer-body">
+          <div class="layer-name">セマンティック検索 / Semantic Search</div>
+          <div class="layer-desc">埋め込みベクトルで「意味的に近い記事」を引ける層。</div>
+          <div class="layer-tech">
+            <span class="chip">OpenAI text-embedding-3-small</span>
+            <span class="chip">pgvector</span>
+            <span class="chip">日本語/英語混在対応</span>
+          </div>
+          <div class="layer-jumps">
+            <span class="layer-jumps-label">関連判断</span>
+            <a class="jump-link" href="#decision-b" data-target="decision-b">04-B · embeddingモデル</a>
+          </div>
+        </div>
+        <div class="layer-status">
+          <div class="status-pill stable">安定</div>
+          <div class="status-note">モデル選定済み</div>
+        </div>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">4</div>
+        <div class="layer-body">
+          <div class="layer-name">AIツール統合 / AI Tool Integration</div>
+          <div class="layer-desc">ChatGPTとClaudeの両方からこのデータを検索/活用できる層。</div>
+          <div class="layer-tech">
+            <span class="chip">ChatGPT Custom GPT</span>
+            <span class="chip">Claude (Web/Desktop)</span>
+            <span class="chip">anon key + RLS</span>
+          </div>
+          <div class="layer-jumps">
+            <span class="layer-jumps-label">関連判断</span>
+            <a class="jump-link" href="#decision-c" data-target="decision-c">04-C · RLS設計</a>
+          </div>
+        </div>
+        <div class="layer-status">
+          <div class="status-pill evolving">進化中</div>
+          <div class="status-note">使い分け方が変動中</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot stable"></span>安定 — スキーマ・選定が確定済み</div>
+      <div class="legend-item"><span class="legend-dot evolving"></span>進化中 — 構成要素が増減する前提</div>
+      <div class="legend-item"><span class="legend-dot experimental"></span>実験中 — まだ試行段階</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       03 · 1日のデータフロー
+       ═══════════════════════════════════════════════════ -->
+  <section id="flow">
+    <div class="section-num">03</div>
+    <h2>1日のデータフロー</h2>
+    <p>朝4時の自動起動から、夜のClaudeでの深掘りまで。実線=自動、点線=Tak本人の手動操作。</p>
+
+    <div class="flow">
+      <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" font-size="11">
+        <!-- Time axis -->
+        <line x1="40" y1="60" x2="760" y2="60" stroke="#d9cfbe" stroke-width="1"/>
+        <g fill="#7a6f63" font-size="10" letter-spacing="1">
+          <text x="80" y="48" text-anchor="middle">04:00 JST</text>
+          <text x="240" y="48" text-anchor="middle">04:00–07:30</text>
+          <text x="400" y="48" text-anchor="middle">08:00</text>
+          <text x="560" y="48" text-anchor="middle">通勤</text>
+          <text x="720" y="48" text-anchor="middle">夜</text>
+        </g>
+        <!-- tick marks -->
+        <g stroke="#d9cfbe">
+          <line x1="80" y1="55" x2="80" y2="65"/>
+          <line x1="240" y1="55" x2="240" y2="65"/>
+          <line x1="400" y1="55" x2="400" y2="65"/>
+          <line x1="560" y1="55" x2="560" y2="65"/>
+          <line x1="720" y1="55" x2="720" y2="65"/>
+        </g>
+
+        <!-- Step 1: scheduled task fires -->
+        <g>
+          <rect x="30" y="100" width="100" height="50" fill="#1a1614" rx="2"/>
+          <text x="80" y="122" text-anchor="middle" fill="#faf6ef" font-size="11" font-weight="600">daily-research</text>
+          <text x="80" y="138" text-anchor="middle" fill="#e07a4e" font-size="9">cron: 0 23 * * *</text>
+        </g>
+
+        <!-- Step 2: collection -->
+        <g>
+          <rect x="180" y="100" width="120" height="50" fill="#faf6ef" stroke="#1a1614" stroke-width="1.5" rx="2"/>
+          <text x="240" y="120" text-anchor="middle" fill="#1a1614" font-weight="600">収集</text>
+          <text x="240" y="138" text-anchor="middle" fill="#4a4239" font-size="9">Web検索 + Gmail</text>
+        </g>
+
+        <!-- Step 3: storage + embedding -->
+        <g>
+          <rect x="180" y="180" width="120" height="50" fill="#faf6ef" stroke="#1a1614" stroke-width="1.5" rx="2"/>
+          <text x="240" y="200" text-anchor="middle" fill="#1a1614" font-weight="600">保存 + embed</text>
+          <text x="240" y="218" text-anchor="middle" fill="#4a4239" font-size="9">Supabase</text>
+        </g>
+
+        <!-- Step 4: morning gmail digest -->
+        <g>
+          <rect x="350" y="100" width="100" height="50" fill="#faf6ef" stroke="#1a1614" stroke-width="1.5" rx="2"/>
+          <text x="400" y="120" text-anchor="middle" fill="#1a1614" font-weight="600">Gmail下書き</text>
+          <text x="400" y="138" text-anchor="middle" fill="#4a4239" font-size="9">配信</text>
+        </g>
+
+        <!-- Step 5: commute reading -->
+        <g>
+          <rect x="510" y="100" width="100" height="50" fill="#faf6ef" stroke="#b1411e" stroke-width="1.5" stroke-dasharray="4,3" rx="2"/>
+          <text x="560" y="120" text-anchor="middle" fill="#1a1614" font-weight="600">通勤精読</text>
+          <text x="560" y="138" text-anchor="middle" fill="#4a4239" font-size="9">既読/クリップ</text>
+        </g>
+
+        <!-- Step 6: deep dive in chatgpt/claude -->
+        <g>
+          <rect x="670" y="100" width="100" height="50" fill="#faf6ef" stroke="#b1411e" stroke-width="1.5" stroke-dasharray="4,3" rx="2"/>
+          <text x="720" y="120" text-anchor="middle" fill="#1a1614" font-weight="600">深掘り</text>
+          <text x="720" y="138" text-anchor="middle" fill="#4a4239" font-size="9">ChatGPT / Claude</text>
+        </g>
+
+        <!-- Arrows: solid (automatic) -->
+        <defs>
+          <marker id="arr-solid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1a1614"/>
+          </marker>
+          <marker id="arr-dashed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#b1411e"/>
+          </marker>
+        </defs>
+
+        <!-- daily-research → 収集 -->
+        <line x1="130" y1="125" x2="178" y2="125" stroke="#1a1614" stroke-width="1.5" marker-end="url(#arr-solid)"/>
+        <!-- 収集 → 保存 -->
+        <line x1="240" y1="152" x2="240" y2="178" stroke="#1a1614" stroke-width="1.5" marker-end="url(#arr-solid)"/>
+        <!-- 保存 → Gmail下書き -->
+        <path d="M 300 205 Q 340 205 360 178 L 380 152" fill="none" stroke="#1a1614" stroke-width="1.5" marker-end="url(#arr-solid)"/>
+        <!-- Gmail下書き → 通勤精読 (dashed) -->
+        <line x1="450" y1="125" x2="508" y2="125" stroke="#b1411e" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-dashed)"/>
+        <!-- 通勤精読 → 深掘り (dashed) -->
+        <line x1="610" y1="125" x2="668" y2="125" stroke="#b1411e" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-dashed)"/>
+        <!-- 深掘り → 保存 (dashed feedback loop) -->
+        <path d="M 720 152 Q 720 280 240 280 L 240 232" fill="none" stroke="#b1411e" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-dashed)"/>
+        <text x="480" y="298" text-anchor="middle" fill="#b1411e" font-size="10" font-style="italic">手動追加 (add_manual_article)</text>
+
+        <!-- Annotations -->
+        <text x="80" y="170" text-anchor="middle" fill="#7a6f63" font-size="10">scheduled task</text>
+        <text x="240" y="252" text-anchor="middle" fill="#7a6f63" font-size="10">embedding生成</text>
+      </svg>
+    </div>
+
+    <div class="flow-legend">
+      <span><span class="flow-legend-line solid"></span>自動処理 (cron)</span>
+      <span><span class="flow-legend-line dashed"></span>Tak本人の手動操作</span>
+    </div>
+
+    <p style="margin-top: 18px; font-size: 13px; color: var(--ink-soft);">
+      ポイント: 夜の深掘りで気になった記事をChatGPT/Claudeから<code>add_manual_article</code>で追加できる<strong>フィードバックループ</strong>がある。これにより自動収集だけでは拾えなかった情報も体系に組み込める。
+    </p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       04 · 設計判断の根拠
+       ═══════════════════════════════════════════════════ -->
+  <section id="decisions">
+    <div class="section-num">04</div>
+    <h2>設計判断の根拠</h2>
+    <p>このノートの<strong>主役セクション</strong>。半年後に「あれ、なぜこう設計したんだっけ」と思い出す可能性が高い4つの判断を、ADRと同じフォーマットで残す。</p>
+
+    <p style="font-size: 13px; color: var(--ink-soft); margin-top: -4px;">各判断カードはデフォルトで折りたたまれている。タイトルをクリックして展開。</p>
+
+    <div class="decision-toolbar">
+      <button class="toolbar-btn" id="expand-all-btn">+ すべて展開</button>
+      <button class="toolbar-btn" id="collapse-all-btn">− すべて折りたたむ</button>
+    </div>
+
+    <!-- 04-A · Supabase -->
+    <details class="decision" id="decision-a">
+      <summary>
+        <div class="decision-header">
+          <div class="decision-id">04-A · ADR候補</div>
+          <h3 class="decision-title">なぜSupabaseか (vs Notion / Airtable / Firebase)</h3>
+          <p class="decision-conclusion">PostgresのRLSとSQL自由度を、ローコードのスピードで両立させたかった。</p>
+          <span class="toggle-icon">+</span>
+        </div>
+      </summary>
+      <dl class="decision-grid">
+        <dt>判断</dt>
+        <dd>記事メタデータ・タグ・既読状態の保存先としてSupabase (Postgres) を採用。</dd>
+
+        <dt>候補と却下理由</dt>
+        <dd>
+          <ul>
+            <li><strong>Notion</strong>: APIレート制限が厳しく、毎朝の一括書き込みに不向き。タグの階層構造もリレーショナルに扱いにくい。<span class="tak-note">TAK_NOTE: 却下した時の決め手だった事例(具体的にレート制限で困った経験など)</span></li>
+            <li><strong>Airtable</strong>: スキーマ柔軟性は高いが有料プランの行数制限とAPI料金がスケールしない。SQL検索ができない。<span class="tak-note">TAK_NOTE: 試した経験 / 試さず却下したか</span></li>
+            <li><strong>Firebase Firestore</strong>: NoSQLでクエリ表現が弱い。pgvectorのようなベクトル検索が組めない。<span class="tak-note">TAK_NOTE: 検討したか / 候補にも入れなかったか</span></li>
+            <li><strong>自前Postgres + 自前API</strong>: 認証・RLS・REST APIの実装コストが大きい。1人プロジェクトでは過剰。</li>
+          </ul>
+        </dd>
+
+        <dt>採用理由</dt>
+        <dd>
+          <ul>
+            <li>PostgresのフルSQL + pgvectorでセマンティック検索まで一気に組める</li>
+            <li>RLSで「ChatGPT/Claudeに渡すanon keyから読み書きの粒度を制御」できる</li>
+            <li>freee-etl-engineで既にSupabase運用の知見があり、学習コストがゼロ</li>
+            <li>無料枠で個人利用に十分</li>
+            <li><span class="tak-note">TAK_NOTE: ここに「決定打」を一文で。当時の自分が一番響いた理由</span></li>
+          </ul>
+        </dd>
+
+        <dt>前提条件</dt>
+        <dd>
+          <ul>
+            <li>個人利用のスケール (記事数 ~数千、月間アクセス ~数百)</li>
+            <li>freee-etl-engineと同じSupabaseプロジェクトに同居している</li>
+            <li><span class="tak-note">TAK_NOTE: 他に前提があれば追記</span></li>
+          </ul>
+        </dd>
+
+        <dt>再評価トリガー</dt>
+        <dd>
+          <ul>
+            <li>記事数が無料枠を超えそうになった</li>
+            <li>freee-etl-engineとSupabaseプロジェクトを分離する必要が出た</li>
+            <li>ChatGPT/Claude側でMCPベースのDB接続が標準化され、anon key経由が時代遅れになった</li>
+            <li><span class="tak-note">TAK_NOTE: 他にトリガーがあれば追記</span></li>
+          </ul>
+        </dd>
+      </dl>
+    </details>
+
+    <!-- 04-B · text-embedding-3-small -->
+    <details class="decision" id="decision-b">
+      <summary>
+        <div class="decision-header">
+          <div class="decision-id">04-B · ADR候補 + 用語解説あり</div>
+          <h3 class="decision-title">なぜtext-embedding-3-smallか</h3>
+          <p class="decision-conclusion">日本語・英語が混ざる記事タイトル/要約に対し、コストと精度のバランスが最良だった。</p>
+          <span class="toggle-icon">+</span>
+        </div>
+      </summary>
+
+      <div style="padding: 0 24px;">
+        <div class="explainer">
+          <div class="explainer-label">先に用語の確認 — embeddingとは何か</div>
+
+          <h4>1. 一行で言うと</h4>
+          <p>テキストを<strong>数百〜数千次元のベクトル(数字の列)</strong>に変換する仕組み。「意味が近いテキスト同士はベクトル空間で近くに来る」という性質を持つ。</p>
+
+          <h4>2. なぜ必要か</h4>
+          <p>従来のキーワード検索は「文字列が一致するか」しか見られない。「Claude Code」で検索しても、「Anthropicの開発支援ツール」と書かれた記事は引っかからない。embeddingを使うと<strong>意味で検索できる</strong>。「Claude Code」のベクトルと「Anthropicの開発支援ツール」のベクトルは近くにあるので、両方ヒットする。</p>
+
+          <h4>3. text-embedding-3-smallとは</h4>
+          <p>OpenAIが提供する埋め込みモデルの一つ。<code>1536次元</code>のベクトルを返す。同じシリーズに <code>text-embedding-3-large</code> (3072次元、高精度・高コスト) がある。<code>small</code>は<code>large</code>の1/5程度のコストで、多くのタスクで実用十分な精度。</p>
+
+          <h4>4. pgvectorとの関係</h4>
+          <p>Supabase (Postgres) にはpgvectorという拡張があり、ベクトル列を保存して「コサイン類似度で近いものを引く」SQLが書ける。embeddingモデル(OpenAI)とベクトルDB(pgvector)は別レイヤー。<span class="tak-note">TAK_NOTE: 半年後、ここの理解が深まっていたら書き直す</span></p>
+        </div>
+      </div>
+
+      <dl class="decision-grid">
+        <dt>判断</dt>
+        <dd>埋め込みモデルとして OpenAI <code>text-embedding-3-small</code> を採用。</dd>
+
+        <dt>候補と却下理由</dt>
+        <dd>
+          <ul>
+            <li><strong>text-embedding-3-large</strong>: 精度は高いがコスト5倍。個人利用の記事数では精度差が体感できないと判断。</li>
+            <li><strong>text-embedding-ada-002</strong> (OpenAI旧世代): 3-smallより古く、性能・コストで劣る。</li>
+            <li><strong>Cohere multilingual</strong>: 日本語性能は良いがOpenAIエコシステムから外れる。ChatGPT Custom GPTとの統合運用を考えると同じプロバイダで揃えた方が運用がシンプル。<span class="tak-note">TAK_NOTE: 検討したか / 候補にも入れなかったか</span></li>
+            <li><strong>Voyage AI / BGE系のローカルモデル</strong>: 自前ホスティングのコストが個人運用に合わない。</li>
+          </ul>
+        </dd>
+
+        <dt>採用理由</dt>
+        <dd>
+          <ul>
+            <li>日本語と英語が混在する記事タイトル/要約で実用的な精度</li>
+            <li>1536次元という「pgvectorで扱いやすい次元数」</li>
+            <li>OpenAI APIキー1本で完結 (ChatGPT Custom GPTと同じプロバイダ)</li>
+            <li>コスト: 1Mトークンあたり数セント程度で、個人運用ならほぼ無視できる</li>
+            <li><span class="tak-note">TAK_NOTE: 当時試した記事で実際に「意味検索が効いた」と実感した瞬間があれば記録</span></li>
+          </ul>
+        </dd>
+
+        <dt>前提条件</dt>
+        <dd>
+          <ul>
+            <li>OpenAI APIキーが安定して使える (環境変数管理済み)</li>
+            <li>記事タイトル+要約のトークン数が短い (1記事あたり数百トークン以下)</li>
+            <li><span class="tak-note">TAK_NOTE: 他に前提があれば追記</span></li>
+          </ul>
+        </dd>
+
+        <dt>再評価トリガー</dt>
+        <dd>
+          <ul>
+            <li>OpenAIから後継モデルが出て、コスト/精度比が大きく変わった</li>
+            <li>Anthropic自身が embedding API を提供開始した (Claudeとの統合が深まる)</li>
+            <li>多言語対応で精度差が体感できるレベルになった</li>
+            <li><span class="tak-note">TAK_NOTE: 他にトリガーがあれば追記</span></li>
+          </ul>
+        </dd>
+      </dl>
+    </details>
+
+    <!-- 04-C · RLS -->
+    <details class="decision" id="decision-c">
+      <summary>
+        <div class="decision-header">
+          <div class="decision-id">04-C · ADR候補 + セキュリティ設計</div>
+          <h3 class="decision-title">RLSポリシーの設計意図</h3>
+          <p class="decision-conclusion">anon keyを外部AIツールに渡す前提で、「読みは広く、書きは抹消不可カラムに限定」する。</p>
+          <span class="toggle-icon">+</span>
+        </div>
+      </summary>
+      <dl class="decision-grid">
+        <dt>判断</dt>
+        <dd>
+          <ul>
+            <li>SELECT は anon ロールに対して全許可</li>
+            <li>UPDATE は <code>is_read, is_clipped, read_at, clipped_at</code> の4カラムに限定 (RPC関数経由)</li>
+            <li>INSERT/DELETE は service_role のみ (anonには許可しない)</li>
+            <li>service_roleキーは絶対に外部に出さない</li>
+          </ul>
+        </dd>
+
+        <dt>候補と却下理由</dt>
+        <dd>
+          <ul>
+            <li><strong>anonに全UPDATE許可</strong>: 当初の設計はこれだったが、<code>title</code>や<code>source_type</code>まで書き換え可能でリスクが高すぎ却下。</li>
+            <li><strong>JWT認証 + ユーザ別RLS</strong>: 個人利用なのでJWT発行・管理のコストに見合わない。</li>
+            <li><strong>service_roleキーをChatGPT GPTに渡す</strong>: 全権限が外部に出るので絶対NG。</li>
+          </ul>
+        </dd>
+
+        <dt>採用理由</dt>
+        <dd>
+          <ul>
+            <li>anon keyは「漏れても致命傷にならない」前提で設計</li>
+            <li>「既読フラグ」「クリップフラグ」は書き換えられても損害が限定的</li>
+            <li>RPC関数経由にすることで「書き換えロジック」を集中させ、監査可能</li>
+            <li>ChatGPT Custom GPTにanon keyを設定して読み取り中心に使えるようになる</li>
+            <li><span class="tak-note">TAK_NOTE: 過去にChatGPT GPT用の設定をClaude Codeが生成した時、anon keyを直接埋め込んでしまった事故を経て厳格化した経緯。詳細を残す</span></li>
+          </ul>
+        </dd>
+
+        <dt>前提条件</dt>
+        <dd>
+          <ul>
+            <li>service_roleキーは絶対に外部に出ない (グローバルCLAUDE.mdにルール明記済み)</li>
+            <li>anon keyの漏洩は「想定リスク」として受容している (RLSが防御線)</li>
+            <li>add_manual_articleなどの書き込みRPCは <code>SECURITY DEFINER</code> + 入力バリデーション</li>
+          </ul>
+        </dd>
+
+        <dt>再評価トリガー</dt>
+        <dd>
+          <ul>
+            <li>個人利用以外のユーザを想定する必要が出た (チーム化など)</li>
+            <li>anon keyが流出して実害が出た (この時点でRLS緩めるvs厳格化の判断)</li>
+            <li>SupabaseがRLSの新機能を出して書き換え粒度がさらに細かく制御できるようになった</li>
+            <li><span class="tak-note">TAK_NOTE: 他にトリガーがあれば追記</span></li>
+          </ul>
+        </dd>
+      </dl>
+    </details>
+
+    <!-- 04-D · scheduled task -->
+    <details class="decision" id="decision-d">
+      <summary>
+        <div class="decision-header">
+          <div class="decision-id">04-D · ADR候補 + 諸刃の剣</div>
+          <h3 class="decision-title">daily-researchをscheduled task化した諸刃の剣</h3>
+          <p class="decision-conclusion">毎日自動でリサーチが走る代償として、失敗時に「気づくのが遅れる」リスクを抱えた。</p>
+          <span class="toggle-icon">+</span>
+        </div>
+      </summary>
+      <dl class="decision-grid">
+        <dt>判断</dt>
+        <dd>Claude CodeのScheduled Task機能で <code>daily-research</code> を毎日 8:00 JST (cron: <code>0 23 * * *</code> UTC) に自動起動。モデルは <code>claude-sonnet-4-6</code>。</dd>
+
+        <dt>候補と却下理由</dt>
+        <dd>
+          <ul>
+            <li><strong>毎朝手動で起動</strong>: 続かない。「やる気がある日だけ」になり、リサーチが習慣化しない。</li>
+            <li><strong>GitHub Actionsで自前cron</strong>: Claude Codeのコンテキスト (CLAUDE.md / navigator.md) を活用しにくい。Anthropic API直叩きになり、ツール統合の旨味が消える。</li>
+            <li><strong>常駐プロセス (PCに置く)</strong>: PC稼働状態に依存。出張時に動かない。</li>
+          </ul>
+        </dd>
+
+        <dt>採用理由</dt>
+        <dd>
+          <ul>
+            <li>ホスト管理不要 (Claude Codeのクラウド環境で動く)</li>
+            <li>navigator.md・CLAUDE.mdをそのまま読ませられる</li>
+            <li>Max planの範囲内で運用可能</li>
+            <li>失敗時のログがClaude Code側に残る</li>
+            <li><span class="tak-note">TAK_NOTE: 自動化に踏み切った時の心理的ハードル / 決め手</span></li>
+          </ul>
+        </dd>
+
+        <dt>前提条件</dt>
+        <dd>
+          <ul>
+            <li>Max plan継続</li>
+            <li>navigator.md / CLAUDE.md がリポジトリルートに正しく配置されている (起動ディレクトリのずれに弱い)</li>
+            <li>Anthropic API側の安定性 (500エラー時はそのまま落ちる)</li>
+            <li><span class="tak-note">TAK_NOTE: 他に前提があれば追記</span></li>
+          </ul>
+        </dd>
+
+        <dt>再評価トリガー</dt>
+        <dd>
+          <ul>
+            <li>scheduled task失敗が週1回以上発生するようになった (運用コストが手動越え)</li>
+            <li>Anthropic API料金体系が変わり、Max planだけではカバーできなくなった</li>
+            <li>Claude Code側のscheduled task仕様が変わった (廃止 / リソース制限など)</li>
+            <li>そもそも「毎日リサーチを読む」という習慣が変わった (週1で十分など)</li>
+            <li><span class="tak-note">TAK_NOTE: 半年運用して見えた現実のトリガー</span></li>
+          </ul>
+        </dd>
+      </dl>
+    </details>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       05 · Gotchas
+       ═══════════════════════════════════════════════════ -->
+  <section id="gotchas">
+    <div class="section-num">05</div>
+    <h2>既知の落とし穴</h2>
+    <p>過去に踏んだ地雷。半年後の自分が同じ穴にハマらないように。</p>
+
+    <ul class="gotcha-list">
+      <li>
+        <strong>daily-researchの起動ディレクトリずれ</strong>
+        <div class="gotcha-detail">scheduled task起動時のCWDがずれると <code>navigator.md</code> / <code>CLAUDE.md</code> がglobで見つからず "No files found" で止まる。リポジトリルート起動を確実にすること。<span class="tak-note">TAK_NOTE: 解決策の最終形 (固定パス指定など) を記録</span></div>
+      </li>
+      <li>
+        <strong>anon keyの平文埋め込み事故</strong>
+        <div class="gotcha-detail">Claude Codeに「ChatGPT Custom GPTのSetup手順を作って」と頼むと、実際のanon key値を埋め込んだ手順を生成してしまったことがある。グローバルCLAUDE.mdに「秘密値はプレースホルダ置換必須」のルールを追加して再発防止済み。</div>
+      </li>
+      <li>
+        <strong>階層タグの固定UUID再構築リスク</strong>
+        <div class="gotcha-detail">L1タグの初期データを手打ちUUID (<code>a0000001-0000-...</code>) で投入している。Supabaseプロジェクトを再構築・別環境に移す時、他プロジェクトとUUID衝突する可能性がある。<span class="tak-note">TAK_NOTE: 移行が現実化したら<code>gen_random_uuid()</code>+CTE方式に書き換え</span></div>
+      </li>
+      <li>
+        <strong>Anthropic API 500エラー時のサイレント失敗</strong>
+        <div class="gotcha-detail">scheduled task実行中にAnthropic API側が一時的に500を返すと、タスクは落ちるが翌朝まで気づかない。status.claude.com の確認を運用に組み込むか、失敗通知を別チャネルに飛ばす設計が要検討。<span class="tak-note">TAK_NOTE: 通知の仕組みを入れたら追記</span></div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       06 · 再評価チェックリスト
+       ═══════════════════════════════════════════════════ -->
+  <section id="review">
+    <div class="section-num">06</div>
+    <h2>再評価チェックリスト — 半年後の自分への手紙</h2>
+
+    <div class="checklist">
+      <p class="checklist-intro">半年後にこのノートを開いた自分へ。下のチェックを順に確認すれば、再評価のスタートラインに立てるようにしてある。</p>
+
+      <ul>
+        <li>
+          <input type="checkbox" id="c1">
+          <label for="c1">収集層のソース構成は当時のままか / 増減したか<span class="ref">→ §02 / §04-A</span></label>
+        </li>
+        <li>
+          <input type="checkbox" id="c2">
+          <label for="c2">ChatGPT Custom GPTとClaudeの使い分けは変わったか<span class="ref">→ §02 / §04-C</span></label>
+        </li>
+        <li>
+          <input type="checkbox" id="c3">
+          <label for="c3">daily-research の運用コストは見合っているか (失敗頻度・リサーチ精読率)<span class="ref">→ §04-D</span></label>
+        </li>
+        <li>
+          <input type="checkbox" id="c4">
+          <label for="c4">Supabase / embedding modelに代替候補は出てきたか<span class="ref">→ §04-A / §04-B</span></label>
+        </li>
+        <li>
+          <input type="checkbox" id="c5">
+          <label for="c5">各設計判断の「再評価トリガー」に該当するものは発生したか<span class="ref">→ §04 全体</span></label>
+        </li>
+        <li>
+          <input type="checkbox" id="c6">
+          <label for="c6">Gotchas に新しい地雷を追加すべきか<span class="ref">→ §05</span></label>
+        </li>
+        <li>
+          <input type="checkbox" id="c7">
+          <label for="c7">流動性マーカー (安定/進化中/実験中) を更新すべきか<span class="ref">→ §02</span></label>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       07 · 関連リンク
+       ═══════════════════════════════════════════════════ -->
+  <section id="links">
+    <div class="section-num">07</div>
+    <h2>関連リンク</h2>
+
+    <ul class="links">
+      <li><strong>実装詳細 (本書とは別)</strong><br><code>detailed-plan-research-hub-v2.html</code> — DBスキーマ、RPC、UI、Phase 2a/2b/2c 移行手順</li>
+      <li><strong>関連ADR</strong><br><span class="tak-note">TAK_NOTE: ADR-001〜004などの該当ADRへのリンクを記入</span></li>
+      <li><strong>scheduled task設定</strong><br>Claude Code: <code>daily-research</code> / cron <code>0 23 * * *</code> / repo: <code>My-Profile-and-Memory</code></li>
+      <li><strong>グローバルセキュリティルール</strong><br><code>~/.claude/CLAUDE.md</code> および <code>My-Profile-and-Memory/global-settings/CLAUDE_GLOBAL.md</code> (秘密値プレースホルダ置換ルール)</li>
+      <li><strong>過去の重要会話</strong><br><span class="tak-note">TAK_NOTE: 設計時の重要会話のClaude.aiリンクを記入</span></li>
+    </ul>
+  </section>
+
+  <footer>
+    Architecture Note · Snapshot 2026-05-11 · Next review 2026-11-11 · Format inspired by Thariq's "Unreasonable Effectiveness of HTML"
+  </footer>
+
+</div>
+<script>
+  // ──────────────────────────────────────────────────
+  // Drill-down enhancements (Phase 1)
+  // ──────────────────────────────────────────────────
+
+  // 1. Side TOC + mobile TOC active section highlighting
+  (function() {
+    const sectionIds = ['tldr', 'layers', 'flow', 'decisions', 'gotchas', 'review', 'links'];
+    const sideLinks = document.querySelectorAll('.side-toc a');
+    const mobileLinks = document.querySelectorAll('.mobile-toc-overlay a');
+    const sideItems = document.querySelectorAll('.side-toc li');
+    const mobileItems = document.querySelectorAll('.mobile-toc-overlay li');
+
+    function setActive(id) {
+      sideItems.forEach((li, i) => {
+        li.classList.toggle('active', sideLinks[i].getAttribute('href') === '#' + id);
+      });
+      mobileItems.forEach((li, i) => {
+        li.classList.toggle('active', mobileLinks[i].getAttribute('href') === '#' + id);
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      // pick the entry whose top is closest to the viewport top among intersecting ones
+      let active = null;
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          if (!active || entry.boundingClientRect.top < active.boundingClientRect.top) {
+            active = entry;
+          }
+        }
+      });
+      if (active) setActive(active.target.id);
+    }, {
+      rootMargin: '-20% 0px -60% 0px',
+      threshold: 0
+    });
+
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+  })();
+
+  // 2. Mobile TOC button toggle
+  (function() {
+    const btn = document.getElementById('mobile-toc-btn');
+    const overlay = document.getElementById('mobile-toc-overlay');
+    if (!btn || !overlay) return;
+    btn.addEventListener('click', () => {
+      const isOpen = overlay.classList.toggle('open');
+      btn.textContent = isOpen ? '×' : '☰';
+    });
+    // close on link tap
+    overlay.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        overlay.classList.remove('open');
+        btn.textContent = '☰';
+      });
+    });
+  })();
+
+  // 3. Expand/collapse all decision cards
+  (function() {
+    const expandBtn = document.getElementById('expand-all-btn');
+    const collapseBtn = document.getElementById('collapse-all-btn');
+    const allDetails = document.querySelectorAll('details.decision');
+    if (expandBtn) expandBtn.addEventListener('click', () => {
+      allDetails.forEach(d => d.open = true);
+    });
+    if (collapseBtn) collapseBtn.addEventListener('click', () => {
+      allDetails.forEach(d => d.open = false);
+    });
+  })();
+
+  // 4. Jump-link auto-expand and flash highlight
+  (function() {
+    document.querySelectorAll('.jump-link[data-target]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.dataset.target;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        target.open = true;
+        // small delay to allow layout shift before scrolling
+        requestAnimationFrame(() => {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          target.classList.remove('flash');
+          // restart animation
+          void target.offsetWidth;
+          target.classList.add('flash');
+          setTimeout(() => target.classList.remove('flash'), 1500);
+        });
+      });
+    });
+  })();
+</script>
+</body>
+</html>
