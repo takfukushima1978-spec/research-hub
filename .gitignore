@@ -6,3 +6,5 @@ package-lock.json
 *.log
 .claude/
 supabase/.temp/
+__pycache__/
+*.pyc
