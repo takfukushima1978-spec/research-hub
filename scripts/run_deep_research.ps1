@@ -2,12 +2,11 @@
 # Executed by Windows Task Scheduler on weekdays at 3 AM
 
 $ErrorActionPreference = "Continue"
-$DownloadsPath = "$env:USERPROFILE\Downloads"
-$LogPath = Join-Path $DownloadsPath "deep_research.log"
-$PromptPath = Join-Path $DownloadsPath "deep_research_prompt.txt"
+$LogPath = Join-Path $PSScriptRoot "deep_research.log"
+$PromptPath = Join-Path $PSScriptRoot "deep_research_prompt.txt"
 $ClaudePath = "C:\Users\user\AppData\Roaming\npm\claude.cmd"
 
-Set-Location $DownloadsPath
+Set-Location $PSScriptRoot
 
 # Log start
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
