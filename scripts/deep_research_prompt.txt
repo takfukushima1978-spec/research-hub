@@ -1,0 +1,60 @@
+Supabaseの未処理Deep Researchリクエストを処理してください。
+
+## 手順
+1. Supabase MCPを使って以下のSQLを実行し、未処理リクエストを取得:
+   SELECT r.id, r.article_id, a.title_ja, a.summary, r.focus_point, r.additional_context, r.priority
+   FROM research.deep_research_requests r
+   JOIN research.articles a ON a.id = r.article_id
+   WHERE r.status = 'pending'
+   ORDER BY r.priority ASC, r.created_at ASC
+   LIMIT 3;
+
+2. 未処理リクエストがなければ「No pending requests」と出力して終了。
+
+3. 各リクエストに対して:
+   a. ステータスをprocessingに更新:
+      UPDATE research.deep_research_requests
+      SET status = 'processing', started_at = now(), updated_at = now()
+      WHERE id = '{request_id}';
+
+   b. WebSearchで徹底調査（5-8回検索、日本語+英語）:
+      - focus_pointについての最新情報
+      - 関連事例、エキスパート意見、学術論文
+      - 実務への示唆
+
+   c. 日本語で2000-3000字のレポートを作成:
+      - タイトル: 元記事タイトル + 「深掘りリサーチ」
+      - 要約（300字）
+      - 本文: 構造的に整理
+      - 各セクションにソースURL
+      - 「示唆と提言」セクション
+      - 出典リスト
+
+   d. 結果をSupabaseに保存（complete_deep_research RPC呼び出し）:
+      SELECT public.complete_deep_research(
+        '{request_id}',
+        '300字の要約',
+        'リサーチ全文（Markdown）',
+        NULL
+      );
+
+   e. Gmail下書きを作成（gmail_create_draft MCP使用）:
+      - to: tak.fukushima1978@gmail.com
+      - subject: [Deep Research] {元記事タイトル} - {日付YYYY-MM-DD}
+      - contentType: text/html
+      - body: NewsPicks風インラインスタイルHTML
+        - ヘッダー: background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;padding:32px 20px;text-align:center
+        - ラベル: background:linear-gradient(90deg,#8b5cf6,#a78bfa);color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px（深掘り用紫）
+        - カード: background:#fff;padding:20px;border-radius:12px;margin:16px auto;max-width:680px
+        - 本文: font-size:16px;color:#444;line-height:1.8
+        - 見出し: font-size:19px;font-weight:800;color:#1a1a2e
+        - アクセント: #e94560
+
+4. 全リクエスト処理後、サマリー下書きをGmailに作成:
+   - subject: [Deep Research完了] {件数}件のリサーチが完了しました - {日付}
+
+## 制約
+- 最大3件/実行
+- Gmail下書き作成は必須
+- エラーが出ても他のリクエストは続行
+- 簡潔に報告（余計な会話不要）
