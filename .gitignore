@@ -8,3 +8,5 @@ package-lock.json
 supabase/.temp/
 __pycache__/
 *.pyc
+token.json
+credentials.json
