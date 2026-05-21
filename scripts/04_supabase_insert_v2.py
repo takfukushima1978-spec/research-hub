@@ -4,10 +4,10 @@ Research Hub - Supabase投入スクリプト v2
 階層タグ対応版
 
 新しい記事HTMLをSupabaseに投入する汎用スクリプト。
-ダウンロードフォルダの未投入HTML記事を検出して投入。
+スクリプトと同じディレクトリ（scripts/）の未投入HTML記事を検出して投入。
 
 使い方:
-  cd ~/Downloads
+  cd C:\dev\research-hub\scripts
   python 04_supabase_insert_v2.py
 """
 
