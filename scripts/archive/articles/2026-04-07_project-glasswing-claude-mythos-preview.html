@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Glasswing & Claude Mythos | 2026.04.07</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 18px; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 40px 20px 32px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+  .header .date { font-size: 13px; opacity: 0.7; }
+  .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .card { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; }
+  .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .card p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .card .source-link a { color: #e94560; text-decoration: none; }
+  .impact { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .impact h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .impact p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .impact .stat { display: inline-block; background: rgba(233,69,96,0.2); border: 1px solid rgba(233,69,96,0.4); padding: 8px 16px; border-radius: 8px; margin: 4px 4px; font-size: 15px; color: #ff6b6b; font-weight: 700; }
+  .impact .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 14px; }
+  .impact .source-link a { color: #ff6b6b; text-decoration: none; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .sources h4 { font-size: 15px; color: #666; margin-bottom: 10px; }
+  .sources a { color: #e94560; text-decoration: none; word-break: break-all; }
+  .sources ul { list-style: none; padding: 0; }
+  .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .sources li::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">CLAUDE CODE 公式発表</div>
+  <h1>27年前のバグも発見！<br>AIハッカー「Project Glasswing」の衝撃</h1>
+  <div class="date">2026年4月7日 ｜ Project Glasswing & Claude Mythos Preview</div>
+</div>
+
+<div class="lead">
+  Anthropicが発表した「Project Glasswing」が、サイバーセキュリティ業界に衝撃を与えている。Claude Codeを活用した自律的な脆弱性探索エージェントが、OpenBSDに27年間潜んでいたバグやLinuxカーネルの特権昇格チェーンを発見。同時に新モデル「Claude Mythos Preview」もお披露目された。
+</div>
+
+<div class="card">
+  <div class="num">1</div>
+  <h2>Project Glasswing ── AIが自律的にバグを探す</h2>
+  <p>Project Glasswingは、Claude Codeのエージェント機能をサイバーセキュリティに応用したプロジェクトだ。AIエージェントがソースコードを自律的に読み、脆弱性を発見し、概念実証（PoC）まで作成する。</p>
+  <p>人間のセキュリティ研究者が何年もかけて見つけられなかったバグを、AIが数時間で見つけてしまう。これはセキュリティの世界のパラダイムシフトと言っていい。</p>
+  <div class="source-link">📎 <a href="https://www.anthropic.com/glasswing" target="_blank">公式発表を読む（Project Glasswing）</a></div>
+</div>
+
+<div class="impact">
+  <h2>発見された主な脆弱性</h2>
+  <p>Project Glasswingが実際に発見した脆弱性の実績が公開されている。</p>
+  <div style="margin: 16px 0;">
+    <span class="stat">OpenBSD 27年越しバグ</span>
+    <span class="stat">Linux カーネル特権昇格</span>
+    <span class="stat">複数のゼロデイ発見</span>
+  </div>
+  <p>特にOpenBSDのバグは、セキュリティに定評のあるOSに長年潜んでいたという点で、セキュリティコミュニティに大きな衝撃を与えた。</p>
+  <div class="source-link">📎 <a href="https://red.anthropic.com/2026/mythos-preview/" target="_blank">詳細レポート（red.anthropic.com）</a></div>
+</div>
+
+<div class="card">
+  <div class="num">2</div>
+  <h2>Claude Mythos Preview ── 次世代モデルの片鱗</h2>
+  <p>Project Glasswingと同時に発表されたのが、新モデル「Claude Mythos Preview」だ。コード理解とセキュリティ分析に特化した能力を持つとされ、Glasswingの中核エンジンとして使われている。</p>
+  <p>一般開発者向けの提供時期は未定だが、コード品質分析やセキュリティレビューの精度が大幅に向上する可能性がある。</p>
+  <div class="highlight">
+    💡 Claude Mythos Previewはまだ研究プレビュー段階。だが、将来的にClaude Codeに統合されれば、コードレビューの精度が次のレベルに到達する可能性がある。
+  </div>
+  <div class="source-link">📎 <a href="https://red.anthropic.com/2026/mythos-preview/" target="_blank">公式発表を読む（Claude Mythos Preview）</a></div>
+</div>
+
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>AIがセキュリティ研究者として機能する時代が本格的に到来した。Project Glasswingの成果は「AIは既存のバグを再発見するだけ」という懐疑論を完全に覆すものだ。開発者にとっての示唆は明確で、Claude Codeのセキュリティ分析機能は今後ますます重要になる。自分のコードベースでも試してみる価値がある。</p>
+</div>
+
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://www.anthropic.com/glasswing" target="_blank">Anthropic - Project Glasswing</a></li>
+    <li><a href="https://red.anthropic.com/2026/mythos-preview/" target="_blank">red.anthropic.com - Claude Mythos Preview</a></li>
+  </ul>
+</div>
+
+</body>
+</html>

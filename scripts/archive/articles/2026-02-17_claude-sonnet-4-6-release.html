@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Sonnet 4.6 リリース | 2026.02.17</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 18px; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 40px 20px 32px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+  .header .date { font-size: 13px; opacity: 0.7; }
+  .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .card { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; }
+  .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .card p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .card .source-link a { color: #e94560; text-decoration: none; }
+  .dark-card { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .dark-card h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .dark-card p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .dark-card .highlight { background: rgba(233,69,96,0.15); border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #ffaaaa; }
+  .dark-card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 14px; }
+  .dark-card .source-link a { color: #ff6b6b; text-decoration: none; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .sources h4 { font-size: 15px; color: #666; margin-bottom: 10px; }
+  .sources a { color: #e94560; text-decoration: none; word-break: break-all; }
+  .sources ul { list-style: none; padding: 0; }
+  .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .sources li::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 16px; color: #e94560; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">CLAUDE CODE 公式発表</div>
+  <h1>日常使いの"最適解"が進化<br>Sonnet 4.6のインパクト</h1>
+  <div class="date">2026年2月17日 ｜ Claude Sonnet 4.6</div>
+</div>
+<div class="lead">
+  「最も有能なSonnetモデル」としてClaude Sonnet 4.6が登場。コーディング、Computer Use、長文推論、エージェント計画、デザインなど全方位でスキルが向上。Claude Codeのデフォルトモデルとして、日々の開発体験を底上げする。
+</div>
+<div class="card">
+  <div class="num">1</div>
+  <h2>全方位アップグレード</h2>
+  <p>Sonnet 4.6はコーディングだけでなく、Computer Use、長文コンテキスト推論、エージェント計画、ナレッジワーク、デザインまで幅広く改善された。ベータで100万トークンのコンテキストウィンドウも利用可能。</p>
+  <p>Opusほどの深い推論は不要だが、速度と品質のバランスが求められる日常的な開発タスクに最適だ。</p>
+  <div class="highlight">💡 Sonnet 4.6はClaude Codeのデフォルトモデル。特に設定を変えなくても、アップデートするだけで恩恵を受けられる。</div>
+  <div class="source-link">📎 <a href="https://www.anthropic.com/news/claude-sonnet-4-6" target="_blank">公式発表を読む（Claude Sonnet 4.6）</a></div>
+</div>
+<div class="card">
+  <div class="num">2</div>
+  <h2>Computer Useの改善</h2>
+  <p>Sonnet 4.6ではComputer Use機能の精度が向上。画面要素の認識、クリック位置の正確さ、複数ステップの操作チェーンの安定性が改善された。3月に登場するCLI版Computer Useの布石となるアップデートだ。</p>
+  <div class="source-link">📎 <a href="https://www.anthropic.com/news/claude-sonnet-4-6" target="_blank">公式発表を読む（Claude Sonnet 4.6）</a></div>
+</div>
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>Sonnetはほとんどの開発者にとって「普段使い」のモデル。その品質が上がることは、Claude Codeエコシステム全体の底上げを意味する。特にComputer Useの改善は、後のCLI統合やVercept買収の伏線として見ると非常に興味深い。</p>
+</div>
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://www.anthropic.com/news/claude-sonnet-4-6" target="_blank">Anthropic - Claude Sonnet 4.6</a></li>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code 2.1.0 | 2026.01.07</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 18px; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 40px 20px 32px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+  .header .date { font-size: 13px; opacity: 0.7; }
+  .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .card { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; }
+  .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .card p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .card .source-link a { color: #e94560; text-decoration: none; }
+  .dark-card { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .dark-card h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .dark-card p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .dark-card .highlight { background: rgba(233,69,96,0.15); border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #ffaaaa; }
+  .dark-card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 14px; }
+  .dark-card .source-link a { color: #ff6b6b; text-decoration: none; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .sources h4 { font-size: 15px; color: #666; margin-bottom: 10px; }
+  .sources a { color: #e94560; text-decoration: none; word-break: break-all; }
+  .sources ul { list-style: none; padding: 0; }
+  .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .sources li::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 16px; color: #e94560; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">CLAUDE CODE 公式発表</div>
+  <h1>1,096コミットの衝撃<br>Claude Code 2.1.0 全貌解剖</h1>
+  <div class="date">2026年1月7日 ｜ Claude Code v2.1.0</div>
+</div>
+<div class="lead">
+  2026年の幕開けを飾る大型アップデート「Claude Code 2.1.0」がリリースされた。1,096コミットを一気に投入し、Skills Hot Reload、Session Teleportation、コンテキストフォーク、多言語出力、ターミナルUX改善など、Claude Codeの使い方を根本から変える機能が満載だ。
+</div>
+<div class="card">
+  <div class="num">1</div>
+  <h2>Skills Hot Reload ── 5秒で反映される世界</h2>
+  <p><code>~/.claude/skills</code>や<code>.claude/skills</code>に置いたスキルファイルが、セッション再起動なしで即座に反映されるようになった。これまでスキルの修正→テストに2分かかっていたサイクルが、わずか5秒に短縮。</p>
+  <p>スキル開発のイテレーション速度が24倍に向上したとの報告もある。カスタムスキルの開発が一気に身近になった。</p>
+  <div class="highlight">💡 スキルファイルを保存するだけで即反映。SKILL.mdの書き方を覚えれば、自分だけの専用AIツールを量産できる。</div>
+  <div class="source-link">📎 <a href="https://venturebeat.com/orchestration/claude-code-2-1-0-arrives-with-smoother-workflows-and-smarter-agents" target="_blank">VentureBeat報道を読む</a></div>
+</div>
+<div class="card">
+  <div class="num">2</div>
+  <h2>Session Teleportation ── ターミナルからWebへ瞬間移動</h2>
+  <p><code>/teleport</code>コマンドで、ターミナルのセッションをclaude.ai/codeのWeb版にそのまま引き継げるようになった。自宅のターミナルで始めた作業を、外出先のブラウザで続行。会話履歴もコンテキストもすべて引き継がれる。</p>
+  <div class="highlight">💡 <code>/teleport</code>でURLが発行される。そのURLを別デバイスで開くだけ。モバイルからでもセッションを引き継げる。</div>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></div>
+</div>
+<div class="card">
+  <div class="num">3</div>
+  <h2>Context Fork ── 安全な実験空間</h2>
+  <p>スキルやスラッシュコマンドのfrontmatterに<code>context: fork</code>を指定することで、メインエージェントのコンテキストを汚さずにサブタスクを実行できるようになった。</p>
+  <p>新しいロジックのテストや、リスクのある操作を隔離環境で試せる。失敗してもメインセッションに影響しない安全設計だ。</p>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></div>
+</div>
+<div class="card">
+  <div class="num">4</div>
+  <h2>多言語出力 & ターミナルUX改善</h2>
+  <p><code>language</code>設定で出力言語を日本語やスペイン語などに指定可能に。日本語での開発ワークフローが格段にスムーズになる。</p>
+  <p>またShift+Enterによる改行がiTerm2、Kitty、Ghostty、WezTermで設定不要で動作するように。地味だが毎日使う機能だけに、この改善は大きい。</p>
+  <div class="highlight">💡 設定ファイルに<code>"language": "ja"</code>と書くだけで、Claude Codeの出力が日本語になる。プロンプトごとに指定する手間がなくなった。</div>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></div>
+</div>
+<div class="dark-card">
+  <h2>Hooks強化 ── エージェントの振る舞いを制御</h2>
+  <p>エージェント、スキル、スラッシュコマンドのfrontmatterにHooksを直接記述できるようになった。PreToolUse、PostToolUse、Stopのロジックをスキル単位でスコープできる。</p>
+  <p>これにより、スキルごとに異なるツール制約や監査ログを設定でき、きめ細かいエージェント制御が実現した。</p>
+  <div class="highlight">💡 Hooksのスキル内定義は、チームでスキルを共有する際のガバナンスにも直結。「このスキルではBashの実行を禁止する」といった制約が宣言的に書ける。</div>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></div>
+</div>
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>1,096コミットの一括投入。この数字が示すのは、Anthropicが2025年後半に水面下で進めてきた大規模な再設計の成果だ。特にSkills Hot ReloadとContext Forkは、Claude Codeを「ただのAIアシスタント」から「カスタマイズ可能なAI開発プラットフォーム」に変える転換点。2026年のClaude Code進化の起点となるリリースだ。</p>
+</div>
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://venturebeat.com/orchestration/claude-code-2-1-0-arrives-with-smoother-workflows-and-smarter-agents" target="_blank">VentureBeat - Claude Code 2.1.0 arrives</a></li>
+    <li><a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></li>
+    <li><a href="https://github.com/anthropics/claude-code/releases" target="_blank">GitHub Releases</a></li>
+  </ul>
+</div>
+</body>
+</html>

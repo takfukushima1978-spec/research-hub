@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Security | 2026.02.20</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 18px; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 40px 20px 32px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+  .header .date { font-size: 13px; opacity: 0.7; }
+  .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .card { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; }
+  .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .card p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .card .source-link a { color: #e94560; text-decoration: none; }
+  .dark-card { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .dark-card h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .dark-card p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .dark-card .highlight { background: rgba(233,69,96,0.15); border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #ffaaaa; }
+  .dark-card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 14px; }
+  .dark-card .source-link a { color: #ff6b6b; text-decoration: none; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .sources h4 { font-size: 15px; color: #666; margin-bottom: 10px; }
+  .sources a { color: #e94560; text-decoration: none; word-break: break-all; }
+  .sources ul { list-style: none; padding: 0; }
+  .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .sources li::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 16px; color: #e94560; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">CLAUDE CODE 公式発表</div>
+  <h1>AIがコードの脆弱性を自動検出<br>Claude Code Security登場</h1>
+  <div class="date">2026年2月20日 ｜ Claude Code Security</div>
+</div>
+<div class="lead">
+  Anthropicが「Claude Code Security」を限定リサーチプレビューとして公開。コードベースのセキュリティ脆弱性をAIがスキャンし、具体的な修正パッチまで提案する。従来のSAST/DASTツールでは見つけられなかった問題を発見できるという。
+</div>
+<div class="card">
+  <div class="num">1</div>
+  <h2>従来ツールの限界を超える</h2>
+  <p>Claude Code Securityは、単なるパターンマッチではなく、コードのロジックを理解した上で脆弱性を検出する。ビジネスロジックの欠陥、認証フローの問題、複数ファイルにまたがるセキュリティホールなど、従来のツールが苦手とする領域をカバーする。</p>
+  <div class="highlight">💡 Claude Code Web版で利用可能。既存のCI/CDパイプラインに組み込むことで、プルリクエストごとにセキュリティチェックを自動実行できる。</div>
+  <div class="source-link">📎 <a href="https://www.anthropic.com/news/claude-code-security" target="_blank">公式発表を読む（Claude Code Security）</a></div>
+</div>
+<div class="card">
+  <div class="num">2</div>
+  <h2>修正パッチの自動提案</h2>
+  <p>脆弱性を見つけるだけでなく、具体的な修正パッチを提案してくれる点が画期的だ。人間のレビュアーは「この修正で本当に問題が解決するか」を確認するだけでよい。セキュリティの専門知識がないチームでも、高い水準のセキュリティ対策が可能になる。</p>
+  <div class="source-link">📎 <a href="https://www.anthropic.com/news/claude-code-security" target="_blank">公式発表を読む（Claude Code Security）</a></div>
+</div>
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>セキュリティは「後から対処」ではコストが跳ね上がる領域。Claude Code Securityのようなツールが開発フローに組み込まれることで、「シフトレフト」（早期発見・早期修正）が現実的になる。4月のProject Glasswingへの伏線としても注目すべき発表だ。</p>
+</div>
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://www.anthropic.com/news/claude-code-security" target="_blank">Anthropic - Claude Code Security</a></li>
+  </ul>
+</div>
+</body>
+</html>

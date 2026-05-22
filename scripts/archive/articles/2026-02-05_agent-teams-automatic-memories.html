@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Teams & 自動メモリ | 2026.02.05</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 18px; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 40px 20px 32px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+  .header .date { font-size: 13px; opacity: 0.7; }
+  .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .card { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; }
+  .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .card p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .card .source-link a { color: #e94560; text-decoration: none; }
+  .dark-card { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .dark-card h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .dark-card p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .dark-card .highlight { background: rgba(233,69,96,0.15); border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #ffaaaa; }
+  .dark-card .stat { display: inline-block; background: rgba(233,69,96,0.2); border: 1px solid rgba(233,69,96,0.4); padding: 8px 16px; border-radius: 8px; margin: 4px 4px; font-size: 15px; color: #ff6b6b; font-weight: 700; }
+  .dark-card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 14px; }
+  .dark-card .source-link a { color: #ff6b6b; text-decoration: none; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .sources h4 { font-size: 15px; color: #666; margin-bottom: 10px; }
+  .sources a { color: #e94560; text-decoration: none; word-break: break-all; }
+  .sources ul { list-style: none; padding: 0; }
+  .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .sources li::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 16px; color: #e94560; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">CLAUDE CODE 公式発表</div>
+  <h1>一人で"チーム開発"する時代<br>Agent Teams & 自動メモリが同時始動</h1>
+  <div class="date">2026年2月5日 ｜ Agent Teams / Automatic Memories</div>
+</div>
+<div class="lead">
+  Opus 4.6のリリースと同時に、Claude Codeに2つの革新的機能が追加された。複数のAIエージェントがチームとして並行開発する「Agent Teams」と、ユーザーのコーディングスタイルを自動的に学習・記憶する「Automatic Memories」だ。
+</div>
+<div class="card">
+  <div class="num">1</div>
+  <h2>Agent Teams ── AIがチームを組む</h2>
+  <p>Agent Teamsは、Claude Codeが複数の独立したエージェントを生成し、並行してタスクをこなすマルチエージェント機能だ。各エージェントは独自のコンテキストウィンドウ、ツールアクセス、通信チャネルを持つ。</p>
+  <p>チームリードがタスクを分割・調整し、チームメイトが個別に作業。メールボックスシステムでエージェント間が直接通信し、共有タスクリストで依存関係を管理する。</p>
+  <div class="highlight">💡 環境変数 <code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code> で有効化。フロントエンドとバックエンドを同時開発するような大規模タスクで真価を発揮する。</div>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></div>
+</div>
+<div class="card">
+  <div class="num">2</div>
+  <h2>Automatic Memories ── AIがあなたの好みを覚える</h2>
+  <p>Claude Codeがユーザーのコーディングスタイル、プロジェクト構造、好みのパターンを自動的に学習・記憶する機能。明示的な指示なしに、過去のやり取りから学んだ知識を適用してくれる。</p>
+  <p>たとえば「テストはいつもJestで書く」「変数名はキャメルケース」「コミットメッセージはConventional Commits」といった好みを覚え、次回から自動的に反映する。</p>
+  <div class="highlight">💡 メモリファイルにはlast-modifiedタイムスタンプが付き、古い記憶と新しい記憶の鮮度をAIが判断できる。</div>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></div>
+</div>
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>Agent TeamsとAutomatic Memoriesの同時投入は、Claude Codeの思想を明確にしている。「AIは一人の便利なアシスタント」ではなく「あなたを理解し、チームとして働くパートナー」だ。特にAgent Teamsは3月のworktree対応、4月のManaged Agentsへと繋がる戦略的機能。実験的フラグ付きとはいえ、早めに触っておく価値がある。</p>
+</div>
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></li>
+    <li><a href="https://www.anthropic.com/news/claude-opus-4-6" target="_blank">Anthropic - Claude Opus 4.6</a></li>
+  </ul>
+</div>
+</body>
+</html>

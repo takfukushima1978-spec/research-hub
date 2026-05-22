@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Computer Use：AIがデスクトップを操作する新時代</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; font-size: 18px; line-height: 1.85; color: #333; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 40px 20px 35px; }
+        .header-label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #e94560; font-weight: 700; margin-bottom: 12px; }
+        .header h1 { font-size: 26px; line-height: 1.5; font-weight: 800; margin-bottom: 10px; }
+        .header .date { font-size: 13px; color: rgba(255,255,255,0.6); }
+        .container { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+        .lead { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-top: -10px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .lead p { font-size: 17px; color: #444; line-height: 1.85; }
+        .section { background: white; border-radius: 12px; padding: 28px 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .section-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+        .section-number { background: #e94560; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+        .section-header h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; line-height: 1.5; }
+        .section p { font-size: 17px; color: #444; line-height: 1.85; margin-bottom: 14px; }
+        .highlight { background: #fff8f0; border-left: 3px solid #e94560; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 16px; color: #555; }
+        .source-link { border-top: 1px dashed #e0e0e0; margin-top: 18px; padding-top: 14px; }
+        .source-link a { font-size: 14px; color: #e94560; text-decoration: none; font-weight: 600; }
+        .source-link a:hover { text-decoration: underline; }
+        .closing { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .closing h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; margin-bottom: 14px; }
+        .closing p { font-size: 17px; color: #444; line-height: 1.85; }
+        .sources { background: white; border-radius: 12px; padding: 24px; margin-bottom: 40px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .sources h3 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+        .sources ul { list-style: none; }
+        .sources li { font-size: 14px; color: #666; padding: 6px 0; }
+        .sources li::before { content: "→ "; color: #e94560; font-weight: 700; }
+        .sources a { color: #0f3460; text-decoration: none; }
+        .sources a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-label">Anthropic News</div>
+            <h1>Claude Code Computer Use：AIがデスクトップを操作する新時代</h1>
+            <div class="date">2026年3月23日（Desktop版）/ 3月30日（CLI拡張）</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="lead">
+            <p>Anthropicが革新的な新機能「Computer Use」を発表した。AIがマウスをクリックし、キーボードを操作し、画面に映る変化を認識する。会話型のAIから「自律型デジタルワーカー」へ。3月23日のDesktop版に続き、3月30日にはCLIでも利用可能になり、ターミナルからGUIアプリを操作できるようになった。</p>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2>Computer Useとは何か<br>AIがデスクトップを操作する新時代</h2>
+            </div>
+            <p>従来、AIは文字で指示を受け、文字で回答する——その使い方が基本だった。しかしClaudeの新しい「Computer Use」機能は違う。AIが人間と同じように、マウスを動かしてクリックし、キーボードでテキストを入力し、画面に映る変化をリアルタイムで認識する。</p>
+            <p>この機能によって、Claudeは単なる「回答者」から「実行者」へと進化した。APIが用意されていない古いツール、GUIベースのプロプライエタリアプリケーション、あるいはiOSシミュレータのようにUIを操作する必要のあるすべてのタスクに対応できるようになったのだ。</p>
+            <div class="highlight">
+                「APIなしのツールに最適。iOSシミュレータの操作、ハードウェアコントロールパネルの設定変更、GUIオンリーアプリの自動化。これまでAIでは手が出せなかった領域が開かれた。」
+            </div>
+            <p>デフォルトではオフになっており、Claudeが新しいアプリにアクセスする際には必ず許可を求める。セキュリティは設計段階から組み込まれている。</p>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/computer-use" target="_blank">📚 Claude Code公式ドキュメント</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2>Desktop版での導入<br>3月23日、Pro・Max向けに開放</h2>
+            </div>
+            <p>2026年3月23日、Anthropicは「Claude Desktop app」にComputer Use機能を搭載した。対象はClaudeの有料ユーザー（ProおよびMax）である。このとき点灯したのが「研究プレビュー」というステータスだ。つまり、実用段階には至っていないが、一般ユーザーにも試験利用が可能になったということである。</p>
+            <p><strong>設定方法は簡潔だ。</strong>まずClaudeのSettings（設定）を開き、Computer Use機能を有効化する。次に、OSのプライベートシステムアクセス権限をClaudeに付与する。これでセットアップは完了。後はClaudeに任意のタスク実行を依頼し、画面の変化を確認させるだけで良い。</p>
+            <p>macOS版が最初にリリースされ、Windows対応は今後の計画に含まれている。</p>
+            <div class="highlight">
+                「設定 → Computer Useを有効化 → OSパーミッション付与 → Claudeに画面操作を依頼 → エンドツーエンド検証」
+            </div>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/whats-new/2026-w13" target="_blank">📰 Week 13リリースノート</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2>CLI版への拡張<br>3月30日、ターミナルからGUIを操作</h2>
+            </div>
+            <p>わずか1週間後の3月30日（第14週）、Anthropicはこの機能をCLI環境にも展開した。これにより、ターミナルからClaudeに指示を出し、デスクトップアプリの操作を自動化できるようになった。</p>
+            <p>ワークフローは極めてシンプルだ。ターミナルで<code>/mcp</code>コマンドを実行し、<code>computer-use</code>を探して有効化するだけ。以降、CLIからClaudeに任意のGUI操作を依頼できる。</p>
+            <p>ターミナル派のプログラマーやシステム管理者にとって、これは革命的だ。スクリプト環境からネイティブアプリを操作し、変化をターミナルで即座に検証できるようになったのである。</p>
+            <div class="highlight">
+                「CLIで `/mcp` → `computer-use` をトグルON → ターミナルからGUIアプリを制御可能に」
+            </div>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">📰 Week 14リリースノート</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2>ユースケース<br>APIでは実現できなかった自動化</h2>
+            </div>
+            <p>Computer Use機能の真価は、「APIでカバーできていないツール」の領域にある。具体例をいくつか挙げよう。</p>
+            <p><strong>iOSシミュレータの操作：</strong>アプリ開発者にとって、Claudeが直接iOSシミュレータを操作し、タップやスワイプをシミュレートできるのは強力だ。デバイステスト自体をAIに任せられる。</p>
+            <p><strong>プロプライエタリツール：</strong>社内でのみ使われている独自開発ツール、古いレガシーシステム。こうしたツールはAPIが存在しないか、極めて限定的な場合が多い。Claudeが直接UIを操作することで、初めて自動化が可能になる。</p>
+            <p><strong>GUIオンリーアプリ：</strong>ハードウェアコントロールパネル、デザインツール、複雑な設定画面。こうした複雑なUIを持つアプリケーションも、Computer Useなら対応できる。</p>
+            <p><strong>複雑な検証タスク：</strong>画面に映る変化を逐一確認しながら進める必要のあるタスク。たとえば、データベース更新後の画面確認、ビジュアル要素の検証なども、Claudeが目視で確認しながら実行できるようになった。</p>
+            <div class="highlight">
+                「これまで『できない』と諦めていた自動化が、今なら『やってみよう』になる」
+            </div>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/computer-use" target="_blank">📚 ユースケース詳細ドキュメント</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2>安全性の設計思想<br>permission-first、trust-but-verify</h2>
+            </div>
+            <p>強力な機能には、同等の責任が伴う。Anthropicはこの点を深く認識し、Computer Use機能にはセキュリティを徹底的に組み込んだ。</p>
+            <p><strong>デフォルトはオフ。</strong>すべてのユーザーで初期状態は無効化されており、自分で明示的に有効化する必要がある。</p>
+            <p><strong>アクセス許可を毎回確認。</strong>Claudeが新しいアプリケーション、新しいディレクトリへのアクセスを試みるたびに、ユーザーに確認を求める。「信頼するが検証する」というアプローチだ。</p>
+            <p><strong>OSレベルの権限管理。</strong>Settings画面で有効化した後、OSのシステムプライベートアクセス権限を明示的に付与する必要がある。これにより、OSレベルでのアクセス制御が機能する。</p>
+            <p><strong>透明性と監査。</strong>Claudeが何をしたのか、どの画面を確認したのかが、すべてユーザーに可視化される。ブラックボックス化しない設計になっている。</p>
+            <div class="highlight">
+                「デフォルトオフ → 明示的な有効化 → 新規アプリアクセス時は確認 → OS権限管理 → 完全な可視化」
+            </div>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/computer-use" target="_blank">📚 セキュリティガイドライン</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2>Vercept買収の影響と今後の展望<br>AIの「手足」を手に入れたAnthropics</h2>
+            </div>
+            <p>Computer Use機能が急速に実現できた背景には、2026年2月のAnthropicによる戦略的買収がある。Computer Use技術のスタートアップ「Vercept」の買収だ。</p>
+            <p>Vercept創業者らがもたらした知見とエンジニアリングが、このComputer Use機能の急速な開発を可能にした。Desktop版が3月23日に、CLIが3月30日に——わずか1週間での拡張という素早さは、統合の成功を物語っている。</p>
+            <p><strong>今後の展開：</strong>現在macOS優先だが、Windows対応は近い。さらに、Linux環境への対応も視野にあるはずだ。APIの一層の拡張、セキュリティ機能のさらなる強化、ユースケースの多様化も予想される。</p>
+            <p>Anthropicにとって、このComputer Use機能は単なる「新機能」ではない。Claude自体をGUIの世界に解放し、デジタル世界のすべてのツール・アプリに対応可能な「汎用AI」へと進化させるための基盤なのだ。</p>
+            <div class="highlight">
+                「Vercept買収 → Desktop版 → CLI拡張 → Windows・Linux対応予定。Claudeが真の『自律型デジタルワーカー』への道を着実に進んでいる」
+            </div>
+            <div class="source-link">
+                <a href="https://www.cnbc.com/2026/03/24/anthropic-claude-ai-agent-use-computer-finish-tasks.html" target="_blank">📰 CNBC報道（英語）</a>
+            </div>
+        </div>
+
+        <div class="closing">
+            <h2>編集部コメント</h2>
+            <p>「会話型AI」という枠組みは、ここで一つの終わりを迎えるのかもしれない。Claudeが自分でマウスをクリックし、ボタンを押し、ダイアログを閉じるようになった今、AIとの関係は「質問と回答」から「指示と実行」へと本質的にシフトしたのだ。ビジネス領域では、ルーチンワークの大幅な削減が期待される。開発現場では、テストと検証の自動化が飛躍的に進むだろう。同時に、セキュリティと倫理の課題も一層重くなる。いかに信頼できるAIワーカーを育成し、その行動を適切に監視するか——その問い自体が、今後のAI産業を左右する最重要テーマになるに違いない。</p>
+        </div>
+
+        <div class="sources">
+            <h3>参考資料</h3>
+            <ul>
+                <li><a href="https://code.claude.com/docs/en/computer-use" target="_blank">Claude Code公式 Computer Useドキュメント</a></li>
+                <li><a href="https://code.claude.com/docs/en/whats-new/2026-w13" target="_blank">Claude Code Week 13リリースノート（Desktop版）</a></li>
+                <li><a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">Claude Code Week 14リリースノート（CLI拡張）</a></li>
+                <li><a href="https://www.cnbc.com/2026/03/24/anthropic-claude-ai-agent-use-computer-finish-tasks.html" target="_blank">CNBC: Anthropic launches Claude AI computer use features</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

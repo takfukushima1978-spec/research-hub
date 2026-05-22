@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国AI蒸留攻撃 | 2026.02.23</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 18px; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 40px 20px 32px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+  .header .date { font-size: 13px; opacity: 0.7; }
+  .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .card { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; }
+  .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .card p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .card .source-link a { color: #e94560; text-decoration: none; }
+  .dark-card { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; }
+  .dark-card h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 14px; }
+  .dark-card p { color: #ccc; font-size: 17px; margin-bottom: 12px; }
+  .dark-card .highlight { background: rgba(233,69,96,0.15); border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #ffaaaa; }
+  .dark-card .stat { display: inline-block; background: rgba(233,69,96,0.2); border: 1px solid rgba(233,69,96,0.4); padding: 8px 16px; border-radius: 8px; margin: 4px 4px; font-size: 15px; color: #ff6b6b; font-weight: 700; }
+  .dark-card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 14px; }
+  .dark-card .source-link a { color: #ff6b6b; text-decoration: none; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .sources h4 { font-size: 15px; color: #666; margin-bottom: 10px; }
+  .sources a { color: #e94560; text-decoration: none; word-break: break-all; }
+  .sources ul { list-style: none; padding: 0; }
+  .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .sources li::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 16px; color: #e94560; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">CLAUDE CODE 公式発表</div>
+  <h1>1,600万回の不正クエリ<br>中国AI企業によるClaude蒸留攻撃の全貌</h1>
+  <div class="date">2026年2月23日 ｜ モデル蒸留攻撃の検知と対策</div>
+</div>
+<div class="lead">
+  Anthropicが衝撃的な発表を行った。中国の3つのAI企業 ── DeepSeek、Moonshot AI、MiniMax ── が、約24,000の不正アカウントを通じてClaude から1,600万回以上のクエリを実行し、モデルの能力を「蒸留」していたことが判明。AI業界のセキュリティに対する警鐘が鳴らされた。
+</div>
+<div class="dark-card">
+  <h2>3社の蒸留キャンペーンの詳細</h2>
+  <p>各社が狙ったClaude の能力は異なっていた。</p>
+  <div style="margin: 16px 0;">
+    <span class="stat">DeepSeek: 15万回以上</span>
+    <span class="stat">Moonshot AI: 340万回以上</span>
+    <span class="stat">MiniMax: 1,300万回以上</span>
+  </div>
+  <p>DeepSeekは推論能力と検閲回避パターンを、Moonshot AIはエージェント的推論とComputer Use開発を、MiniMaxはコーディングとツール使用能力をターゲットにしていた。</p>
+  <div class="source-link">📎 <a href="https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks" target="_blank">Anthropic公式発表を読む</a></div>
+</div>
+<div class="card">
+  <div class="num">1</div>
+  <h2>蒸留（Distillation）とは何か</h2>
+  <p>蒸留とは、高性能なAIモデルの出力を使って、より小さいモデルを訓練する技術だ。自社モデルに対して行うのは正当だが、競合他社のモデルの出力を無断で使って訓練するのは、利用規約違反であり、場合によっては違法行為となる。</p>
+  <p>Anthropicの利用規約では、モデル出力を使った競合モデルの訓練を明確に禁止している。</p>
+  <div class="source-link">📎 <a href="https://fortune.com/2026/02/24/anthropic-china-deepseek-theft-claude-distillation-copyright-national-security/" target="_blank">Fortune報道を読む</a></div>
+</div>
+<div class="card">
+  <div class="num">2</div>
+  <h2>Claude Codeユーザーへの影響</h2>
+  <p>この事件は、AIセキュリティの重要性を改めて浮き彫りにした。Anthropicはアクセスポイントの遮断や検知システムの強化で対応。ユーザー側で特別な対応は不要だが、APIキーの管理やアクセス制御の重要性を再認識するきっかけになった。</p>
+  <div class="highlight">💡 この事件を受けてAnthropicはセキュリティ対策を強化。4月のProject Glasswingのようなサイバーセキュリティへの投資加速にもつながっている。</div>
+  <div class="source-link">📎 <a href="https://techcrunch.com/2026/02/23/anthropic-accuses-chinese-ai-labs-of-mining-claude-as-us-debates-ai-chip-exports/" target="_blank">TechCrunch報道を読む</a></div>
+</div>
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>1,600万回の不正クエリ、24,000の偽アカウント。この規模の産業スパイ活動は、AI業界の「冷戦」と呼ぶべきものだ。OpenAIも同様の被害を報告しており、問題はAnthropicに限った話ではない。AI企業間の技術競争が激化する中、モデルセキュリティは今後ますます重要なテーマになる。</p>
+</div>
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks" target="_blank">Anthropic - Detecting and preventing distillation attacks</a></li>
+    <li><a href="https://fortune.com/2026/02/24/anthropic-china-deepseek-theft-claude-distillation-copyright-national-security/" target="_blank">Fortune - Chinese AI labs ripped off Anthropic</a></li>
+    <li><a href="https://techcrunch.com/2026/02/23/anthropic-accuses-chinese-ai-labs-of-mining-claude-as-us-debates-ai-chip-exports/" target="_blank">TechCrunch - Anthropic accuses Chinese AI labs</a></li>
+  </ul>
+</div>
+</body>
+</html>

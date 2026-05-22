@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Week14 アップデート | 2026.04.03</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 18px; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 40px 20px 32px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+  .header .date { font-size: 13px; opacity: 0.7; }
+  .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .card { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; }
+  .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .card p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .card .source-link a { color: #e94560; text-decoration: none; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .sources h4 { font-size: 15px; color: #666; margin-bottom: 10px; }
+  .sources a { color: #e94560; text-decoration: none; word-break: break-all; }
+  .sources ul { list-style: none; padding: 0; }
+  .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .sources li::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 16px; color: #e94560; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">CLAUDE CODE 公式発表</div>
+  <h1>CLI版Computer Useが降臨！<br>Week 14アップデート全解剖</h1>
+  <div class="date">2026年4月3日 ｜ Claude Code v2.1.86〜v2.1.91</div>
+</div>
+
+<div class="lead">
+  Claude Codeが矢継ぎ早にアップデートを繰り出している。2026年第14週（3月30日〜4月3日）のリリースでは、CLI版Computer Use、インタラクティブ学習機能、描画の改善など、開発者の日常を確実に変える機能が5つ追加された。一つずつ見ていこう。
+</div>
+
+<div class="card">
+  <div class="num">1</div>
+  <h2>CLI版Computer Use ── ターミナルからデスクトップを操る</h2>
+  <p>これまでAPI経由でしか使えなかったComputer Use機能が、ついにCLIから直接利用可能になった。ターミナル上でClaude Codeに「このボタンをクリックして」と指示すれば、デスクトップアプリケーションを操作できる。</p>
+  <p>E2Eテストの自動化や、GUIしか持たないレガシーツールの操作自動化に大きな可能性がある。</p>
+  <div class="highlight">
+    💡 ブラウザテスト、デスクトップアプリの自動操作、スクリーンショットベースのデバッグなど、活用シーンは幅広い。
+  </div>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">公式発表を読む（Week 14 Digest）</a></div>
+</div>
+
+<div class="card">
+  <div class="num">2</div>
+  <h2><code>/powerup</code> ── インタラクティブにスキルアップ</h2>
+  <p>新コマンド<code>/powerup</code>は、Claude Codeの機能をインタラクティブなレッスン形式で学べる機能だ。「Hooksって何？」「MCPサーバーの設定方法は？」といった疑問に、ハンズオン形式で答えてくれる。</p>
+  <p>チームへのオンボーディングツールとしても有用。新メンバーにClaude Codeの使い方を教える手間が大幅に減る。</p>
+  <div class="highlight">
+    💡 ターミナルで<code>/powerup</code>と打つだけ。知らなかった機能に出会える発見感が楽しい。
+  </div>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">公式発表を読む（Week 14 Digest）</a></div>
+</div>
+
+<div class="card">
+  <div class="num">3</div>
+  <h2>フリッカーフリーレンダリング ── 目に優しいUI改善</h2>
+  <p>地味だが確実にうれしいアップデート。ターミナルでの出力がちらつかなくなった。長時間の作業で目が疲れる開発者にとって、この改善は日々の体験を底上げする。</p>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/changelog" target="_blank">公式Changelog</a></div>
+</div>
+
+<div class="card">
+  <div class="num">4</div>
+  <h2>MCP result-sizeオーバーライド</h2>
+  <p>MCPサーバーからの応答サイズ制限をプロジェクト単位でカスタマイズできるようになった。大量のデータを返すMCPツールを使う場合に、デフォルトの制限に引っかからずに済む。</p>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">公式発表を読む（Week 14 Digest）</a></div>
+</div>
+
+<div class="card">
+  <div class="num">5</div>
+  <h2>プラグイン実行ファイルのPATH追加</h2>
+  <p>プラグインが提供する実行ファイルが自動的にPATHに追加されるようになった。これにより、プラグインのCLIツールをフルパス指定なしで呼び出せる。小さな改善だが、日々の開発フローがスムーズになる。</p>
+  <div class="source-link">📎 <a href="https://code.claude.com/docs/en/changelog" target="_blank">公式Changelog</a></div>
+</div>
+
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>Week 14の目玉はなんといってもCLI版Computer Use。これまで「コードは書けるけどGUIは触れない」という制約があったClaude Codeが、いよいよデスクトップ全体を操作できるようになった。<code>/powerup</code>もユニークで、AIツール自身が使い方を教えてくれるという体験は新鮮。アップデート頻度の高さが、Anthropicのこの領域への本気度を物語っている。</p>
+</div>
+
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">Claude Code Week 14 Digest</a></li>
+    <li><a href="https://code.claude.com/docs/en/changelog" target="_blank">Claude Code Changelog</a></li>
+  </ul>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Week 14 Digest: Claude Code v2.1.86-v2.1.91 - 進化が止まらないClaude Code</title>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; font-size: 18px; line-height: 1.85; color: #333; background: #f5f5f5; }
+		.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 40px 20px 35px; }
+		.header-label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #e94560; font-weight: 700; margin-bottom: 12px; }
+		.header h1 { font-size: 26px; line-height: 1.5; font-weight: 800; margin-bottom: 10px; }
+		.header .date { font-size: 13px; color: rgba(255,255,255,0.6); }
+		.container { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+		.lead { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-top: -10px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+		.lead p { font-size: 17px; color: #444; line-height: 1.85; }
+		.section { background: white; border-radius: 12px; padding: 28px 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+		.section-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+		.section-number { background: #e94560; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+		.section-header h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; line-height: 1.5; }
+		.section p { font-size: 17px; color: #444; line-height: 1.85; margin-bottom: 14px; }
+		.highlight { background: #fff8f0; border-left: 3px solid #e94560; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 16px; color: #555; }
+		.source-link { border-top: 1px dashed #e0e0e0; margin-top: 18px; padding-top: 14px; }
+		.source-link a { font-size: 14px; color: #e94560; text-decoration: none; font-weight: 600; }
+		.source-link a:hover { text-decoration: underline; }
+		.closing { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+		.closing h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; margin-bottom: 14px; }
+		.closing p { font-size: 17px; color: #444; line-height: 1.85; }
+		.sources { background: white; border-radius: 12px; padding: 24px; margin-bottom: 40px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+		.sources h3 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+		.sources ul { list-style: none; }
+		.sources li { font-size: 14px; color: #666; padding: 6px 0; }
+		.sources li::before { content: "→ "; color: #e94560; font-weight: 700; }
+		.sources a { color: #0f3460; text-decoration: none; }
+		.sources a:hover { text-decoration: underline; }
+	</style>
+</head>
+<body>
+	<div class="header">
+		<div class="container">
+			<div class="header-label">Claude Code News Digest</div>
+			<h1>Week 14: 進化が止まらないClaude Code</h1>
+			<div class="date">2026年3月30日 - 4月3日 | v2.1.86 - v2.1.91</div>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="lead">
+			<p>Computer Useに注目が集まるClaude Code 2.1ですが、その陰では着実な改善が続いている。Week 14は6つのマイナーバージョンアップを重ね、ユーザー体験の細部を磨き上げた。インタラクティブ学習から描画パフォーマンスの革新まで、今週のアップデートから目を離せません。</p>
+		</div>
+
+		<div class="section">
+			<div class="section-header">
+				<div class="section-number">1</div>
+				<h2>Week 14の概要：機能の進化が加速</h2>
+			</div>
+			<p>3月30日から4月3日にかけて、Claude Codeは6回のバージョンアップ（v2.1.86 ~ v2.1.91）を実施しました。Computer Useの話題に隠れがちですが、開発者体験の向上に直結する改善が集中しているのが特徴です。</p>
+			<p>特に注目すべきは、複数の改善が「機能の発見と利用」という共通テーマで結びついている点。新機能の存在を知らないユーザーが多いという課題に対し、Anthropicは学習ツール、パフォーマンス最適化、プラグイン連携といった複数のアプローチで対処しています。</p>
+			<div class="highlight">
+				Computer Useには専門の記事が設けられため、本稿ではそれ以外の重要な改善に焦点を当てます。
+			</div>
+		</div>
+
+		<div class="section">
+			<div class="section-header">
+				<div class="section-number">2</div>
+				<h2>/powerup：ターミナルで学ぶインタラクティブレッスン</h2>
+			</div>
+			<p>v2.1.90で導入された<code>/powerup</code>は、Claude Codeの隠れた機能をユーザーに教えるための革新的なツールです。短いアニメーションデモを使い、機能ごとのビジュアルチュートリアルをターミナル上で直接実行できます。</p>
+			<p>「Claude Codeのリリースは頻繁で、多くの機能がユーザーの目に触れないまま過ぎ去ってしまう」という開発チームの認識が背景にあります。<code>/powerup</code>を一度実行すれば、その時点での新機能が何かが一目瞭然。アニメーションデモにより、テキストだけでは伝わりにくい動作をリアルタイムで体験できるのが強みです。</p>
+			<p>これはドキュメント充実の次のステップ。「機能が存在すること」から「機能が何をするか直感的に理解できること」へ、UXが一段階進化したと言えます。</p>
+			<div class="source-link">
+				出典: <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">What's New - Week 14</a>
+			</div>
+		</div>
+
+		<div class="section">
+			<div class="section-header">
+				<div class="section-number">3</div>
+				<h2>フリッカーフリーレンダリング：描画の根本改善</h2>
+			</div>
+			<p>v2.1.89で実装された「新型alt-screenレンダラー」は、Claude Codeの応答性とビジュアル品質に根本的な改善をもたらします。従来の描画では、長い会話履歴が蓄積されると、画面の再描画時にちらつき（フリッカー）が発生していました。</p>
+			<p>新レンダラーの特徴は三点。第一に「仮想スクロールバック」により、実際に見える範囲のみを効率的に描画します。第二に「プロンプト固定機能」で、入力欄が常に画面下部に配置されたまま。第三に「マウス選択機能」が長い会話全体に対応し、任意の範囲をコピーできるようになりました。</p>
+			<div class="highlight">
+				環境変数<code>CLAUDE_CODE_NO_FLICKER=1</code>を設定することで有効化可能。特に長時間の作業セッションで威力を発揮します。
+			</div>
+			<p>これは単なる「見た目の改善」ではなく、ユーザーが集中して作業を続けられる環境設計です。ちらつきのストレスがなくなると、認知負荷が大幅に軽減されます。</p>
+			<div class="source-link">
+				出典: <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">What's New - Week 14</a>
+			</div>
+		</div>
+
+		<div class="section">
+			<div class="section-header">
+				<div class="section-number">4</div>
+				<h2>MCP結果サイズオーバーライド：大規模ペイロード対応</h2>
+			</div>
+			<p>MCPサーバー開発者向けの重要な改善がv2.1.91に実装されました。これまで、MCPツールが返す結果のサイズは全サーバー共通の上限に制限されていました。大規模データを扱うツールでは、結果の一部がディスクに保存される事態が発生していたのです。</p>
+			<p>新機能により、MCPサーバー作者は<code>anthropic/maxResultSizeChars</code>パラメータをツール定義に追加し、ツール個別の結果サイズ上限を設定できるようになりました。上限は最大50万文字。DBクエリの結果取得、大規模ファイル解析、複数リソースの一括処理といった、データ量が多いツールの実装がより効率的になります。</p>
+			<div class="highlight">
+				従来は全ツール共通の「グローバル制限」で一律カット。今後は「ツール単位でのきめ細かい調整」が可能に。
+			</div>
+			<p>MCPエコシステム全体の成熟を示す改善です。ツール開発の自由度が高まることで、より実用的で多機能なMCPサーバーが登場することが期待されます。</p>
+			<div class="source-link">
+				出典: <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">What's New - Week 14</a>
+			</div>
+		</div>
+
+		<div class="section">
+			<div class="section-header">
+				<div class="section-number">5</div>
+				<h2>プラグイン実行ファイルのPATH対応</h2>
+			</div>
+			<p>v2.1.91では、プラグイン開発者にとって重要な新しい仕組みが導入されました。プラグインのルートディレクトリに<code>bin/</code>フォルダを配置し、その中に実行ファイルを置くと、Claude Codeがプラグイン有効化時に自動的にこれらをBashツールのPATH環境変数に追加するようになったのです。</p>
+			<p>この変更の意義は何か。従来、プラグインで独自コマンドを提供する場合、複雑なセットアップが必要でした。今後は、ユーザーがプラグインを有効化するだけで、そのプラグイン固有のコマンドラインツールが即座に利用可能になります。</p>
+			<p>例えば、Pythonスクリプト実行、データ処理ツール、カスタムビルドスクリプトといったプラグイン要素が、プラグイン有効期間中は自動的にシェル上で実行できる。これによりプラグインの実用性が飛躍的に向上します。</p>
+			<div class="source-link">
+				出典: <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">What's New - Week 14</a>
+			</div>
+		</div>
+
+		<div class="section">
+			<div class="section-header">
+				<div class="section-number">6</div>
+				<h2>その他の注目改善：細部が光る設計</h2>
+			</div>
+			<p>Week 14はこれまで紹介した大型機能だけでなく、ユーザー体験を着実に改善する細かい調整が多数含まれています。いくつか注目すべき改善を紹介します。</p>
+
+			<p><strong>PermissionDenied フック対応</strong><br>
+			自動実行モード（auto mode）において、権限不足で処理が失敗した際に自動的に回復するためのフックが実装されました。プラグインやカスタム設定がより堅牢に動作するようになります。</p>
+
+			<p><strong>PreToolUse フックの「defer」値</strong><br>
+			hooks/PreToolUseにおいて、<code>permissionDecision</code>に「defer」値が新たに設定可能になりました。これにより、権限判定を後延ばしにし、より柔軟な実行フローが実現します。</p>
+
+			<p><strong>その他の実装改善</strong><br>
+			- <code>disableSkillShellExecution</code> 設定の追加：スキル実行時のシェル呼び出しを禁止<br>
+			- Edit ツールがcat/sed で表示されたファイルに対応<br>
+			- フック出力が50K超過時にディスク保存される仕組みの整備<br>
+			- Thinking モードのサマリー機能がデフォルト無効化<br>
+			- Voice mode の改善（音声入力品質向上）<br>
+			- <code>claude-cli://</code> ディープリンクが複数行プロンプトに対応<br>
+			- 4月1日限定：かわいい <code>/buddy</code> 生物が登場</p>
+
+			<div class="highlight">
+				これらは一見すると「細かい改善」ですが、重ねると開発者体験の質が大きく向上します。
+			</div>
+			<div class="source-link">
+				出典: <a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">What's New - Week 14</a>
+			</div>
+		</div>
+
+		<div class="closing">
+			<h2>編集部コメント</h2>
+			<p>Week 14は、Claude Codeが「機能の質」から「体験の質」への転換点を迎えたことを示しています。Computer Useという大型機能が注目を集める一方で、開発チームは地道にUXを磨き、ツール作者向けの基盤を強化しています。<code>/powerup</code>のようなビジュアル学習ツール、フリッカーフリーレンダリングによる集中環境、MCPエコシステムの拡張、プラグイン連携の簡素化—これらが組み合わさると、Claude Codeはやがて「日常的に触るツール」から「手放せない相棒」へ進化していくでしょう。</p>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="sources">
+			<h3>出典</h3>
+			<ul>
+				<li><a href="https://code.claude.com/docs/en/whats-new/2026-w14" target="_blank">Claude Code What's New - Week 14 (2026-03-30)</a></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>

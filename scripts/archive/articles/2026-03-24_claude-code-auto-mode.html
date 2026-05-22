@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Auto Mode: AI時代の権限管理の新境地</title>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; font-size: 18px; line-height: 1.85; color: #333; background: #f5f5f5; }
+.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 40px 20px 35px; }
+.header-label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #e94560; font-weight: 700; margin-bottom: 12px; }
+.header h1 { font-size: 26px; line-height: 1.5; font-weight: 800; margin-bottom: 10px; }
+.header .date { font-size: 13px; color: rgba(255,255,255,0.6); }
+.container { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+.lead { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-top: -10px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.lead p { font-size: 17px; color: #444; line-height: 1.85; }
+.section { background: white; border-radius: 12px; padding: 28px 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.section-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+.section-number { background: #e94560; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+.section-header h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; line-height: 1.5; }
+.section p { font-size: 17px; color: #444; line-height: 1.85; margin-bottom: 14px; }
+.highlight { background: #fff8f0; border-left: 3px solid #e94560; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 16px; color: #555; }
+.source-link { border-top: 1px dashed #e0e0e0; margin-top: 18px; padding-top: 14px; }
+.source-link a { font-size: 14px; color: #e94560; text-decoration: none; font-weight: 600; }
+.source-link a:hover { text-decoration: underline; }
+.closing { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.closing h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; margin-bottom: 14px; }
+.closing p { font-size: 17px; color: #444; line-height: 1.85; }
+.sources { background: white; border-radius: 12px; padding: 24px; margin-bottom: 40px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.sources h3 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+.sources ul { list-style: none; }
+.sources li { font-size: 14px; color: #666; padding: 6px 0; }
+.sources li::before { content: "→ "; color: #e94560; font-weight: 700; }
+.sources a { color: #0f3460; text-decoration: none; }
+.sources a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-label">Claude Code NEWS</div>
+            <h1>「Auto Mode」という名の権限管理革命<br>93%の承認率がもたらす生産性向上</h1>
+            <div class="date">2026年3月24-25日 発表</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="lead">
+            <p>Anthropicは2026年3月24-25日、Claude Code向けの革新的な権限管理機能「Auto Mode」を研究プレビューとしてリリースした。AIモデルが権限要求を自律的に判断し、人間の介入を最小化する仕組みだ。ユーザーの承認率93%という驚異的な数字の背景には、入力層と出力層の二層防御システムと、極めて精密な分類器がある。</p>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2>権限疲弊からの解放<br>「承認地獄」を終わらせる</h2>
+            </div>
+            <p>Claude Codeの最大の課題は、あらゆる操作に対して人間の承認が必要だったことだ。ファイル作成、コマンド実行、外部APIへのアクセス——一つ一つに「本当に実行していいですか？」と問われる。これは安全性の観点では理想的だが、実務では無視できない負荷になる。</p>
+            <p>Auto Modeは、この権限疲弊を根本から解決する。モデルベースの分類器が権限要求を自動判断し、真に危険な操作だけを人間にエスカレートする。その結果、93%の操作が承認されることになった。</p>
+            <div class="highlight">
+                <strong>93%の承認率</strong>がもたらすものは、単なる利便性ではない。開発の流速、自動化の深さ、AI時代の生産性基準そのものが変わる。
+            </div>
+            <p>ユーザーが決断を迫られるのは、実際に危険性が高い操作のみ。つまり「全て信用する」のでもなく「全て疑う」のでもなく、その中間地点——Anthropicが「インテリジェント・ミドルグラウンド」と呼ぶ領域を実現した。</p>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/permission-modes">→ 詳細: Permission Mode ドキュメント</a>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2>二層防御システム<br>入力層と出力層で悪意を遮断</h2>
+            </div>
+            <p>Auto Modeの核は「二層防御」という戦略にある。第一層は入力側、第二層は出力側。それぞれ独立した防御メカニズムが動作する。</p>
+            <p><strong>入力層：Prompt Injection Probe（サーバー側スキャナー）</strong><br>ユーザーのプロンプトをサーバー側で事前スキャンし、明らかなプロンプトインジェクション攻撃を検出する。これはモデルの推論前に機能するため、悪意ある指示がそもそも正当な入力として扱われない。</p>
+            <p><strong>出力層：Transcript Classifier（Sonnet 4.6 ベース）</strong><br>モデルの実行ログ（トランスクリプト）を「実行してもいいか」を判定する専用分類器が分析する。ここが Auto Mode の最大の革新点だ。</p>
+            <div class="highlight">
+                <strong>入力 → 処理 → 出力</strong>の全段階で防御が機能する。プロンプトインジェクションと実行時の意図的な不正操作、両方に対応できる設計。
+            </div>
+            <p>この二層構造により、一つの層をすり抜けた悪意にも、もう一つの層が対抗できる。セキュリティの多層防御原則をAI時代に実装した格好だ。</p>
+            <div class="source-link">
+                <a href="https://www.anthropic.com/engineering/claude-code-auto-mode">→ 詳細: Engineering Blog - Auto Mode Architecture</a>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2>三段階の権限ティア<br>操作の危険度に応じた段階的許可</h2>
+            </div>
+            <p>Auto Mode の権限判定は、操作の種類によって三つのティアに分かれている。これにより、「すべて許可」と「すべて拒否」の二者択一ではなく、きめ細かい制御が実現された。</p>
+            <p><strong>Tier 1：Safe-Tool Allowlist（自動承認）</strong><br>既知の安全なツール（リスト内のコマンドやAPI呼び出し）は自動的に許可される。セットアップ、カレンダー操作、標準ライブラリの読み込みなど、悪用の余地がない操作が対象。</p>
+            <p><strong>Tier 2：In-Project File Operations（限定的な許可）</strong><br>プロジェクト内のファイル操作（作成、編集、削除）は制限されたスコープで許可される。ただしプロジェクト外へのアクセスや外部への流出は防止される。</p>
+            <p><strong>Tier 3：Classifier Review（分類器が判定）</strong><br>それ以外の操作——外部APIへのアクセス、システム設定の変更、機密ファイルの読み込みなど——は分類器が詳細に分析する。多くは自動許可されるが、危険性が高いと判定されれば人間にエスカレートされる。</p>
+            <div class="highlight">
+                操作の危険度に応じた三段階ティアにより、人間の審査負荷を最小化しながら、セキュリティを維持する仕組みが完成した。
+            </div>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/whats-new/2026-w13">→ 詳細: What's New - 2026 Week 13</a>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2>精度指標が語る真実<br>0.4%の誤認可率が示す信頼性</h2>
+            </div>
+            <p>Auto Mode の信頼性は、詳細なパフォーマンスメトリクスに基づいている。Anthropic が公開した数字を見ると、この仕組みがいかに精密か、その輪郭が見える。</p>
+            <p><strong>誤認可率（False Positive）：0.4%（全パイプライン）</strong><br>実際には危険な操作を安全だと誤判定してしまう割合。0.4%という数字は、10000回の操作のうち40回だけが誤判定されるということ。この精度は、医療診断や航空機の安全システムレベルの要求に匹敵する。</p>
+            <p><strong>誤拒否率（False Negative）</strong><br>本来許可されるべき操作を拒否してしまう割合。実際のユーザー操作では17%、合成的なエクスフィルトレーション試験では5.7%。ユーザー体験を損なわない程度に拒否をコントロールしている。</p>
+            <div class="highlight">
+                <strong>二段階フィルター</strong>が機能している：Stage 1は高速な単一トークン判定、Stage 2はフラグされた操作に対するChain-of-Thought推論。
+            </div>
+            <p>この指標群は、安全性と利便性のバランスがいかに綿密に調整されたかを物語っている。</p>
+            <div class="source-link">
+                <a href="https://www.anthropic.com/engineering/claude-code-auto-mode">→ 詳細: Performance Metrics - Engineering Blog</a>
+            </div>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2>拒否の運用ロジック<br>連続拒否で初めて人間が介入</h2>
+            </div>
+            <p>Auto Mode には「Deny-and-Continue」という独特のメカニズムが組み込まれている。つまり、分類器が操作を拒否してもプロセスは続行され、人間への自動エスカレーションは条件付きだ。</p>
+            <p>具体的には、<strong>3回の連続拒否</strong>または<strong>20回の累積拒否</strong>に達して初めて、人間の審査に自動的に引き上げられる。これにより、たった一つの疑わしい操作で流れが止まることがない。一方で、パターン的な危険性は検出される。</p>
+            <p>複数エージェントが同時に動作する環境では特に有効だ。一つのエージェントが「疑わしい」と判定した操作でも、他のエージェントが継続的に同じパターンで拒否されることで、初めて人間に知らされる。これはマルチエージェントシステムの現実的なニーズに応えた設計と言える。</p>
+            <div class="highlight">
+                <strong>3連続 or 20累積</strong——この数字はUserExperienceと Security のバランスポイントとして慎重に選定された。
+            </div>
+            <div class="source-link">
+                <a href="https://www.anthropic.com/engineering/claude-code-auto-mode">→ 詳細: Deny-and-Continue Logic</a>
+            </div>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2>有効化の方法<br>Shift+TabからJSONまで</h2>
+            </div>
+            <p>Auto Mode を有効にする方法は驚くほどシンプルだ。ユーザーには複数の選択肢が用意されている。</p>
+            <p><strong>リアルタイムトグル：Shift+Tab</strong><br>Claude Code の UI 上で Shift+Tab を押すと、権限モード（Manual → Auto → Dangerously Skip）がサイクルして切り替わる。試験的に試してみたい、あるいはセッションごとに変更したいユーザーにはこれが最も簡単。</p>
+            <p><strong>設定ファイル：settings.json</strong><br>恒久的に Auto Mode を有効にしたい場合は、Claude Code の設定ファイル（settings.json）に defaultMode: "auto" と記述する。これで新規セッションは自動的に Auto Mode で起動する。</p>
+            <div class="highlight">
+                UI からワンキーで、JSON 設定ファイルからデフォルト指定——どちらの選択肢も用意されている点が、Anthropic の設計思想を表している。
+            </div>
+            <p>利用可能なモデルは Sonnet 4.6 と Opus 4.6。初期段階では Team プラン向けにロールアウトされ、その後 Enterprise・API にも拡大される予定。</p>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/permission-modes">→ 詳細: How to Enable Auto Mode</a>
+            </div>
+        </div>
+
+        <!-- Closing -->
+        <div class="closing">
+            <h2>編集部コメント</h2>
+            <p>Auto Mode の登場は、「AI に何をやらせるか」という問いに新しい答えを与えた。従来は「全信頼」か「全不信」の二者択一だったが、Auto Mode は「段階的信頼」という第三の道を示した。0.4%の誤認可率、93%の承認率——これらの数字は、単なる技術仕様ではなく、AI時代における人間とマシンの新しい協働モデルの到来を象徴している。企業がセキュリティと生産性の両立に困窮する中で、この「インテリジェント・ミドルグラウンド」がどこまで実務的価値を発揮するか。注視する価値は充分にある。</p>
+        </div>
+
+        <!-- Sources -->
+        <div class="sources">
+            <h3>参考資料</h3>
+            <ul>
+                <li><a href="https://www.anthropic.com/engineering/claude-code-auto-mode">Anthropic Engineering Blog - Claude Code Auto Mode</a></li>
+                <li><a href="https://code.claude.com/docs/en/whats-new/2026-w13">Claude Code What's New - 2026 Week 13</a></li>
+                <li><a href="https://code.claude.com/docs/en/permission-modes">Claude Code Documentation - Permission Modes</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

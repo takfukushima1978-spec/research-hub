@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Managed Agents ローンチ | 2026.04.08</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 18px; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 40px 20px 32px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 12px; }
+  .header .date { font-size: 13px; opacity: 0.7; }
+  .lead { background: #fff; margin: -16px 16px 20px; padding: 24px 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); font-size: 17px; color: #555; line-height: 1.9; position: relative; max-width: 680px; margin-left: auto; margin-right: auto; }
+  .lead::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e94560, #ff6b6b); border-radius: 12px 12px 0 0; }
+  .card { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; }
+  .card .num { display: inline-block; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; width: 28px; height: 28px; line-height: 28px; text-align: center; border-radius: 50%; margin-bottom: 12px; }
+  .card h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 14px; line-height: 1.5; }
+  .card p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .card .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .card .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e0e0e0; font-size: 14px; }
+  .card .source-link a { color: #e94560; text-decoration: none; }
+  .pricing { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 680px; text-align: center; }
+  .pricing h2 { color: #ff6b6b; font-size: 21px; margin-bottom: 20px; }
+  .pricing .price { font-size: 40px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .pricing .price-unit { font-size: 16px; color: #aaa; margin-bottom: 20px; }
+  .pricing p { color: #ccc; font-size: 16px; text-align: left; }
+  .pricing .source-link { margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); font-size: 14px; text-align: left; }
+  .pricing .source-link a { color: #ff6b6b; text-decoration: none; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 680px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; line-height: 1.85; }
+  .sources { max-width: 680px; margin: 20px auto 40px; padding: 20px 22px; font-size: 14px; color: #888; }
+  .sources h4 { font-size: 15px; color: #666; margin-bottom: 10px; }
+  .sources a { color: #e94560; text-decoration: none; word-break: break-all; }
+  .sources ul { list-style: none; padding: 0; }
+  .sources li { margin-bottom: 8px; padding-left: 16px; position: relative; }
+  .sources li::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">CLAUDE CODE 公式発表</div>
+  <h1>AIエージェントをクラウドにデプロイ<br>「Managed Agents」公開ベータ開始</h1>
+  <div class="date">2026年4月8日 ｜ Claude Managed Agents</div>
+</div>
+
+<div class="lead">
+  Anthropicが「Claude Managed Agents」の公開ベータを開始した。クラウドホスト型のAIエージェントを構築・デプロイできるAPIスイートで、Notion、楽天、Asanaといった大手企業が早期採用。1セッション時間あたり$0.08という価格設定で、AIエージェント市場に本格参入した。
+</div>
+
+<div class="card">
+  <div class="num">1</div>
+  <h2>Managed Agentsとは何か</h2>
+  <p>Claude Managed Agentsは、Claude Codeの技術をベースにしたクラウドホスト型AIエージェントプラットフォームだ。開発者はAPIを通じて、自社のワークフローに特化したAIエージェントを構築し、Anthropicのインフラ上でホスティングできる。</p>
+  <p>ローカル環境でClaude Codeを動かす必要がなく、サーバーレスにスケールする。バックグラウンドジョブ、カスタマーサポート、コードレビューの自動化など、24時間稼働が必要なユースケースに最適だ。</p>
+  <div class="source-link">📎 <a href="https://siliconangle.com/2026/04/08/anthropic-launches-claude-managed-agents-speed-ai-agent-development/" target="_blank">SiliconANGLE報道を読む</a></div>
+</div>
+
+<div class="card">
+  <div class="num">2</div>
+  <h2>早期採用企業 ── Notion、楽天、Asana</h2>
+  <p>公開ベータ段階ですでに大手企業が採用を表明している。Notionはドキュメント管理の自動化に、楽天はECプラットフォームの運用効率化に、AsanaはプロジェクトマネジメントのAIアシスタントに活用する計画だ。</p>
+  <p>日本企業として楽天が早期採用しているのは注目に値する。国内のAIエージェント導入事例として、先駆的な存在になりそうだ。</p>
+  <div class="highlight">
+    💡 楽天の採用は、日本市場におけるAIエージェント実用化の重要なシグナル。自社サービスでの導入検討の参考になる。
+  </div>
+  <div class="source-link">📎 <a href="https://siliconangle.com/2026/04/08/anthropic-launches-claude-managed-agents-speed-ai-agent-development/" target="_blank">SiliconANGLE報道を読む</a></div>
+</div>
+
+<div class="pricing">
+  <h2>料金体系</h2>
+  <div class="price">$0.08</div>
+  <div class="price-unit">/ セッション時間</div>
+  <p>従量課金モデルで、エージェントが実際に稼働した時間に対してのみ課金される。待機時間やアイドル状態には課金されない。スモールスタートで試せるのは大きなメリットだ。</p>
+  <div class="source-link">📎 <a href="https://www.anthropic.com/news" target="_blank">Anthropic公式ニュース</a></div>
+</div>
+
+<div class="card">
+  <div class="num">3</div>
+  <h2>開発者にとっての意味</h2>
+  <p>Managed Agentsの登場は、Claude Codeが「個人の開発ツール」から「企業向けプラットフォーム」へと進化したことを意味する。</p>
+  <p>これまでClaude Codeで培ったプロンプトエンジニアリングやHooksの知識がそのままクラウドエージェント開発に活かせる。ローカルでプロトタイプを作り、Managed Agentsでプロダクション化するというワークフローが確立されそうだ。</p>
+  <div class="highlight">
+    💡 まずはローカルのClaude Codeで自動化したいワークフローを試作し、うまくいったらManaged Agentsでクラウドにデプロイ。この流れが今後のスタンダードになりそう。
+  </div>
+  <div class="source-link">📎 <a href="https://www.anthropic.com/news" target="_blank">Anthropic公式ニュース</a></div>
+</div>
+
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>Managed Agentsは、AIエージェント市場の「AWS的存在」を狙う一手だ。楽天の早期採用が示すように、日本企業にとっても無視できない動き。Claude Codeユーザーにとっては、ローカルで磨いたスキルがそのままクラウドで活きるという点で、学習投資のリターンが高まった。今後のプライシングの変動やSLA（サービスレベル契約）の整備に注目したい。</p>
+</div>
+
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://siliconangle.com/2026/04/08/anthropic-launches-claude-managed-agents-speed-ai-agent-development/" target="_blank">SiliconANGLE - Anthropic launches Claude Managed Agents</a></li>
+    <li><a href="https://www.anthropic.com/news" target="_blank">Anthropic公式ニュース</a></li>
+  </ul>
+</div>
+
+</body>
+</html>

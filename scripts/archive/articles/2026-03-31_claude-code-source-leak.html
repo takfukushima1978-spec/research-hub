@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code ソースコード漏洩事件 - 2026年3月31日</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; font-size: 18px; line-height: 1.85; color: #333; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 40px 20px 35px; }
+        .header-label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #e94560; font-weight: 700; margin-bottom: 12px; }
+        .header h1 { font-size: 26px; line-height: 1.5; font-weight: 800; margin-bottom: 10px; }
+        .header .date { font-size: 13px; color: rgba(255,255,255,0.6); }
+        .container { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+        .lead { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-top: -10px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .lead p { font-size: 17px; color: #444; line-height: 1.85; }
+        .section { background: white; border-radius: 12px; padding: 28px 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .section-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+        .section-number { background: #e94560; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+        .section-header h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; line-height: 1.5; }
+        .section p { font-size: 17px; color: #444; line-height: 1.85; margin-bottom: 14px; }
+        .highlight { background: #fff8f0; border-left: 3px solid #e94560; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 16px; color: #555; }
+        .source-link { border-top: 1px dashed #e0e0e0; margin-top: 18px; padding-top: 14px; }
+        .source-link a { font-size: 14px; color: #e94560; text-decoration: none; font-weight: 600; }
+        .source-link a:hover { text-decoration: underline; }
+        .closing { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .closing h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; margin-bottom: 14px; }
+        .closing p { font-size: 17px; color: #444; line-height: 1.85; }
+        .sources { background: white; border-radius: 12px; padding: 24px; margin-bottom: 40px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .sources h3 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+        .sources ul { list-style: none; }
+        .sources li { font-size: 14px; color: #666; padding: 6px 0; }
+        .sources li::before { content: "→ "; color: #e94560; font-weight: 700; }
+        .sources a { color: #0f3460; text-decoration: none; }
+        .sources a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-label">AI開発</div>
+            <h1>Anthropic「Claude Code」のソースコード、59.8MBのソースマップファイルで漏洩——人為的なパッケージング問題が招いた危機</h1>
+            <div class="date">2026年3月31日 | 編集部</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="lead">
+            <p>Anthropicが開発したAI統合開発環境「Claude Code」の内部ソースコードが、2026年3月31日にnpmパッケージを通じて一時的に公開されてしまった。含まれていた59.8MBのJavaScriptソースマップファイルには、約2,000個のTypeScriptファイルと51万2,000行以上のコードが記録されていた。セキュリティ研究者によって数時間のうちにGitHubで複製され、数千人が解析に当たった。Anthropicは「顧客データやクレデンシャルは含まれていない」と明言し、パッケージング工程における人為的なエラーであることを認めた。</p>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2>何が起きたのか——クリティカルなタイムウィンドウ</h2>
+            </div>
+            <p>2026年3月31日の00時21分から03時29分（UTC）にかけて、わずか3時間余りの間、Anthropicの公式npmパッケージレジストリに登録されたバージョン2.1.88の「@anthropic-ai/claude-code」に重大な誤りが存在していた。</p>
+            <p>通常、ソースマップファイル（.map拡張子）はブラウザ開発者ツール上でのデバッグを目的とした内部利用専用のファイルである。しかしこのパッケージには、サイズにして59.8MBに及ぶソースマップファイルが含まれたままリリースされてしまった。</p>
+            <div class="highlight">
+                漏洩した情報：約2,000個のTypeScriptファイル、51万2,000行以上のコード、内部アーキテクチャの詳細設計図
+            </div>
+            <p>このファイルには、Claude Codeの内部実装、アーキテクチャ、機能設計、そして本来は公開すべきでない開発者向けの備考まで、プロダクトの根幹を成す知的資産がそのまま保存されていた。</p>
+            <div class="source-link">
+                <a href="https://thehackernews.com/2026/04/claude-code-tleaked-via-npm-packaging.html" target="_blank">The Hacker News: Claude Code Leaked via NPM Packaging Error</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2>発見の経緯——インターンが見つけた痕跡</h2>
+            </div>
+            <p>この漏洩を最初に発見したのは、ブロックチェーン開発企業Solayer Labsの実務インターンシップに参加していたセキュリティ研究者、Chaofan Shou氏だった。彼は定期的なnpmパッケージの検査作業中に、通常では見られないソースマップファイルの存在に気づき、すぐさまその重要性を認識した。</p>
+            <p>Shou氏は直ちにSNXプラットフォーム「X」（旧Twitter）でこの問題を報告。投稿は瞬く間に拡散し、セキュリティコミュニティの注目を集めることとなった。</p>
+            <div class="highlight">
+                「npmパッケージの検査は、多くの開発者が日常的に行う作業だからこそ、このような見落としは誰もが発見できた可能性がある」とShou氏は指摘している
+            </div>
+            <p>Shou氏の報告を皮切りに、複数のセキュリティ研究者がソースコードの複製を開始。GitHubを中心に数百のリポジトリが瞬時に立ち上がり、世界中の開発者が漏洩したコードの詳細な解析に着手した。この過程で、Claude Codeの内部設計の秘密が広く知られることになった。</p>
+            <div class="source-link">
+                <a href="https://venturebeat.com/technology/claude-codes-source-code-appears-to-have-leaked-heres-what-we-know" target="_blank">VentureBeat: Claude Code's Source Code Appears to Have Leaked</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2>露出した情報の規模——51万行のコードが公開</h2>
+            </div>
+            <p>漏洩したソースマップファイルの規模は、業界内での予想を大きく上回るものだった。含まれていたのは単なるコードの断片ではなく、Claude Codeの完全な内部アーキテクチャを示す約2,000個のTypeScriptファイルである。</p>
+            <p>その総行数は51万2,000行を超えており、通常のビジネスアプリケーション数十個分に相当する膨大なコード量となっていた。これには、API設計、データベーススキーマ、認証メカニズム、ユーザーインターフェースの実装詳細、さらには内部コメントに記載されたエンジニアリング上の意思決定や技術的なボトルネック分析まで含まれていた。</p>
+            <div class="highlight">
+                このコード量は、Anthropicが5年以上かけて構築してきた知的資産の相当な部分を占めると考えられている
+            </div>
+            <p>セキュリティアナリストらが漏洩したコードを解析した結果、Claude Codeの内部実装パターン、セキュリティ対策の方針、パフォーマンス最適化の手法といった、競争上の優位性を決定づける多くの情報が含まれていることが判明した。これは、単なるプロダクトセキュリティの問題ではなく、企業の戦略的な知的財産権侵害に当たる可能性も指摘されている。</p>
+            <div class="source-link">
+                <a href="https://www.theregister.com/2026/03/31/anthropic_claude_code_source_code/" target="_blank">The Register: Anthropic's Claude Code Source Code Leaks</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2>Anthropicの対応声明——「人為的エラーであり、セキュリティ侵害ではない」</h2>
+            </div>
+            <p>事態の発生から数時間後、Anthropicは公式声明を発表した。その内容は、この事案に対する企業の認識と対応姿勢を示すものとなっていた。</p>
+            <p>Anthropicの発表によると、「顧客データ、APIキー、認証情報、その他のセキュリティに関連する機密情報は、一切含まれていない、または露出していない」とのことだ。この点は業界内でも重要視されており、もし顧客データが漏洩していれば、その影響範囲は極めて深刻なものになっていたはずだ。</p>
+            <div class="highlight">
+                Anthropicの公式声明：「本事象は、セキュリティ侵害ではなく、リリース工程におけるパッケージング問題に由来する人為的なエラーである」
+            </div>
+            <p>つまり、Anthropicの見解では、この漏洩は悪意のあるハッキングやセキュリティ脆弱性の悪用ではなく、開発チームの手違いによるものだと主張している。このような説明は、一定の責任認識を示すものである一方で、セキュリティ業界からは「人為的エラーであっても、結果として重大な知的財産が露出した事実は変わらない」といった批判の声も上がっている。</p>
+            <p>同社はまた、「今後このような事案が繰り返されないよう、パッケージング工程のレビュー手続きを強化し、自動検証システムを導入する」と述べ、再発防止策を急ピッチで進めていることを明らかにした。</p>
+            <div class="source-link">
+                <a href="https://www.bleepingcomputer.com/news/artificial-intelligence/claude-code-source-code-accidentally-leaked-in-npm-package/" target="_blank">BleepingComputer: Claude Code Source Code Accidentally Leaked in NPM Package</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2>供給チェーン問題の拡大——Axiosサイバー攻撃との同時発生</h2>
+            </div>
+            <p>今回のClaudeコード漏洩事件は、より深刻な文脈の中で起こっていた。事件と同じ時期に、別のセキュリティ脅威が浮上していたのである。</p>
+            <p>ソフトウェア供給チェーン上で知られるHTTPクライアントライブラリ「Axios」が、同期間にサイバー攻撃の対象となっていた。この攻撃により、一時的にAxiosのパッケージが改ざんされたもしくはマルウェア入りのバージョンが配布された可能性があるという警告が発せられた。</p>
+            <div class="highlight">
+                3月31日のわずかな時間帯に、Claude Codeのソースコード漏洩とAxios供給チェーン攻撃の両者が発生。このウィンドウ内でClaudeパッケージをインストールしたユーザーが、二重の脅威にさらされた可能性がある
+            </div>
+            <p>セキュリティ研究者らは、この同時発生が単なる偶然か、それとも計画的な連動攻撃の一部であるのかについて、慎重な検証を進めている。いずれにせよ、この事件はオープンソース依存関係の脆弱性が、個別企業の努力だけでは対処しきれないほど深刻な問題であることを浮き彫りにした。</p>
+            <p>npmやPyPI、Maven Central等の中央リポジトリに登録されたパッケージの安全性は、エコシステム全体の信頼性に直結する。今回の事件を経験したことで、多くの企業がパッケージレジストリの検証強化やセキュアな配布メカニズムの導入を急ぐことが予想される。</p>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2>ソフトウェア供給チェーン——業界が学ぶべき教訓</h2>
+            </div>
+            <p>Claude Codeのソースコード漏洩事件は、現代のソフトウェア開発における供給チェーンセキュリティの脆弱性を象徴する出来事となった。この事件から、業界が学ぶべき教訓は数多い。</p>
+            <p>第一に、「人為的エラーの排除は不可能であり、その検出メカニズムをいかに自動化するかが重要」だということだ。Anthropicの場合、ソースマップファイルがパッケージに含まれていないことを確認する自動チェック機能があれば、この事態は防げていた。多くの企業が手作業でのレビューに頼っているが、ヒューマンエラーの確率ゼロは達成不可能である。</p>
+            <div class="highlight">
+                業界内で広がるベストプラクティス：リリース前の自動スキャン、依存性の透明化、パッケージのシグネチャ検証、ダウンロード時のハッシュ確認
+            </div>
+            <p>第二に、「オープンソース依存関係の透明性と追跡性の向上」が急務だということである。npmやその他のパッケージレジストリは、パッケージの来歴、変更内容、権限者の確認を記録するメタデータシステムをより充実させる必要があると考えられている。</p>
+            <p>第三に、「企業は自社のコード公開リスクをより厳密に評価すべき」という教訓である。ソースマップファイルは本来、開発環境でのみ必要なものであり、本番配布物に含めるべきではない。プロダクションビルドのプロセスにおいて、不要なファイルの自動除外メカニズムを導入することが標準的な慣行になるべきだ。</p>
+            <p>第四に、「セキュリティインシデント後の透明性が企業信頼に不可欠」という点である。Anthropicが迅速に事実を認め、顧客データの安全性を明言したことで、パニックを最小限に抑えることができた。隠蔽やはぐらかしは、むしろ状況を悪化させることが多い。</p>
+        </div>
+
+        <div class="closing">
+            <h2>編集部コメント</h2>
+            <p>Claude Codeのソースコード漏洩事件は、大規模言語モデルとそれを支える開発インフラストラクチャが、いかに複雑で、脆弱性を内包しているかを明示するものとなった。Anthropicのような業界有数の企業でさえも、パッケージング工程という一見単純に思える段階で、重大な過誤を犯しうるということは、すべての開発組織にとって他山の石となるべき事例である。</p>
+            <p>今後、AI開発企業のセキュリティ対策はより一層厳格化することが確実視される。同時に、業界全体がオープンソースエコシステムの信頼性を高めるための協調的な取り組みを加速させることが求められている。単一企業の努力では防げない脅威から利用者を守るために、パッケージレジストリ、ツールチェーン提供者、企業開発チーム、セキュリティ研究者らが一体となった防御体制の構築が急務である。</p>
+        </div>
+
+        <div class="sources">
+            <h3>参考資料</h3>
+            <ul>
+                <li><a href="https://thehackernews.com/2026/04/claude-code-tleaked-via-npm-packaging.html" target="_blank">The Hacker News: Claude Code Leaked via NPM Packaging Error</a></li>
+                <li><a href="https://venturebeat.com/technology/claude-codes-source-code-appears-to-have-leaked-heres-what-we-know" target="_blank">VentureBeat: Claude Code's Source Code Appears to Have Leaked - Here's What We Know</a></li>
+                <li><a href="https://www.theregister.com/2026/03/31/anthropic_claude_code_source_code/" target="_blank">The Register: Anthropic's Claude Code Source Code Leaks</a></li>
+                <li><a href="https://www.bleepingcomputer.com/news/artificial-intelligence/claude-code-source-code-accidentally-leaked-in-npm-package/" target="_blank">BleepingComputer: Claude Code Source Code Accidentally Leaked in NPM Package</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

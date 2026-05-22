@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code 最前線 | 2026.04.10</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    line-height: 1.85;
+    font-size: 18px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    padding: 40px 20px 32px;
+    text-align: center;
+  }
+  .header .label {
+    display: inline-block;
+    background: linear-gradient(90deg, #e94560, #ff6b6b);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  .header .date {
+    font-size: 13px;
+    opacity: 0.7;
+  }
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  .lead {
+    background: #fff;
+    margin: -16px 16px 20px;
+    padding: 24px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    font-size: 17px;
+    color: #555;
+    line-height: 1.9;
+    position: relative;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .lead::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #e94560, #ff6b6b);
+    border-radius: 12px 12px 0 0;
+  }
+  .card {
+    background: #fff;
+    margin: 16px auto;
+    padding: 28px 22px;
+    border-radius: 12px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    max-width: 680px;
+  }
+  .card .num {
+    display: inline-block;
+    background: linear-gradient(135deg, #e94560, #ff6b6b);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+    margin-bottom: 12px;
+  }
+  .card h2 {
+    font-size: 21px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .card p {
+    font-size: 17px;
+    color: #444;
+    margin-bottom: 12px;
+  }
+  .card .highlight {
+    background: #fff8f0;
+    border-left: 4px solid #e94560;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 16px;
+    color: #555;
+  }
+  .security-section {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: #fff;
+    margin: 24px auto;
+    padding: 28px 22px;
+    border-radius: 12px;
+    max-width: 680px;
+  }
+  .security-section h2 {
+    color: #ff6b6b;
+    font-size: 21px;
+    margin-bottom: 14px;
+  }
+  .security-section p {
+    color: #ccc;
+    font-size: 17px;
+    margin-bottom: 12px;
+  }
+  .security-section .warn {
+    background: rgba(233,69,96,0.15);
+    border: 1px solid rgba(233,69,96,0.3);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+    font-size: 16px;
+    color: #ffaaaa;
+  }
+  .closing {
+    background: #fff;
+    margin: 24px auto;
+    padding: 28px 22px;
+    border-radius: 12px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    max-width: 680px;
+    border-top: 3px solid #e94560;
+  }
+  .closing h3 {
+    font-size: 18px;
+    color: #e94560;
+    margin-bottom: 12px;
+  }
+  .closing p {
+    font-size: 16px;
+    color: #666;
+  }
+  .sources {
+    max-width: 680px;
+    margin: 20px auto 40px;
+    padding: 20px 22px;
+    font-size: 13px;
+    color: #888;
+  }
+  .sources h4 {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+  }
+  .sources a {
+    color: #e94560;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .sources ul {
+    list-style: none;
+    padding: 0;
+  }
+  .sources li {
+    margin-bottom: 6px;
+    padding-left: 12px;
+    position: relative;
+  }
+  .sources li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #ccc;
+  }
+  code {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #e94560;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">DAILY TECH INSIGHT</div>
+  <h1>あなたはまだ知らない？<br>Claude Code "プロの流儀" 5選</h1>
+  <div class="date">2026年4月10日 ｜ Claude Code最前線</div>
+</div>
+
+<div class="lead">
+  AIコーディングエージェントの進化が止まらない。中でもAnthropicのClaude Codeは、アップデートのたびに「そんなこともできるのか」と驚かされる機能を追加している。だが、その全貌を把握している開発者はどれほどいるだろうか。今日は、使いこなせば生産性が劇的に変わる5つのテクニックと、見過ごしがちなセキュリティリスクをお届けする。
+</div>
+
+<div class="card">
+  <div class="num">1</div>
+  <h2>コンテキスト管理 ── "記憶の断捨離"が最強の武器</h2>
+  <p>Claude Codeの性能を最大限に引き出す鍵は、実はプロンプトの書き方ではなく<strong>コンテキストの管理</strong>にある。会話が長くなるほどモデルの注意力は分散し、精度が落ちる。</p>
+  <p>プロの開発者は<code>/compact</code>コマンドでこまめにコンテキストを圧縮し、<code>CLAUDE.md</code>ファイルにプロジェクト固有の指示を書いておくことで、セッションをまたいでも一貫した品質を維持している。</p>
+  <div class="highlight">
+    💡 実践ポイント：複雑なタスクの前に<code>/compact</code>を実行。プロジェクトルートの<code>CLAUDE.md</code>にコーディング規約やアーキテクチャの要点を書いておくと、毎回の指示出しが激減する。
+  </div>
+</div>
+
+<div class="card">
+  <div class="num">2</div>
+  <h2>サブエージェント活用 ── "分身の術"で調査と実装を同時に</h2>
+  <p>Claude Codeには<strong>サブエージェント</strong>（子タスク）を生成する機能がある。メインのセッションを止めずに、調査・検索・ファイル探索を別エージェントに任せられる。</p>
+  <p>たとえば「このエラーの原因を調べて」というリサーチをサブエージェントに投げつつ、自分は実装を続ける。これが"分身の術"だ。</p>
+  <div class="highlight">
+    💡 実践ポイント：大規模リファクタリング時、影響範囲の調査をサブエージェントに任せることで、メインの思考フローを中断せずに済む。
+  </div>
+</div>
+
+<div class="card">
+  <div class="num">3</div>
+  <h2>Agent Teams ── 並行開発の新パラダイム</h2>
+  <p>2026年に入り注目を集めているのが<strong>Agent Teams</strong>の概念だ。複数のClaude Codeセッションをそれぞれ別ブランチで走らせ、フロントエンドとバックエンドを同時に開発する。</p>
+  <p>Git worktreeを活用した分離環境で、互いの変更が干渉しない。一人のエンジニアが、あたかもチームのように働ける時代が来ている。</p>
+  <div class="highlight">
+    💡 実践ポイント：<code>claude --worktree</code>オプションで隔離されたワークツリーを作成。フィーチャー単位でエージェントを並行稼働させると、PRのマージまでのリードタイムが大幅短縮。
+  </div>
+</div>
+
+<div class="card">
+  <div class="num">4</div>
+  <h2>Hooks ── AIにガードレールを敷く</h2>
+  <p>Claude Codeの<strong>Hooks機能</strong>は、特定のアクション（ファイル保存、コマンド実行など）の前後にカスタムスクリプトを差し込める仕組みだ。</p>
+  <p>コミット前にlintを自動実行したり、機密ファイルへの書き込みをブロックしたり。AIの「やりすぎ」を防ぐ安全弁として機能する。</p>
+  <div class="highlight">
+    💡 実践ポイント：<code>.claude/hooks/</code>ディレクトリにpre-commitフックを設定して、AIが生成したコードにも必ずフォーマッターとlintが通るようにする。品質の底上げに直結する。
+  </div>
+</div>
+
+<div class="card">
+  <div class="num">5</div>
+  <h2><code>/btw</code>コマンド ── "ついでに"の魔法</h2>
+  <p>意外と知られていないのが<code>/btw</code>コマンド。メインのタスクを中断せずに「ついでにこれもやって」と追加指示を出せる。</p>
+  <p>たとえば実装中に「/btw このファイルのtypoも直して」と伝えれば、本筋の作業フローを崩さずに細かい修正を差し込める。</p>
+  <div class="highlight">
+    💡 実践ポイント：コードレビューで見つけた細かい指摘を<code>/btw</code>で即修正。メインタスクの流れを止めないのが最大のメリット。
+  </div>
+</div>
+
+<div class="security-section">
+  <h2>知らないと怖い ── セキュリティの落とし穴</h2>
+
+  <p>便利さの裏には、必ずリスクがある。Claude Codeを業務で使うなら、以下の2つは必ず押さえておきたい。</p>
+
+  <div class="warn">
+    ⚠️ <strong>プロンプトインジェクション</strong><br>
+    悪意あるリポジトリやファイルに仕込まれた命令文を、AIが「正規の指示」と誤認するリスク。信頼できないソースのコードをClaude Codeで開く際は、パーミッションモードを確認し、自動実行を制限すること。<code>--allowedTools</code>フラグで使用可能なツールを限定するのも有効だ。
+  </div>
+
+  <div class="warn">
+    ⚠️ <strong>AI生成コードの脆弱性</strong><br>
+    AIが生成したコードには、入力バリデーションの欠如やハードコードされたシークレットが紛れ込むことがある。「AIが書いたから大丈夫」は危険な思い込み。生成後のセキュリティレビューは人間の責務として必ず行うべきだ。
+  </div>
+</div>
+
+<div class="closing">
+  <h3>📝 編集部コメント</h3>
+  <p>Claude Codeは「使える人」と「使いこなす人」の差が大きいツールだ。今日紹介した5つのテクニックは、どれも設定に数分しかかからないが、日々の開発効率への影響は絶大。特にHooksとコンテキスト管理は、チーム導入時の品質担保にも直結する。まずは一つ、今日から試してみてほしい。</p>
+</div>
+
+<div class="sources">
+  <h4>出典・参考リンク</h4>
+  <ul>
+    <li><a href="https://docs.claude.com/en/docs/claude-code/overview" target="_blank">Claude Code 公式ドキュメント</a></li>
+    <li><a href="https://www.anthropic.com/blog" target="_blank">Anthropic Blog</a></li>
+    <li><a href="https://docs.claude.com/en/docs/claude-code/security" target="_blank">Claude Code Security Best Practices</a></li>
+  </ul>
+</div>
+
+</body>
+</html>

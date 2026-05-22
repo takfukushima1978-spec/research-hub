@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Week 13 Digest | 怒涛のアップデートラッシュ</title>
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; font-size: 18px; line-height: 1.85; color: #333; background: #f5f5f5; }
+.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 40px 20px 35px; }
+.header-label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #e94560; font-weight: 700; margin-bottom: 12px; }
+.header h1 { font-size: 26px; line-height: 1.5; font-weight: 800; margin-bottom: 10px; }
+.header .date { font-size: 13px; color: rgba(255,255,255,0.6); }
+.container { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+.lead { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-top: -10px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.lead p { font-size: 17px; color: #444; line-height: 1.85; }
+.section { background: white; border-radius: 12px; padding: 28px 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.section-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
+.section-number { background: #e94560; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+.section-header h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; line-height: 1.5; }
+.section p { font-size: 17px; color: #444; line-height: 1.85; margin-bottom: 14px; }
+.highlight { background: #fff8f0; border-left: 3px solid #e94560; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 16px; color: #555; }
+.source-link { border-top: 1px dashed #e0e0e0; margin-top: 18px; padding-top: 14px; }
+.source-link a { font-size: 14px; color: #e94560; text-decoration: none; font-weight: 600; }
+.source-link a:hover { text-decoration: underline; }
+.closing { border-top: 3px solid #e94560; background: white; border-radius: 0 0 12px 12px; padding: 28px 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.closing h2 { font-size: 21px; font-weight: 700; color: #1a1a2e; margin-bottom: 14px; }
+.closing p { font-size: 17px; color: #444; line-height: 1.85; }
+.sources { background: white; border-radius: 12px; padding: 24px; margin-bottom: 40px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.sources h3 { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+.sources ul { list-style: none; }
+.sources li { font-size: 14px; color: #666; padding: 6px 0; }
+.sources li::before { content: "→ "; color: #e94560; font-weight: 700; }
+.sources a { color: #0f3460; text-decoration: none; }
+.sources a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-label">Claude Code</div>
+            <h1>Week 13アップデート速報<br>Auto Mode と Computer Use 以外の実装陣営</h1>
+            <div class="date">2026年3月27日 | v2.1.83～v2.1.85</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="lead">
+            <p>3月23日から27日の短期間で、Claude Code は怒涛のアップデートラッシュを敢行した。話題の Auto Mode と Computer Use 機能に隠れながらも、開発者体験を大きく高める機能が次々とリリース。Transcript Search、PowerShell ツール、Conditional Hooks など、地味だが確実に生産性を向上させる実装たちが、この week を象徴している。</p>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2>Week 13 の概要<br>怒涛のアップデートラッシュ</h2>
+            </div>
+            <p>わずか5日間で3つのマイナーバージョンアップを敢行した Claude Code。v2.1.83 から v2.1.85 にかけて、単なるバグ修正ではなく、開発ワークフロー全体を変えうる機能が投入された。</p>
+            <p>世間の注目は Auto Mode と Computer Use に集中しているが、実際のユーザーがもっとも恩恵を受けるのは、むしろキーボードショートカット、OS固有機能、設定管理の柔軟化といった「地味だが必須」の機能たちだ。</p>
+            <div class="highlight">
+                Week 13 は「開発者向けOSネイティブ対応」と「UI/UX の細部最適化」に特化したリリースサイクルと位置づけられる。
+            </div>
+            <p>特に Windows 開発者、自動化パワーユーザー、ターミナル職人にとっては、この week のアップデートは無視できない。</p>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2>Transcript Search<br>会話検索で迷子から卒業</h2>
+            </div>
+            <p>長い会話履歴から「あのコマンド、あの質問」を探すことは、Claude Code ユーザーにとって日常茶飯事だった。その課題に正面から取り組んだのが Transcript Search である。</p>
+            <p>実装は極めてシンプルながら強力。トランスクリプトモード中に「/」キーを押すだけで検索モードに突入。n キーで次の一致へ、Shift+N で前の一致へステップスルーできる。Ctrl+O でトランスクリプト自体を開く機能も並行実装された。</p>
+            <div class="highlight">
+                「/」→「キーワード」→「n」。この3ステップで、数百行のトランスクリプトから目的の会話に一気にジャンプ。テンポの良さが開発体験を変える。
+            </div>
+            <p>Git の commit message 検索や、API 呼び出しの試行錯誤ログを遡る際、この機能の価値は格段に高い。ユーザーからの要望も多かったであろう改善だが、週13での実装は遅れて当然とも言える。</p>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/whats-new/2026-w13">詳細を公式ドキュメントで確認</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2>PowerShell Tool (Preview)<br>Windows 開発者への朗報</h2>
+            </div>
+            <p>Mac と Linux で Bash を使う開発者には「Claude Code にシェル機能がある」ことは常識だった。しかし Windows? PowerShell は？という声は、長きに渡って宙ぶらりんだった。</p>
+            <p>v2.1.84 で導入された PowerShell Tool（プレビュー）は、その空白を埋める。Windows ネイティブの PowerShell コマンドレットを直接実行でき、パイプで複雑なオブジェクト処理も可能。Windows パスの直感的な取り扱いも特徴だ。</p>
+            <div class="highlight">
+                opt-in オプション「CLAUDE_CODE_USE_POWERSHELL_TOOL=1」で有効化。環境変数ひとつで、Windows 開発ワークフロー全体が変わる。
+            </div>
+            <p>現在はプレビュー段階だが、完成度は高い。Active Directory クエリ、Windows Update 管理、Registry 操作といった「Mac/Linux では不可能」なタスクも Claude Code に託せるようになる。企業内での Claude Code 導入を検討していた Windows ショップにとっては、この実装は game changer である。</p>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/whats-new/2026-w13">v2.1.84 リリース情報</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2>Conditional Hooks<br>フック実行を賢くコントロール</h2>
+            </div>
+            <p>Hook 機能自体は既存だったが、v2.1.85 で実装された Conditional Hooks は、その応用可能性を劇的に拡張する。</p>
+            <p>「すべてのコマンド実行時に Hook を発火させたい」のではなく、「特定の条件下でのみ Hook を発火させたい」という実運用ニーズに応えたのがこの機能だ。</p>
+            <div class="highlight">
+                Hook の JSON 定義に "if" フィールドを追記。例えば "if": "Bash(git commit *)" なら、git commit 実行時のみ Hook が動作する。
+            </div>
+            <p>これにより、「lint 実行前に自動フォーマット」「commit 前に test 実行」といった複雑なワークフロー自動化が、Permission Rule 構文で宣言的に記述できるようになった。Hook の粗粒度な実行制御に悩まされていた power user にとっては、朗報以外の何物でもない。</p>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/whats-new/2026-w13">Conditional Hooks の仕様</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2>その他の改善<br>細部の積み重ねが全体を変える</h2>
+            </div>
+            <p>Week 13 の価値は、上記4つの主要機能だけに留まらない。いくつかの細かいながら実用的な改善が、全体的な開発体験を底上げしている。</p>
+            <p><strong>Plugin userConfig の公開化：</strong> Plugin 開発者向けに userConfig が public になり、keychain ベースのシークレット管理が可能に。プラグインエコシステムの拡張可能性が一段と高まった。</p>
+            <p><strong>画像チップの自動挿入：</strong> ペーストした画像が「[Image #1]」といった chip として自動的に会話に組み込まれるようになった。スクリーンショット共有の煩雑さが軽減される。</p>
+            <p><strong>managed-settings.d/ ドロップインディレクトリ：</strong> 設定管理に段階的な導入が可能になった。個別の設定ファイルを drop-in できるため、複数環境での設定共有が容易に。</p>
+            <div class="highlight">
+                CwdChanged / FileChanged などの Hook イベント追加も地味だが重要。ファイルシステムの変化に即座に反応する automation が実現できるようになった。
+            </div>
+            <p>さらに、Agents が initialPrompt を宣言できるようになり、エージェント型 automation の初期化が柔軟に。Ctrl+X Ctrl+E で外部エディタ起動、/status が Claude の応答中でも利用可能、deep links で preferred terminal を開く、75分以上の idle 後に /clear を nudge するなど、UX の細部が丹念に改善されている。</p>
+            <p>VS Code ユーザーには rate limit banner の表示、Esc キー 2 回連続で rewind picker が開くといった QOL 向上も実装された。</p>
+            <div class="source-link">
+                <a href="https://code.claude.com/docs/en/whats-new/2026-w13">全改善の詳細リスト</a>
+            </div>
+        </div>
+
+        <div class="closing">
+            <h2>編集部コメント</h2>
+            <p>Auto Mode と Computer Use が world のニュースを独占する中、Week 13 は「開発者の足元を見つめたリリース」という印象が強い。PowerShell ツール、Conditional Hooks、Transcript Search といった機能は、showroom piece ではなく、daily driver の品質向上に直結している。</p>
+            <p>特に注目すべきは、OS ネイティブ機能への対応（PowerShell）と、自動化のきめ細かい制御（Conditional Hooks）の実装である。これらは、Claude Code が「単なるチャットインターフェース」から「本格的な開発環境」へと進化していることを示唆している。</p>
+            <p>細部を大切にする企業哲学が透けて見える week である。</p>
+        </div>
+
+        <div class="sources">
+            <h3>参考情報</h3>
+            <ul>
+                <li><a href="https://code.claude.com/docs/en/whats-new/2026-w13">Claude Code Week 13 What's New (公式)</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
