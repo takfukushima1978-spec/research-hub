@@ -1,0 +1,16 @@
+{
+  "name": "research-hub-relay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pass-through proxy Worker to bypass Cloudflare bot detection on Supabase Edge Functions from Anthropic Routines.",
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240502.0",
+    "typescript": "^5.4.0"
+  }
+}

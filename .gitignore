@@ -10,3 +10,14 @@ __pycache__/
 *.pyc
 token.json
 credentials.json
+
+# Console 貼り付け用の secrets 埋め込み済みプロンプト（ローカル専用、絶対に commit しない）
+prompts/CONSOLE-READY-*.md
+
+# Cloudflare Workers のビルド成果物・依存
+worker/.wrangler/
+worker/node_modules/
+# ただし worker/ 配下の package.json と package-lock.json は git 管理する
+# （ルート側の package.json / package-lock.json は除外設定が継承されるため明示的に許可）
+!worker/package.json
+!worker/package-lock.json

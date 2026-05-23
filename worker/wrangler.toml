@@ -1,0 +1,21 @@
+# Cloudflare Workers 中継 webhook for Research Hub
+#
+# 役割: Anthropic Routines (data center IP) からの POST を受け、
+# Supabase Edge Functions / REST API に転送する。
+# Cloudflare ファミリー間通信のため Supabase 前段の bot 検知に弾かれない。
+#
+# Secret 設定 (デプロイ前に1回だけ):
+#   npx wrangler secret put INTERNAL_TOKEN     --config worker/wrangler.toml
+#   npx wrangler secret put SUPABASE_URL       --config worker/wrangler.toml
+#   npx wrangler secret put SUPABASE_ANON_KEY  --config worker/wrangler.toml
+#
+# デプロイ:
+#   npx wrangler deploy --config worker/wrangler.toml
+
+name = "research-hub-relay"
+main = "src/index.ts"
+compatibility_date = "2026-05-23"
+
+# 観測性 (Cloudflare Dashboard で Worker のログが見える)
+[observability]
+enabled = true

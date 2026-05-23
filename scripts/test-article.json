@@ -1,0 +1,14 @@
+{
+  "title": "【パイプライン疎通テスト】Research Hub 復旧調査 2026-05-23",
+  "category_name": "system-test",
+  "summary": "2026-05-09 以降の記事投入停止に対する E2E 疎通テスト。サーバー側（Edge Function / RPC / DB / Viewer）が健全であることを確認する目的の管理用記事。本文・ソース・タグは品質ノルマを満たす最低限の内容で構成し、目視確認後に削除してよい。",
+  "source_date": "2026-05-23",
+  "quality_override": true,
+  "body_html": "<h2>1. TL;DR</h2><p>これは Research Hub パイプラインの E2E 疎通テスト記事である。2026-05-09 以降、本番パイプラインの記事投入が停止しているため、サーバー側（Edge Function + RPC + DB + Viewer）が正常に応答することを確認する目的で投入した。</p><h2>2. 背景</h2><p>2026-05-23 時点で、Supabase の research.articles テーブルへの記事投入は 2026-05-09 を最後に途絶している。同時に tak-work/リサーチ/auto-research/ 配下のローカル出力ディレクトリも 2026-04-16 を最後に更新が止まっている。これらの停止原因を切り分けるため、ローカルから insert-article Edge Function を直接叩く方式で記事投入を実施した。</p><h2>3. 確認事項</h2><ul><li>Edge Function insert-article が 201 を返すこと</li><li>research.articles に published 状態でレコードが追加されること</li><li>index.html のビューワーで本記事が一覧の最上位に表示されること</li><li>カードのカテゴリ・タグ・本文リンクが正しく表示されること</li></ul><h2>4. 仕組み</h2><p>本記事は INTERNAL_TOKEN を用いた管理経路で投入された。通常運用では auto-research-collect スケジュールタスクが毎日 3:03 JST に実行され、Claude が Web 検索で記事を生成して同じ Edge Function に POST する設計になっている。本テストでは body_text 等の品質ノルマを quality_override:true で一時的にスキップしているが、これはテスト用途のみで通常運用では使用しない。</p><h2>5. 期待される動作</h2><p>本記事がビューワーで確認できれば、サーバー側パイプラインに故障はなく、停止原因はクライアント側のスケジュールタスクである可能性が決定的になる。次のステップとして Anthropic Console での auto-research-collect の状態確認に進む。</p><h2>6. 一次ソース</h2><ul><li><a href=\"https://swgdzytwyvkwvncaqjks.supabase.co\">Research Hub Supabase Project</a></li><li><a href=\"https://github.com/takfukushima1978-spec\">Tak GitHub</a></li><li><a href=\"https://claude.ai/code/scheduled\">Anthropic Scheduled Tasks Console</a></li></ul>",
+  "tag_names": ["system-test", "pipeline", "monitoring", "research-hub"],
+  "source_urls": [
+    { "url": "https://swgdzytwyvkwvncaqjks.supabase.co", "title": "Supabase Project", "domain": "supabase.co" },
+    { "url": "https://github.com/takfukushima1978-spec", "title": "GitHub", "domain": "github.com" },
+    { "url": "https://claude.ai/code/scheduled", "title": "Scheduled Tasks Console", "domain": "claude.ai" }
+  ]
+}
