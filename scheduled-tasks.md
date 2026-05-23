@@ -14,6 +14,23 @@
 - **教訓**: Console prompt とリポジトリ `prompts/` の同期は手動運用。prompt 更新時は scheduled-tasks.md の「最終同期日」を更新すること
 - **最終同期日**: （未同期 / 復旧作業中）
 
+## auto-research-morning-email（朝6:57 JST の Discord サマリー通知）
+
+### 設定情報
+- **Trigger ID**: trig_01849zsAtA2CXcHwXoVwyKhv
+- **スケジュール**: 毎日 6:57 JST（cron: `57 21 * * *` UTC）
+- **環境**: Anthropic クラウド sandbox + 「Cloudflare Workers_My Reserch」環境（research-hub-relay を Allowed domains に登録）
+- **必須コネクター**: 不要（Worker 経由の HTTP のみで完結）
+- **通知先**: Discord 個人サーバーの `#research-hub-notify` チャンネル（Webhook 経由）
+- **管理画面**: https://claude.ai/code/scheduled/trig_01849zsAtA2CXcHwXoVwyKhv
+- **プロンプト本体**: `prompts/morning-email-CONSOLE.md`（Console 上の prompt は手動コピペで同期）
+- **役割**: 本日の新規記事を Supabase DB から取得して Discord webhook で Tak のスマホに通知。各記事に GitHub Pages ビューワーリンク + DR キューイング状況を embed 形式で含める
+- **更新履歴**:
+  - 2026-05-23 (Discord版): Gmail から Discord webhook に切替。`gmail_send_draft` が Routine 環境で利用不可と判明したため。Worker に `/notify/discord` エンドポイント追加 (DISCORD_WEBHOOK_URL secret 経由)
+  - 2026-05-23 (Gmail版・廃止): クラウド sandbox 対応版 Gmail Draft 作成試行 → 送信不可で断念
+  - ~2026-04 (旧版・廃止): ローカル `daily-summary/*.md` 読み込み前提。クラウド sandbox では空振り
+- **既知の未実装**: 5段階評価フィードバック（Discord reaction → DB 反映 → auto-research-collect で読み取り）は Phase 2 で実装予定
+
 ## deep-research-runner（Deep Research pending → completed ランナー）
 
 ### 設定情報
