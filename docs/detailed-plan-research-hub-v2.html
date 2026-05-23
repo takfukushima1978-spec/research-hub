@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Hub v2 詳細設計書</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f5f5f5; color: #333; line-height: 1.85; font-size: 17px; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 48px 20px 36px; text-align: center; }
+  .header .label { display: inline-block; background: linear-gradient(90deg, #e94560, #ff6b6b); color: #fff; font-size: 12px; font-weight: 700; padding: 3px 14px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 16px; }
+  .header h1 { font-size: 26px; font-weight: 800; line-height: 1.4; margin-bottom: 8px; }
+  .header .sub { font-size: 14px; opacity: 0.8; }
+  .section { background: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 720px; }
+  .section h2 { font-size: 21px; font-weight: 800; color: #1a1a2e; margin-bottom: 16px; border-left: 4px solid #e94560; padding-left: 12px; }
+  .section h3 { font-size: 18px; font-weight: 700; color: #333; margin: 20px 0 10px; }
+  .section h4 { font-size: 16px; font-weight: 700; color: #e94560; margin: 16px 0 8px; }
+  .section p { font-size: 17px; color: #444; margin-bottom: 12px; }
+  .section ul, .section ol { font-size: 16px; color: #444; padding-left: 20px; margin-bottom: 14px; }
+  .section li { margin-bottom: 6px; }
+  .highlight { background: #fff8f0; border-left: 4px solid #e94560; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-size: 16px; color: #555; }
+  .dark-section { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; margin: 16px auto; padding: 28px 22px; border-radius: 12px; max-width: 720px; }
+  .dark-section h2 { font-size: 21px; font-weight: 800; color: #ff6b6b; margin-bottom: 16px; border-left: 4px solid #e94560; padding-left: 12px; }
+  .dark-section h3 { font-size: 18px; color: #ffaaaa; margin: 16px 0 8px; }
+  .dark-section p { color: #ccc; font-size: 16px; margin-bottom: 10px; }
+  .dark-section pre { background: rgba(0,0,0,0.3); color: #e0e0e0; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 12px; line-height: 1.5; margin: 14px 0; }
+  pre { background: #f8f8f8; border: 1px solid #e0e0e0; color: #333; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 12px; line-height: 1.5; margin: 14px 0; font-family: 'SF Mono', monospace; }
+  .phase { display: flex; align-items: flex-start; margin: 12px 0; padding: 16px; border-radius: 8px; background: #f9f9f9; }
+  .phase-num { background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-size: 14px; font-weight: 800; width: 36px; height: 36px; line-height: 36px; text-align: center; border-radius: 50%; flex-shrink: 0; margin-right: 14px; }
+  .phase-body h4 { font-size: 17px; color: #1a1a2e; margin-bottom: 4px; }
+  .phase-body p { font-size: 15px; color: #666; margin: 0; }
+  .tag-tree { font-size: 14px; }
+  .tag-tree .l1 { font-weight: 800; color: #1a1a2e; margin-top: 12px; }
+  .tag-tree .l2 { margin-left: 20px; color: #e94560; font-weight: 600; }
+  .tag-tree .l3 { margin-left: 40px; color: #888; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 15px; color: #e94560; }
+  .closing { background: #fff; margin: 24px auto; padding: 28px 22px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 720px; border-top: 3px solid #e94560; }
+  .closing h3 { font-size: 18px; color: #e94560; margin-bottom: 12px; }
+  .closing p { font-size: 16px; color: #666; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">DETAILED DESIGN v2</div>
+  <h1>「空気のようなインプット」を実現する<br>Research Hub v2 詳細設計書</h1>
+  <div class="sub">既読/クリップ管理 × 手動インプット × 階層タグ × 運用設計</div>
+</div>
+
+<!-- ===== 1. コンセプト ===== -->
+<div class="section">
+  <h2>1. コンセプトと行動モデル</h2>
+  <p>「空気のようなインプット」= 意識せずに良質な情報が蓄積され、必要な時に必要な形で取り出せる状態。</p>
+
+  <h3>Takの一日の行動モデル</h3>
+  <div class="highlight">
+    <strong>朝 (4:00-7:00)</strong> — 自動リサーチがGmail下書きに3本配信。起床後にスマホで流し読み。気になるものはクリップ。<br><br>
+    <strong>通勤 (7:00-9:00)</strong> — ビューアーでクリップ記事を精読。既読フラグON。<br><br>
+    <strong>仕事中 (9:00-18:00)</strong> — 参考になった記事をClaude Code/Coworkから手動登録。「この記事をDBに入れて」の一言で。<br><br>
+    <strong>夜 (20:00-)</strong> — 週次で未読記事のキャッチアップ。階層タグで「セキュリティ系だけ」などフィルタ。<br><br>
+    <strong>週末</strong> — クリップ記事をNotebookLMに投入 → 音声化してながら聴き。
+  </div>
+</div>
+
+<!-- ===== 2. DB拡張SQL ===== -->
+<div class="dark-section">
+  <h2>2. DB拡張SQL</h2>
+  <p>既存テーブルのALTERと新機能のSQL。SQL Editorで順番に実行してください。</p>
+
+  <h3>2.1 既読/クリップフラグ追加</h3>
+<pre>
+-- articles テーブルにフラグ追加
+ALTER TABLE research.articles
+  ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS is_clipped BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS clipped_at TIMESTAMPTZ;
+
+-- ソースタイプ追加（自動/手動/外部の区分）
+ALTER TABLE research.articles
+  ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'auto_research'
+  CHECK (source_type IN (
+    'auto_research',    -- 自動リサーチ
+    'manual_clip',      -- 手動クリップ（URL共有）
+    'manual_note',      -- 手動メモ（テキスト入力）
+    'external_article'  -- 外部記事取り込み
+  ));
+
+-- 外部記事用のURLフィールド
+ALTER TABLE research.articles
+  ADD COLUMN IF NOT EXISTS external_url TEXT;
+
+-- UPDATEのRLSポリシー追加（フラグ切替用）
+CREATE POLICY "Allow public update articles"
+  ON research.articles FOR UPDATE
+  USING (true) WITH CHECK (true);
+
+-- インデックス
+CREATE INDEX IF NOT EXISTS idx_articles_is_read
+  ON research.articles(is_read);
+CREATE INDEX IF NOT EXISTS idx_articles_is_clipped
+  ON research.articles(is_clipped);
+CREATE INDEX IF NOT EXISTS idx_articles_source_type
+  ON research.articles(source_type);
+</pre>
+
+  <h3>2.2 階層タグシステム</h3>
+<pre>
+-- tags テーブルを階層化
+ALTER TABLE research.tags
+  ADD COLUMN IF NOT EXISTS parent_id UUID
+    REFERENCES research.tags(id),
+  ADD COLUMN IF NOT EXISTS level INT DEFAULT 1
+    CHECK (level IN (1, 2, 3)),
+  ADD COLUMN IF NOT EXISTS label_ja TEXT,
+  ADD COLUMN IF NOT EXISTS sort_order INT DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS icon TEXT;
+
+-- 階層インデックス
+CREATE INDEX IF NOT EXISTS idx_tags_parent
+  ON research.tags(parent_id);
+CREATE INDEX IF NOT EXISTS idx_tags_level
+  ON research.tags(level);
+
+-- 階層タグ取得用ビュー
+CREATE OR REPLACE VIEW research.tags_tree AS
+SELECT
+  t.id, t.name, t.label_ja, t.level,
+  t.parent_id, t.sort_order, t.icon,
+  p.name as parent_name,
+  p.label_ja as parent_label_ja,
+  gp.name as grandparent_name,
+  gp.label_ja as grandparent_label_ja
+FROM research.tags t
+LEFT JOIN research.tags p ON p.id = t.parent_id
+LEFT JOIN research.tags gp ON gp.id = p.parent_id
+ORDER BY
+  COALESCE(gp.sort_order, p.sort_order, t.sort_order),
+  t.level, t.sort_order;
+</pre>
+
+  <h3>2.3 フラグ切替用RPC関数</h3>
+<pre>
+-- 既読/クリップのトグル関数
+CREATE OR REPLACE FUNCTION public.toggle_article_flag(
+  p_article_id uuid,
+  p_flag text  -- 'read' or 'clipped'
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = research, public
+AS $$
+DECLARE
+  v_new_value boolean;
+BEGIN
+  IF p_flag = 'read' THEN
+    UPDATE research.articles
+    SET is_read = NOT is_read,
+        read_at = CASE WHEN NOT is_read
+          THEN now() ELSE NULL END
+    WHERE id = p_article_id
+    RETURNING is_read INTO v_new_value;
+  ELSIF p_flag = 'clipped' THEN
+    UPDATE research.articles
+    SET is_clipped = NOT is_clipped,
+        clipped_at = CASE WHEN NOT is_clipped
+          THEN now() ELSE NULL END
+    WHERE id = p_article_id
+    RETURNING is_clipped INTO v_new_value;
+  END IF;
+
+  RETURN jsonb_build_object(
+    'article_id', p_article_id,
+    'flag', p_flag,
+    'value', v_new_value
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION
+  public.toggle_article_flag TO anon, authenticated;
+</pre>
+
+  <h3>2.4 手動インプット用RPC関数</h3>
+<pre>
+-- URLから記事を手動登録
+CREATE OR REPLACE FUNCTION public.add_manual_article(
+  p_title text,
+  p_url text DEFAULT NULL,
+  p_body_text text DEFAULT NULL,
+  p_summary text DEFAULT NULL,
+  p_tag_ids uuid[] DEFAULT '{}'::uuid[],
+  p_source_type text DEFAULT 'manual_clip'
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = research, public
+AS $$
+DECLARE
+  v_article_id uuid;
+  v_slug text;
+  v_tag_id uuid;
+BEGIN
+  -- slug生成
+  v_slug := to_char(now(), 'YYYY-MM-DD') || '_manual_'
+    || substr(md5(p_title || now()::text), 1, 8);
+
+  -- 記事挿入
+  INSERT INTO research.articles (
+    title, title_ja, slug, body_text,
+    summary, external_url, source_type,
+    source_date, status
+  ) VALUES (
+    p_title, p_title, v_slug, p_body_text,
+    COALESCE(p_summary, left(p_body_text, 200)),
+    p_url, p_source_type,
+    current_date, 'published'
+  ) RETURNING id INTO v_article_id;
+
+  -- タグ紐付け
+  FOREACH v_tag_id IN ARRAY p_tag_ids LOOP
+    INSERT INTO research.article_tags (article_id, tag_id)
+    VALUES (v_article_id, v_tag_id)
+    ON CONFLICT DO NOTHING;
+  END LOOP;
+
+  -- ソースURL登録
+  IF p_url IS NOT NULL THEN
+    INSERT INTO research.research_sources (
+      article_id, url, title,
+      domain
+    ) VALUES (
+      v_article_id, p_url, p_title,
+      (regexp_match(p_url,
+        'https?://([^/]+)'))[1]
+    );
+  END IF;
+
+  RETURN v_article_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION
+  public.add_manual_article TO anon, authenticated;
+</pre>
+</div>
+
+<!-- ===== 3. 階層タグ初期データ ===== -->
+<div class="section">
+  <h2>3. 階層タグ初期データ</h2>
+  <p>まず既存のフラットタグを削除し、階層構造で再作成します。</p>
+
+  <div class="tag-tree">
+    <div class="l1">📊 会計・税務</div>
+    <div class="l2">├ 監査</div>
+    <div class="l3">│ ├ AI監査 / EY / KPMG / Deloitte</div>
+    <div class="l2">├ 税務申告</div>
+    <div class="l3">│ ├ 確定申告 / 相続税 / 国税庁</div>
+    <div class="l2">├ 記帳・仕訳</div>
+    <div class="l3">│ ├ AI-OCR / 自動仕訳 / Digits</div>
+    <div class="l2">└ 規制・基準</div>
+    <div class="l3">　 └ 会計基準 / コンプライアンス</div>
+
+    <div class="l1" style="margin-top:16px;">🤖 AI・テクノロジー</div>
+    <div class="l2">├ 生成AI</div>
+    <div class="l3">│ ├ LLM / プロンプト / RAG</div>
+    <div class="l2">├ エージェント</div>
+    <div class="l3">│ ├ Agent Teams / Managed Agents / マルチエージェント</div>
+    <div class="l2">├ Computer Use</div>
+    <div class="l3">│ ├ デスクトップ操作 / Vercept</div>
+    <div class="l2">└ MCP</div>
+    <div class="l3">　 └ Elicitation / サーバー / コネクタ</div>
+
+    <div class="l1" style="margin-top:16px;">🔧 ツール・プロダクト</div>
+    <div class="l2">├ Claude Code</div>
+    <div class="l3">│ ├ Hooks / Skills / Voice / Sandbox</div>
+    <div class="l2">├ Cowork</div>
+    <div class="l3">│ ├ スケジュールタスク / プラグイン</div>
+    <div class="l2">├ 会計ソフト</div>
+    <div class="l3">│ ├ freee / マネーフォワード / 弥生</div>
+    <div class="l2">└ その他AIツール</div>
+    <div class="l3">　 └ NotebookLM / ChatGPT / Perplexity / Notion</div>
+
+    <div class="l1" style="margin-top:16px;">🔒 セキュリティ・リスク</div>
+    <div class="l2">├ 脆弱性</div>
+    <div class="l3">│ ├ CVE / ゼロデイ / コード流出</div>
+    <div class="l2">├ プロンプトインジェクション</div>
+    <div class="l3">│ ├ Claudy Day / 攻撃手法</div>
+    <div class="l2">├ データ保護</div>
+    <div class="l3">│ ├ 蒸留攻撃 / API不正利用</div>
+    <div class="l2">└ ポリシー・安全性</div>
+    <div class="l3">　 └ RSP / サードパーティ規約</div>
+
+    <div class="l1" style="margin-top:16px;">💼 経営・戦略</div>
+    <div class="l2">├ DX・業務効率化</div>
+    <div class="l3">│ ├ ROI / コスト削減 / 自動化</div>
+    <div class="l2">├ 業界動向</div>
+    <div class="l3">│ ├ Big4 / スタートアップ / 買収</div>
+    <div class="l2">└ 人材・組織</div>
+    <div class="l3">　 └ AI人材 / リスキリング / チーム構成</div>
+  </div>
+
+  <div class="highlight">💡 階層タグは後からいくらでも追加・変更可能。L1は5つ程度で安定させ、L2/L3は使いながら育てる運用がベスト。</div>
+</div>
+
+<!-- ===== 3.5 SQL ===== -->
+<div class="dark-section">
+  <h2>3.5 階層タグ投入SQL</h2>
+<pre>
+-- 既存タグのクリーンアップ（article_tagsの紐付けも削除）
+DELETE FROM research.article_tags;
+DELETE FROM research.tags;
+
+-- ===== L1: 大区分 =====
+INSERT INTO research.tags
+  (id, name, label_ja, level, icon, sort_order)
+VALUES
+  ('a0000001-0000-0000-0000-000000000001',
+   'accounting', '会計・税務', 1, '📊', 10),
+  ('a0000001-0000-0000-0000-000000000002',
+   'ai_tech', 'AI・テクノロジー', 1, '🤖', 20),
+  ('a0000001-0000-0000-0000-000000000003',
+   'tools', 'ツール・プロダクト', 1, '🔧', 30),
+  ('a0000001-0000-0000-0000-000000000004',
+   'security', 'セキュリティ・リスク', 1, '🔒', 40),
+  ('a0000001-0000-0000-0000-000000000005',
+   'business', '経営・戦略', 1, '💼', 50);
+
+-- ===== L2: 中区分 =====
+-- 会計・税務
+INSERT INTO research.tags
+  (name, label_ja, level, parent_id, sort_order)
+VALUES
+  ('audit', '監査', 2,
+   'a0000001-0000-0000-0000-000000000001', 11),
+  ('tax', '税務申告', 2,
+   'a0000001-0000-0000-0000-000000000001', 12),
+  ('bookkeeping', '記帳・仕訳', 2,
+   'a0000001-0000-0000-0000-000000000001', 13),
+  ('regulation', '規制・基準', 2,
+   'a0000001-0000-0000-0000-000000000001', 14);
+
+-- AI・テクノロジー
+INSERT INTO research.tags
+  (name, label_ja, level, parent_id, sort_order)
+VALUES
+  ('generative_ai', '生成AI', 2,
+   'a0000001-0000-0000-0000-000000000002', 21),
+  ('agents', 'エージェント', 2,
+   'a0000001-0000-0000-0000-000000000002', 22),
+  ('computer_use', 'Computer Use', 2,
+   'a0000001-0000-0000-0000-000000000002', 23),
+  ('mcp', 'MCP', 2,
+   'a0000001-0000-0000-0000-000000000002', 24);
+
+-- ツール・プロダクト
+INSERT INTO research.tags
+  (name, label_ja, level, parent_id, sort_order)
+VALUES
+  ('claude_code', 'Claude Code', 2,
+   'a0000001-0000-0000-0000-000000000003', 31),
+  ('cowork', 'Cowork', 2,
+   'a0000001-0000-0000-0000-000000000003', 32),
+  ('accounting_sw', '会計ソフト', 2,
+   'a0000001-0000-0000-0000-000000000003', 33),
+  ('other_ai_tools', 'その他AIツール', 2,
+   'a0000001-0000-0000-0000-000000000003', 34);
+
+-- セキュリティ・リスク
+INSERT INTO research.tags
+  (name, label_ja, level, parent_id, sort_order)
+VALUES
+  ('vulnerability', '脆弱性', 2,
+   'a0000001-0000-0000-0000-000000000004', 41),
+  ('prompt_injection', 'プロンプトインジェクション', 2,
+   'a0000001-0000-0000-0000-000000000004', 42),
+  ('data_protection', 'データ保護', 2,
+   'a0000001-0000-0000-0000-000000000004', 43),
+  ('policy', 'ポリシー・安全性', 2,
+   'a0000001-0000-0000-0000-000000000004', 44);
+
+-- 経営・戦略
+INSERT INTO research.tags
+  (name, label_ja, level, parent_id, sort_order)
+VALUES
+  ('dx', 'DX・業務効率化', 2,
+   'a0000001-0000-0000-0000-000000000005', 51),
+  ('industry', '業界動向', 2,
+   'a0000001-0000-0000-0000-000000000005', 52),
+  ('talent', '人材・組織', 2,
+   'a0000001-0000-0000-0000-000000000005', 53);
+
+-- ===== L3: 小区分（よく使うもの） =====
+-- Claude Code配下
+INSERT INTO research.tags
+  (name, label_ja, level, parent_id, sort_order)
+SELECT name, label_ja, 3, parent.id, srt
+FROM (VALUES
+  ('hooks', 'Hooks',
+   (SELECT id FROM research.tags
+    WHERE name='claude_code'), 311),
+  ('skills', 'Skills',
+   (SELECT id FROM research.tags
+    WHERE name='claude_code'), 312),
+  ('voice_mode', 'Voice Mode',
+   (SELECT id FROM research.tags
+    WHERE name='claude_code'), 313),
+  ('sandbox', 'Sandbox',
+   (SELECT id FROM research.tags
+    WHERE name='claude_code'), 314),
+  ('agent_teams', 'Agent Teams',
+   (SELECT id FROM research.tags
+    WHERE name='agents'), 221),
+  ('managed_agents', 'Managed Agents',
+   (SELECT id FROM research.tags
+    WHERE name='agents'), 222),
+  ('elicitation', 'Elicitation',
+   (SELECT id FROM research.tags
+    WHERE name='mcp'), 241),
+  ('freee', 'freee',
+   (SELECT id FROM research.tags
+    WHERE name='accounting_sw'), 331),
+  ('notebooklm', 'NotebookLM',
+   (SELECT id FROM research.tags
+    WHERE name='other_ai_tools'), 341)
+) AS t(name, label_ja, parent_id, srt),
+LATERAL (SELECT id FROM research.tags
+  WHERE research.tags.id = t.parent_id) parent;
+
+-- tags_treeビューへのアクセス権
+GRANT SELECT ON research.tags_tree
+  TO anon, authenticated;
+</pre>
+</div>
+
+<!-- ===== 4. ビューアー改修 ===== -->
+<div class="section">
+  <h2>4. ビューアー（GitHub Pages）改修仕様</h2>
+
+  <h3>4.1 フラグ切替UI</h3>
+  <p>記事一覧の各カードに2つのアイコンボタンを追加:</p>
+  <ul>
+    <li><strong>👁 既読ボタン</strong> — タップで既読/未読を切替。既読の記事はカードが薄くなる</li>
+    <li><strong>📌 クリップボタン</strong> — タップでクリップON/OFF。クリップされた記事はアクセントカラーのバッジが付く</li>
+  </ul>
+  <p>タップ時に <code>toggle_article_flag</code> RPC関数を呼び出し、UIを即時更新。</p>
+
+  <h3>4.2 フィルタバー拡張</h3>
+  <p>既存のカテゴリフィルタに加えて:</p>
+  <ul>
+    <li><strong>状態フィルタ</strong>: すべて / 未読のみ / クリップのみ</li>
+    <li><strong>ソースフィルタ</strong>: すべて / 自動リサーチ / 手動登録</li>
+    <li><strong>タグフィルタ</strong>: L1タグをタップ → L2が展開 → L2タップで絞り込み</li>
+  </ul>
+
+  <h3>4.3 手動登録フォーム</h3>
+  <p>ビューアーのヘッダーに「＋」ボタンを追加。タップするとモーダルが開く:</p>
+  <ul>
+    <li>URLフィールド（任意）</li>
+    <li>タイトルフィールド（必須）</li>
+    <li>メモ/本文フィールド（任意）</li>
+    <li>タグ選択（L1 → L2の2段階セレクト）</li>
+    <li>「登録」ボタン → <code>add_manual_article</code> RPC呼び出し</li>
+  </ul>
+
+  <h3>4.4 階層タグ表示</h3>
+  <p>記事カードにタグをバッジ表示。L1タグは色分け:</p>
+  <ul>
+    <li>📊 会計・税務 → 青系バッジ</li>
+    <li>🤖 AI・テクノロジー → 緑系バッジ</li>
+    <li>🔧 ツール → オレンジ系バッジ</li>
+    <li>🔒 セキュリティ → 赤系バッジ</li>
+    <li>💼 経営 → 紫系バッジ</li>
+  </ul>
+</div>
+
+<!-- ===== 5. 手動インプット ===== -->
+<div class="section">
+  <h2>5. 手動インプットの3つの方法</h2>
+
+  <h3>方法A: ビューアーの「＋」フォーム</h3>
+  <p>スマホで記事を見つけた時に、URLとタイトルをコピペして即登録。最もカジュアルな方法。</p>
+
+  <h3>方法B: Claude Code / Coworkから登録</h3>
+  <p>「この記事をリサーチDBに追加して」と自然言語で指示。Claude Codeがadd_manual_article RPCを呼び出す。Supabase MCPが接続されていれば直接、なければPythonスクリプト経由。</p>
+  <div class="highlight">💡 例: 「https://example.com/article をリサーチDBに追加して。タグはClaude Code + セキュリティで。」</div>
+
+  <h3>方法C: ブックマークレット（将来）</h3>
+  <p>ブラウザのブックマークバーに登録するJavaScriptワンライナー。任意のWebページ上で実行すると、そのページのURLとタイトルをSupabaseに自動登録。Phase 3で実装。</p>
+</div>
+
+<!-- ===== 6. 運用設計 ===== -->
+<div class="section">
+  <h2>6. 「空気のようなインプット」運用設計</h2>
+
+  <h3>6.1 自動収集の拡張性</h3>
+  <p>新しいリサーチトピックの追加は、スケジュールタスクを作成するだけ。research_topicsテーブルでトピックを管理し、カテゴリとタグを紐付ければ自動的にビューアーに反映される。</p>
+
+  <h3>6.2 タグの育て方</h3>
+  <ul>
+    <li><strong>L1（大区分）</strong>: 5つで固定。追加は年1回程度のレビューで検討</li>
+    <li><strong>L2（中区分）</strong>: 月次で見直し。使用頻度が低いものは統合</li>
+    <li><strong>L3（小区分）</strong>: 必要に応じて随時追加。使い方に合わせて自然に成長させる</li>
+  </ul>
+
+  <h3>6.3 データ鮮度管理</h3>
+  <ul>
+    <li>90日以上前 + 未読 + 未クリップ → 自動アーカイブ</li>
+    <li>クリップされた記事は永久保存（アーカイブ対象外）</li>
+    <li>手動登録した記事もアーカイブ対象外</li>
+  </ul>
+
+  <h3>6.4 週次ダイジェスト（将来）</h3>
+  <p>週末に自動生成。「今週のクリップ記事」「未読の重要記事」をまとめたダイジェストメールをGmail下書きに配信。</p>
+</div>
+
+<!-- ===== 7. ロードマップ ===== -->
+<div class="section">
+  <h2>7. 実装ロードマップ</h2>
+
+  <div class="phase">
+    <div class="phase-num">1</div>
+    <div class="phase-body">
+      <h4>Phase 2a: DB拡張 + 階層タグ（今すぐ）</h4>
+      <p>セクション2-3のSQLをSQL Editorで実行。フラグカラム追加、階層タグ投入、RPC関数作成。作業時間: 15分。</p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-num">2</div>
+    <div class="phase-body">
+      <h4>Phase 2b: ビューアー改修（1-2日）</h4>
+      <p>GitHub Pagesのindex.htmlを改修。フラグ切替UI、フィルタバー拡張、手動登録フォーム、階層タグ表示を追加。</p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-num">3</div>
+    <div class="phase-body">
+      <h4>Phase 2c: 既存記事のタグ再付与（30分）</h4>
+      <p>既存28記事に新しい階層タグを自動付与するスクリプトを実行。</p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-num">4</div>
+    <div class="phase-body">
+      <h4>Phase 3a: Claude Code連携（1日）</h4>
+      <p>Supabase MCPの接続設定。自然言語での記事登録・検索が可能に。</p>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-num">5</div>
+    <div class="phase-body">
+      <h4>Phase 3b: ブックマークレット + NotebookLM連携（1週間）</h4>
+      <p>ワンクリック登録、週次エクスポート → 音声化のフロー構築。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== クロージング ===== -->
+<div class="closing">
+  <h3>📝 Next Step</h3>
+  <p>まずPhase 2aのSQL実行から始めましょう。セクション2と3.5のSQLをSQL Editorで実行すれば、DB側の準備は完了。その後ビューアーの改修に入ります。SQLを実行したら教えてください。</p>
+</div>
+
+</body>
+</html>

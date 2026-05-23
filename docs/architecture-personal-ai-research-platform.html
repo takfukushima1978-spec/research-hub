@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>パーソナルAIリサーチ基盤 - 全体アーキテクチャ設計書 v1.1</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: #f5f5f5;
+    color: #2d2d2d;
+    font-size: 17px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    padding: 48px 24px 36px;
+    text-align: center;
+  }
+  .header .label {
+    display: inline-block;
+    background: #e94560;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .header .subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .header .meta {
+    margin-top: 20px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+  .toc {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .toc h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: #0f3460;
+  }
+  .toc ol {
+    padding-left: 20px;
+  }
+  .toc li {
+    margin-bottom: 6px;
+    font-size: 15px;
+  }
+  .toc a {
+    color: #0f3460;
+    text-decoration: none;
+    border-bottom: 1px dashed #ccc;
+  }
+  .toc a:hover { color: #e94560; }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 21px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #e94560;
+  }
+  .card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f3460;
+    margin: 24px 0 10px;
+  }
+  .card h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #444;
+    margin: 18px 0 8px;
+  }
+  .card p { margin: 10px 0; }
+  .card ul, .card ol {
+    padding-left: 22px;
+    margin: 10px 0;
+  }
+  .card li { margin-bottom: 6px; }
+  .accent { color: #e94560; font-weight: 700; }
+  .tag {
+    display: inline-block;
+    background: #eef;
+    color: #0f3460;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin: 2px 4px 2px 0;
+    font-weight: 600;
+  }
+  .tag.green { background: #e6f9e6; color: #1a7a1a; }
+  .tag.orange { background: #fff3e0; color: #c65100; }
+  .tag.red { background: #fde; color: #c62828; }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 14px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  .inline-code {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #c62828;
+  }
+  .arch-diagram {
+    background: #1a1a2e;
+    color: #cdd6f4;
+    padding: 18px 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 14px 0;
+    white-space: pre;
+    -webkit-overflow-scrolling: touch;
+  }
+  .phase-card {
+    border-left: 4px solid #e94560;
+    background: #fafafa;
+    padding: 16px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 14px 0;
+  }
+  .phase-card .phase-title {
+    font-weight: 700;
+    color: #e94560;
+    margin-bottom: 6px;
+    font-size: 16px;
+  }
+  .phase-card .duration {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .cost-table th {
+    background: #0f3460;
+    color: #fff;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .cost-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+  }
+  .cost-table tr:nth-child(even) td {
+    background: #fafafa;
+  }
+  .highlight-box {
+    background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+    color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 16px 0;
+  }
+  .highlight-box h4 {
+    color: #e94560;
+    margin-top: 0;
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    margin: 12px 0;
+    gap: 12px;
+  }
+  .flow-step .num {
+    background: #e94560;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .flow-step .content { flex: 1; }
+  .footer {
+    text-align: center;
+    padding: 30px 16px;
+    font-size: 13px;
+    color: #999;
+  }
+  @media (max-width: 480px) {
+    .header { padding: 36px 16px 28px; }
+    .header h1 { font-size: 22px; }
+    .card { padding: 22px 18px; }
+    pre { font-size: 11px; padding: 14px; }
+    .arch-diagram { font-size: 10px; padding: 14px 8px; }
+    .cost-table { font-size: 12px; }
+    .cost-table th, .cost-table td { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">Architecture Design</div>
+  <h1>パーソナルAIリサーチ基盤<br>全体アーキテクチャ設計書</h1>
+  <p class="subtitle" style="font-size:12px; color:rgba(255,255,255,0.55); margin-top:4px;">v1.1 — スキーマ分離 &amp; ストレージ最適化対応</p>
+  <p class="subtitle">情報が勝手に集まる → Supabaseに蓄積 → 好きな形で消費 ── フルオート知識基盤の設計</p>
+  <p class="meta">作成日: 2026-04-10 &nbsp;|&nbsp; Author: Tak &nbsp;|&nbsp; Version 1.1</p>
+</div>
+
+<div class="container">
+
+<!-- 目次 -->
+<div class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#sec1">全体アーキテクチャ概要</a></li>
+    <li><a href="#sec2">Supabaseテーブル設計</a></li>
+    <li><a href="#sec3">自動収集パイプライン設計</a></li>
+    <li><a href="#sec4">検索・活用レイヤー設計</a></li>
+    <li><a href="#sec5">運用設計</a></li>
+    <li><a href="#sec6">段階的実装ロードマップ</a></li>
+    <li><a href="#sec7">修正履歴</a></li>
+  </ol>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション1: 全体アーキテクチャ -->
+<!-- ============================================ -->
+<div class="card" id="sec1">
+  <h2>1. 全体アーキテクチャ概要</h2>
+
+  <h3>設計思想</h3>
+  <p>本基盤は「<span class="accent">収集 → 蓄積 → 検索 → 活用</span>」の4レイヤーで構成されます。各レイヤーは疎結合に設計し、段階的に構築・拡張できる構造とします。</p>
+
+  <h3>全体データフロー図</h3>
+  <div class="arch-diagram">
+┌─────────────────────────────────────────────────────────┐
+│                  COLLECTION LAYER                        │
+│                  （収集レイヤー）                          │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │ Cowork       │  │ Cowork       │  │ 手動 /       │   │
+│  │ Schedule #1  │  │ Schedule #2  │  │ 追加トピック  │   │
+│  │ 04:00        │  │ 10:00        │  │              │   │
+│  │ Claude Code  │  │ 会計AI事例   │  │              │   │
+│  │ スキル情報    │  │              │  │              │   │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘   │
+│         │                 │                 │            │
+│         ▼                 ▼                 ▼            │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │          Ingestion Pipeline (Python)             │    │
+│  │  HTML解析 → メタデータ抽出 → 重複検知 → 投入     │    │
+│  └─────────────────────┬───────────────────────────┘    │
+└────────────────────────┼────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                  STORAGE LAYER                           │
+│                  （蓄積レイヤー）                          │
+│                                                          │
+│  ┌──────────────────── Supabase ────────────────────┐   │
+│  │                                                   │   │
+│  │  ┌──────────┐  ┌─────────────┐  ┌────────────┐  │   │
+│  │  │ articles │  │  embeddings │  │  sources   │  │   │
+│  │  │ 記事本文  │  │  ベクトル    │  │  ソース管理 │  │   │
+│  │  │ メタデータ │  │  pgvector   │  │  重複排除   │  │   │
+│  │  └──────────┘  └─────────────┘  └────────────┘  │   │
+│  │                                                   │   │
+│  │  ┌──────────┐  ┌─────────────┐                   │   │
+│  │  │categories│  │    tags     │                   │   │
+│  │  │ カテゴリ  │  │  タグ管理   │                   │   │
+│  │  └──────────┘  └─────────────┘                   │   │
+│  │                                                   │   │
+│  │  pgvector拡張 │ Edge Functions │ REST API         │   │
+│  └───────────────────────────────────────────────────┘   │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                  SEARCH LAYER                            │
+│                  （検索レイヤー）                          │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │ セマンティック │  │ キーワード   │  │ フィルタ     │   │
+│  │ 検索          │  │ 全文検索     │  │ 検索         │   │
+│  │ (pgvector)   │  │ (tsvector)  │  │ (日付/tag)  │   │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘   │
+│         └─────────────────┼─────────────────┘            │
+│                           ▼                              │
+│              Supabase Edge Functions                      │
+│              (統合検索API)                                │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                  CONSUMPTION LAYER                        │
+│                  （活用レイヤー）                          │
+│                                                          │
+│  ┌────────────┐ ┌────────────┐ ┌────────────────────┐   │
+│  │ Claude     │ │ Deep       │ │ NotebookLM         │   │
+│  │ Code/MCP   │ │ Research   │ │ 音声/スライド化     │   │
+│  └────────────┘ └────────────┘ └────────────────────┘   │
+│  ┌────────────┐ ┌────────────┐ ┌────────────────────┐   │
+│  │ ChatGPT    │ │ ブログ /   │ │ freee連携          │   │
+│  │ Perplexity │ │ Newsletter │ │ 会計業務           │   │
+│  └────────────┘ └────────────┘ └────────────────────┘   │
+└─────────────────────────────────────────────────────────┘</div>
+
+  <h3>レイヤー間通信</h3>
+  <ul>
+    <li><strong>収集 → 蓄積:</strong> Supabase REST API（<span class="inline-code">POST /rest/v1/articles</span>）経由でJSON投入（<span class="inline-code">Content-Profile: research</span> ヘッダー付与）</li>
+    <li><strong>蓄積 → 検索:</strong> Supabase Edge Functionsでセマンティック検索APIを提供</li>
+    <li><strong>検索 → 活用:</strong> REST API / MCP Server経由で各ツールからアクセス</li>
+  </ul>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション2: Supabaseテーブル設計 -->
+<!-- ============================================ -->
+<div class="card" id="sec2">
+  <h2>2. Supabaseテーブル設計</h2>
+
+  <h3>ER概要</h3>
+  <div class="arch-diagram">
+categories ──────┐
+                  │ 1:N
+                  ▼
+ articles ◄────── article_tags ──────► tags
+   │  │
+   │  │ N:1
+   │  └──────────► css_templates
+   │
+   │ 1:1
+   ▼
+ article_embeddings
+
+ articles ◄────── article_sources ───► research_sources
+            N:M</div>
+
+  <h3>2.1 スキーマ作成 &amp; 拡張の有効化</h3>
+  <p>本リサーチプラットフォームのすべてのテーブル・関数は <span class="inline-code">research</span> スキーマに格納します。Supabaseを他プロジェクトと共用している場合でも、データが混在しません。</p>
+<pre><code>-- Supabase SQL Editorで実行
+
+-- 1. 専用スキーマを作成
+CREATE SCHEMA IF NOT EXISTS research;
+
+-- 2. 拡張はpublicスキーマに作成（データベースレベル）
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;  -- あいまい検索用
+CREATE EXTENSION IF NOT EXISTS pgcrypto; -- SHA-256ハッシュ用
+
+-- 3. search_pathにresearchスキーマを追加（セッション内でのアクセスを簡略化）
+ALTER DATABASE postgres SET search_path TO public, research;</code></pre>
+  <div class="highlight-box">
+    <h4>Edge Functionからのアクセス方法</h4>
+    <p style="font-size:14px; color:rgba(255,255,255,0.85); margin-top:8px;">
+      Supabase REST APIのデフォルトは <span class="inline-code" style="color:#e94560;">public</span> スキーマです。<span class="inline-code" style="color:#e94560;">research</span> スキーマのテーブルにアクセスするには、リクエストヘッダーに <span class="inline-code" style="color:#e94560;">Accept-Profile: research</span>（GETの場合）または <span class="inline-code" style="color:#e94560;">Content-Profile: research</span>（POST/PATCH/DELETEの場合）を付与してください。<br>
+      または、Supabaseダッシュボードの Settings &gt; API &gt; Exposed schemas に <span class="inline-code" style="color:#e94560;">research</span> を追加し、<span class="inline-code" style="color:#e94560;">db_extra_search_path</span> に設定する方法もあります。
+    </p>
+  </div>
+
+  <h3>2.2 categories テーブル</h3>
+<pre><code>CREATE TABLE research.categories (
+  id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name          TEXT NOT NULL UNIQUE,
+  slug          TEXT NOT NULL UNIQUE,
+  description   TEXT,
+  color         TEXT DEFAULT '#0f3460',
+  sort_order    INT DEFAULT 0,
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+-- 初期カテゴリ投入
+INSERT INTO research.categories (name, slug, description) VALUES
+  ('Claude Code活用', 'claude-code', 'Claude Codeのスキル・Tips・セキュリティ情報'),
+  ('会計AI事例', 'accounting-ai', 'AI活用した会計士・税理士の先進事例'),
+  ('税制・法改正', 'tax-law', '税制改正・法改正のAI活用への影響'),
+  ('AI業界動向', 'ai-trends', 'AI業界全般のトレンド・ニュース');</code></pre>
+
+  <h3>2.3 tags テーブル</h3>
+<pre><code>CREATE TABLE research.tags (
+  id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name          TEXT NOT NULL UNIQUE,
+  slug          TEXT NOT NULL UNIQUE,
+  usage_count   INT DEFAULT 0,
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_tags_slug ON research.tags (slug);
+CREATE INDEX idx_tags_usage ON research.tags (usage_count DESC);</code></pre>
+
+  <h3>2.4 research_sources テーブル</h3>
+<pre><code>CREATE TABLE research.research_sources (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  url             TEXT NOT NULL,
+  url_hash        TEXT GENERATED ALWAYS AS (
+                    encode(digest(url, 'sha256'), 'hex')
+                  ) STORED UNIQUE,
+  domain          TEXT,
+  title           TEXT,
+  first_seen_at   TIMESTAMPTZ DEFAULT now(),
+  last_seen_at    TIMESTAMPTZ DEFAULT now(),
+  fetch_count     INT DEFAULT 1,
+  reliability     SMALLINT DEFAULT 3
+                  CHECK (reliability BETWEEN 1 AND 5),
+  is_active       BOOLEAN DEFAULT true,
+  created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_sources_url_hash ON research.research_sources (url_hash);
+CREATE INDEX idx_sources_domain ON research.research_sources (domain);</code></pre>
+
+  <h3>2.5 articles テーブル（中核）</h3>
+<pre><code>CREATE TABLE research.articles (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+
+  -- メタデータ
+  title           TEXT NOT NULL,
+  summary         TEXT,
+  category_id     UUID REFERENCES research.categories(id),
+  research_topic  TEXT NOT NULL,
+
+  -- 本文
+  body_html       TEXT NOT NULL,
+  body_text       TEXT NOT NULL,
+  body_markdown   TEXT,           -- 軽量保存形式（約1.5KB/記事）
+  word_count      INT,
+
+  -- ソース情報
+  source_urls     TEXT[],
+  primary_source  TEXT,
+
+  -- 自動生成メタ
+  key_insights    JSONB DEFAULT '[]',
+  relevance_score SMALLINT DEFAULT 3
+                  CHECK (relevance_score BETWEEN 1 AND 5),
+
+  -- ステータス
+  status          TEXT DEFAULT 'published'
+                  CHECK (status IN (
+                    'draft', 'published', 'archived'
+                  )),
+  is_read         BOOLEAN DEFAULT false,
+  is_starred      BOOLEAN DEFAULT false,
+
+  -- 日時
+  published_at    TIMESTAMPTZ DEFAULT now(),
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  updated_at      TIMESTAMPTZ DEFAULT now(),
+  archived_at     TIMESTAMPTZ
+);
+
+-- インデックス
+CREATE INDEX idx_articles_category
+  ON research.articles (category_id);
+CREATE INDEX idx_articles_topic
+  ON research.articles (research_topic);
+CREATE INDEX idx_articles_published
+  ON research.articles (published_at DESC);
+CREATE INDEX idx_articles_status
+  ON research.articles (status);
+CREATE INDEX idx_articles_starred
+  ON research.articles (is_starred)
+  WHERE is_starred = true;
+
+-- 全文検索用インデックス（日本語対応）
+ALTER TABLE research.articles
+  ADD COLUMN fts tsvector
+  GENERATED ALWAYS AS (
+    to_tsvector('simple',
+      coalesce(title, '') || ' ' ||
+      coalesce(body_text, '')
+    )
+  ) STORED;
+
+CREATE INDEX idx_articles_fts
+  ON research.articles USING gin(fts);
+
+-- updated_at自動更新トリガー
+CREATE OR REPLACE FUNCTION research.update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER articles_updated
+  BEFORE UPDATE ON research.articles
+  FOR EACH ROW
+  EXECUTE FUNCTION research.update_timestamp();</code></pre>
+
+  <h3>2.6 article_embeddings テーブル</h3>
+<pre><code>CREATE TABLE research.article_embeddings (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  article_id      UUID NOT NULL REFERENCES research.articles(id)
+                  ON DELETE CASCADE,
+
+  -- ベクトル埋め込み（OpenAI text-embedding-3-small: 1536次元）
+  embedding       vector(1536) NOT NULL,
+
+  -- 埋め込みメタデータ
+  model           TEXT DEFAULT 'text-embedding-3-small',
+  chunk_index     INT DEFAULT 0,
+  chunk_text      TEXT,
+
+  created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+-- HNSW インデックス（高速近似最近傍探索）
+CREATE INDEX idx_embeddings_vector
+  ON research.article_embeddings
+  USING hnsw (embedding vector_cosine_ops)
+  WITH (m = 16, ef_construction = 64);
+
+CREATE INDEX idx_embeddings_article
+  ON research.article_embeddings (article_id);</code></pre>
+
+  <h3>2.7 article_tags 中間テーブル</h3>
+<pre><code>CREATE TABLE research.article_tags (
+  article_id  UUID NOT NULL REFERENCES research.articles(id)
+              ON DELETE CASCADE,
+  tag_id      UUID NOT NULL REFERENCES research.tags(id)
+              ON DELETE CASCADE,
+  PRIMARY KEY (article_id, tag_id)
+);
+
+CREATE INDEX idx_article_tags_tag
+  ON research.article_tags (tag_id);</code></pre>
+
+  <h3>2.8 article_sources 中間テーブル</h3>
+<pre><code>CREATE TABLE research.article_sources (
+  article_id  UUID NOT NULL REFERENCES research.articles(id)
+              ON DELETE CASCADE,
+  source_id   UUID NOT NULL REFERENCES research.research_sources(id)
+              ON DELETE CASCADE,
+  PRIMARY KEY (article_id, source_id)
+);</code></pre>
+
+  <h3>2.9 セマンティック検索関数</h3>
+<pre><code>-- コサイン類似度によるセマンティック検索
+CREATE OR REPLACE FUNCTION research.search_articles(
+  query_embedding vector(1536),
+  match_threshold FLOAT DEFAULT 0.7,
+  match_count INT DEFAULT 10,
+  filter_category UUID DEFAULT NULL,
+  filter_status TEXT DEFAULT 'published'
+)
+RETURNS TABLE (
+  id UUID,
+  title TEXT,
+  summary TEXT,
+  research_topic TEXT,
+  published_at TIMESTAMPTZ,
+  similarity FLOAT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    a.id,
+    a.title,
+    a.summary,
+    a.research_topic,
+    a.published_at,
+    1 - (e.embedding &lt;=&gt; query_embedding) AS similarity
+  FROM research.article_embeddings e
+  JOIN research.articles a ON a.id = e.article_id
+  WHERE
+    a.status = filter_status
+    AND (filter_category IS NULL
+         OR a.category_id = filter_category)
+    AND 1 - (e.embedding &lt;=&gt; query_embedding) > match_threshold
+  ORDER BY similarity DESC
+  LIMIT match_count;
+END;
+$$;</code></pre>
+
+  <h3>2.10 RLS（Row Level Security）</h3>
+<pre><code>-- サービスロールキーで全操作可能に設定
+-- （個人利用のため、APIキーのセキュア管理で対応）
+ALTER TABLE research.articles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE research.article_embeddings ENABLE ROW LEVEL SECURITY;
+
+-- サービスロール用ポリシー
+CREATE POLICY "Service role full access"
+  ON research.articles FOR ALL
+  USING (true) WITH CHECK (true);
+
+CREATE POLICY "Service role full access"
+  ON research.article_embeddings FOR ALL
+  USING (true) WITH CHECK (true);</code></pre>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション3: 自動収集パイプライン設計 -->
+<!-- ============================================ -->
+<div class="card" id="sec3">
+  <h2>3. 自動収集パイプライン設計</h2>
+
+  <h3>3.1 パイプライン全体フロー</h3>
+  <div class="arch-diagram">
+Cowork Schedule Task
+  │
+  ├─ 1. WebSearch + WebFetch でリサーチ実行
+  │
+  ├─ 2. HTML記事を生成（現行と同じ）
+  │
+  ├─ 3. HTML → ~/Downloads/ に保存（現行と同じ）
+  │
+  ├─ 4. [NEW] 記事メタデータ + 本文をJSON化
+  │     {
+  │       "title": "...",
+  │       "summary": "...",
+  │       "body_html": "...(CSSなしコンテンツHTML)",
+  │       "body_text": "...",
+  │       "body_markdown": "...",
+  │       "source_urls": [...],
+  │       "research_topic": "claude-code-skills",
+  │       "category_slug": "claude-code",
+  │       "tags": ["MCP", "セキュリティ", ...]
+  │     }
+  │
+  ├─ 5. [NEW] Supabase REST APIに投入
+  │     POST https://&lt;project&gt;.supabase.co/rest/v1/articles
+  │     Header: Content-Profile: research
+  │
+  └─ 6. [NEW] OpenAI Embedding API → ベクトル保存
+        POST https://&lt;project&gt;.supabase.co/rest/v1/article_embeddings
+        Header: Content-Profile: research</div>
+
+  <h3>3.2 body_html 保存ガイドライン</h3>
+  <p>body_html にはCSSを含めず、<span class="inline-code">&lt;body&gt;</span>内のコンテンツHTMLのみを保存します。</p>
+  <ul>
+    <li><strong>保存する:</strong> <span class="inline-code">&lt;h1&gt;</span>〜<span class="inline-code">&lt;p&gt;</span>タグ、テーブル、リスト等のコンテンツHTML</li>
+    <li><strong>保存しない:</strong> <span class="inline-code">&lt;style&gt;</span>タグ、インラインCSS、<span class="inline-code">&lt;head&gt;</span>セクション</li>
+    <li><strong>body_markdown:</strong> Markdownに変換した軽量テキストも併せて保存（最も容量効率が良い）</li>
+    <li><strong>フルHTML再構成:</strong> 表示時に <span class="inline-code">css_templates</span> のCSSと結合して生成</li>
+  </ul>
+
+  <h3>3.3 スケジュールタスク改修案</h3>
+  <p>既存のスケジュールタスクのプロンプトに、以下のSupabase投入ステップを追加します。</p>
+
+<pre><code># スケジュールタスクのプロンプトに追記する内容（概念）
+
+## Supabase投入ステップ
+リサーチ記事の生成後、以下を実行:
+
+1. 記事から以下のメタデータを抽出:
+   - title, summary, body_html, body_text
+   - source_urls（参照元URL一覧）
+   - tags（自動抽出キーワード 3-5個）
+
+2. Supabase REST APIでarticlesテーブルに投入:
+   curl -X POST \
+     'https://&lt;PROJECT_ID&gt;.supabase.co/rest/v1/articles' \
+     -H 'apikey: &lt;ANON_KEY&gt;' \
+     -H 'Authorization: Bearer &lt;SERVICE_ROLE_KEY&gt;' \
+     -H 'Content-Type: application/json' \
+     -H 'Content-Profile: research' \
+     -d '{ ... }'
+
+3. OpenAI API でembedding生成:
+   curl https://api.openai.com/v1/embeddings \
+     -H 'Authorization: Bearer &lt;OPENAI_KEY&gt;' \
+     -d '{"model":"text-embedding-3-small",
+          "input":"[title + summary + body_text]"}'
+
+4. article_embeddingsテーブルに投入</code></pre>
+
+  <h3>3.4 重複検知ロジック</h3>
+  <p>3段階の重複チェックで、同じソースからの重複記事を排除します。</p>
+
+  <div class="flow-step">
+    <div class="num">1</div>
+    <div class="content">
+      <strong>URL完全一致</strong>: <span class="inline-code">research_sources.url_hash</span>のSHA-256ハッシュで判定。既存URLなら<span class="inline-code">last_seen_at</span>と<span class="inline-code">fetch_count</span>を更新のみ。
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="num">2</div>
+    <div class="content">
+      <strong>タイトル類似度</strong>: pg_trgmの<span class="inline-code">similarity()</span>関数でタイトルの類似度を計算。閾値0.8以上なら重複と判定。
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="num">3</div>
+    <div class="content">
+      <strong>ベクトル類似度</strong>: 投入前にembeddingを生成し、既存記事とのコサイン類似度が0.95以上なら重複として投入をスキップ。
+    </div>
+  </div>
+
+<pre><code>-- 重複チェック用SQL関数
+CREATE OR REPLACE FUNCTION research.check_duplicate(
+  p_title TEXT,
+  p_source_urls TEXT[],
+  p_embedding vector(1536) DEFAULT NULL
+)
+RETURNS TABLE (
+  is_duplicate BOOLEAN,
+  duplicate_id UUID,
+  match_type TEXT,
+  similarity_score FLOAT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- 1. URL完全一致チェック
+  RETURN QUERY
+  SELECT true, a.id, 'url_match'::TEXT, 1.0::FLOAT
+  FROM research.articles a
+  WHERE a.source_urls && p_source_urls
+  LIMIT 1;
+  IF FOUND THEN RETURN; END IF;
+
+  -- 2. タイトル類似度チェック
+  RETURN QUERY
+  SELECT true, a.id, 'title_similar'::TEXT,
+         similarity(a.title, p_title)::FLOAT
+  FROM research.articles a
+  WHERE similarity(a.title, p_title) > 0.8
+  ORDER BY similarity(a.title, p_title) DESC
+  LIMIT 1;
+  IF FOUND THEN RETURN; END IF;
+
+  -- 3. ベクトル類似度チェック
+  IF p_embedding IS NOT NULL THEN
+    RETURN QUERY
+    SELECT true, a.id, 'vector_similar'::TEXT,
+           (1 - (e.embedding &lt;=&gt; p_embedding))::FLOAT
+    FROM research.article_embeddings e
+    JOIN research.articles a ON a.id = e.article_id
+    WHERE 1 - (e.embedding &lt;=&gt; p_embedding) > 0.95
+    ORDER BY e.embedding &lt;=&gt; p_embedding ASC
+    LIMIT 1;
+    IF FOUND THEN RETURN; END IF;
+  END IF;
+
+  -- 重複なし
+  RETURN QUERY SELECT false, NULL::UUID,
+    'none'::TEXT, 0.0::FLOAT;
+END;
+$$;</code></pre>
+
+  <h3>3.5 新規トピック追加の仕組み</h3>
+  <p>新しいリサーチトピックは以下の手順で追加します。</p>
+
+  <div class="flow-step">
+    <div class="num">1</div>
+    <div class="content">
+      <strong>カテゴリ登録</strong>: <span class="inline-code">categories</span>テーブルに新カテゴリをINSERT
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="num">2</div>
+    <div class="content">
+      <strong>スケジュールタスク作成</strong>: Coworkで新しいスケジュールタスクを作成（cron式で実行時刻を指定）
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="num">3</div>
+    <div class="content">
+      <strong>プロンプトテンプレート</strong>: 共通のリサーチプロンプトテンプレートに、トピック固有の検索キーワード・ソースを追記
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <h4>トピック追加テンプレート例</h4>
+    <p style="font-size:14px; color:rgba(255,255,255,0.85); margin-top:8px;">
+      「Cowork、新しいスケジュールタスクを作って。毎朝7時に『インボイス制度×AI自動化の最新事例』をリサーチして、HTML記事を生成した後Supabaseに投入してね」── これだけで新トピックが稼働します。
+    </p>
+
+  <h3>3.5 CSSテンプレート管理</h3>
+  <p>HTML記事の <span class="inline-code">body_html</span> にはCSSを含めず、コンテンツHTMLのみを保存します。CSSテンプレートは専用テーブルで一元管理し、表示時にオンデマンドで結合します。</p>
+
+  <h4>メリット</h4>
+  <ul>
+    <li>1記事あたりのサイズを約9.2KB → 約5KB に削減（CSS 3.5KB分の重複排除）</li>
+    <li>CSSテンプレートの変更が全記事に一括反映</li>
+    <li>テーマ切り替え（ダークモード等）が容易</li>
+  </ul>
+
+  <h4>css_templates テーブル</h4>
+<pre><code>CREATE TABLE research.css_templates (
+  id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name          TEXT NOT NULL UNIQUE,
+  slug          TEXT NOT NULL UNIQUE,
+  css_content   TEXT NOT NULL,
+  is_default    BOOLEAN DEFAULT false,
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  updated_at    TIMESTAMPTZ DEFAULT now()
+);
+
+-- デフォルトテンプレート投入
+INSERT INTO research.css_templates (name, slug, css_content, is_default) VALUES
+  ('Standard Article', 'standard', '/* 標準記事CSS */', true);
+
+CREATE TRIGGER css_templates_updated
+  BEFORE UPDATE ON research.css_templates
+  FOR EACH ROW
+  EXECUTE FUNCTION research.update_timestamp();</code></pre>
+
+  <h4>articles テーブルにテンプレートID追加</h4>
+<pre><code>-- articles テーブルにCSS テンプレート参照を追加
+ALTER TABLE research.articles
+  ADD COLUMN css_template_id UUID
+  REFERENCES research.css_templates(id)
+  DEFAULT (
+    SELECT id FROM research.css_templates
+    WHERE is_default = true LIMIT 1
+  );</code></pre>
+
+  <h4>完全HTMLの結合生成（Edge Function）</h4>
+<pre><code>// 記事表示時にCSSを結合してフルHTMLを返す
+const { data: article } = await supabase
+  .schema('research')
+  .from('articles')
+  .select('*, css_templates(css_content)')
+  .eq('id', articleId)
+  .single()
+
+const fullHtml = `&lt;!DOCTYPE html&gt;
+&lt;html&gt;&lt;head&gt;
+&lt;style&gt;${article.css_templates.css_content}&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+${article.body_html}
+&lt;/body&gt;&lt;/html&gt;`</code></pre>
+
+  <div class="highlight-box">
+    <h4>ストレージ削減効果</h4>
+    <p style="font-size:14px; color:rgba(255,255,255,0.85); margin-top:8px;">
+      CSSなし body_html: 約5KB/記事 → 年間730記事で 3.6MB<br>
+      body_markdown 併用: 約1.5KB/記事 → 年間730記事で 1.1MB<br>
+      従来のCSS込みHTML: 約9.2KB/記事 → 年間730記事で 6.6MB<br><br>
+      <strong>年間約3〜5.5MBの削減</strong>。CSSテンプレートは全記事で共有するため、追加コストは数KBのみ。
+    </p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション4: 検索・活用レイヤー設計 -->
+<!-- ============================================ -->
+<div class="card" id="sec4">
+  <h2>4. 検索・活用レイヤー設計</h2>
+
+  <h3>4.1 Supabase Edge Function: 統合検索API</h3>
+  <p>セマンティック検索・キーワード検索・フィルタリングを統合する単一のエンドポイントを提供します。</p>
+
+<pre><code>// supabase/functions/search/index.ts
+import { serve } from 'https://deno.land/std/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+serve(async (req) =&gt; {
+  const {
+    query,          // 検索クエリ（自然言語）
+    category,       // カテゴリフィルタ
+    tags,           // タグフィルタ
+    date_from,      // 日付範囲（開始）
+    date_to,        // 日付範囲（終了）
+    limit = 10,     // 取得件数
+    search_type     // 'semantic' | 'keyword' | 'hybrid'
+  } = await req.json()
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
+  // 1. クエリのembedding生成
+  const embeddingRes = await fetch(
+    'https://api.openai.com/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      'Authorization':
+        `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'text-embedding-3-small',
+      input: query
+    })
+  })
+  const { data: [{ embedding }] } =
+    await embeddingRes.json()
+
+  // 2. セマンティック検索実行
+  const { data: results } = await supabase
+    .schema('research')
+    .rpc('search_articles', {
+      query_embedding: embedding,
+      match_threshold: 0.7,
+      match_count: limit,
+      filter_category: category || null
+    })
+
+  return new Response(
+    JSON.stringify({ results, count: results.length }),
+    { headers: { 'Content-Type': 'application/json' } }
+  )
+})</code></pre>
+
+  <h3>4.2 MCP Server連携設計</h3>
+  <p>Claude Code / Coworkからナレッジベースに直接アクセスするためのMCPサーバーを構築します。</p>
+
+  <div class="arch-diagram">
+Claude Code / Cowork
+  │
+  ├─ MCP Tool: search_knowledge
+  │   → 自然言語で記事を検索
+  │   → 「会計AIの最新事例を3件」
+  │
+  ├─ MCP Tool: get_article
+  │   → ID指定で記事の全文を取得
+  │
+  ├─ MCP Tool: list_recent
+  │   → 最新N件の記事一覧
+  │   → カテゴリ・日付フィルタ対応
+  │
+  ├─ MCP Tool: get_insights
+  │   → テーマ別のインサイト集約
+  │   → 「今週のClaude Codeまとめ」
+  │
+  └─ MCP Tool: add_article
+      → 手動で記事を追加</div>
+
+<pre><code># MCP Server 定義概要（TypeScript）
+# ~/.claude/mcp-servers/knowledge-base/
+
+tools:
+  - name: search_knowledge
+    description: |
+      パーソナルナレッジベースをセマンティック検索。
+      自然言語のクエリで関連記事を検索します。
+    parameters:
+      query: string      # 検索クエリ
+      category?: string  # カテゴリフィルタ
+      limit?: number     # 取得件数（default: 5）
+
+  - name: get_article
+    description: 記事IDを指定して全文を取得
+    parameters:
+      id: string         # 記事UUID
+
+  - name: list_recent
+    description: 最新の記事一覧を取得
+    parameters:
+      category?: string
+      days?: number      # 過去N日分（default: 7）
+      limit?: number
+
+  - name: get_insights
+    description: |
+      指定テーマの要約インサイトを生成。
+      週次レポートや振り返りに使用。
+    parameters:
+      topic: string
+      date_from?: string
+      date_to?: string</code></pre>
+
+  <h3>4.3 外部AIツール連携</h3>
+
+  <h4>NotebookLM連携（ながら聴き用）</h4>
+  <p>週次で蓄積された記事をPDFにまとめ、NotebookLMに投入して音声化します。</p>
+  <div class="flow-step">
+    <div class="num">1</div>
+    <div class="content">週次スケジュールタスクで「今週の記事サマリーPDF」を自動生成</div>
+  </div>
+  <div class="flow-step">
+    <div class="num">2</div>
+    <div class="content">Google DriveにPDFをアップロード</div>
+  </div>
+  <div class="flow-step">
+    <div class="num">3</div>
+    <div class="content">NotebookLMのソースとして追加 → Audio Overview生成</div>
+  </div>
+  <div class="flow-step">
+    <div class="num">4</div>
+    <div class="content">スマホで通勤中にポッドキャスト感覚で消費</div>
+  </div>
+
+  <h4>ChatGPT / Perplexity連携</h4>
+  <p>Supabase REST APIをPublic Endpointとして公開し、Custom GPTやPerplexity Spacesからアクセスします。</p>
+<pre><code># Custom GPT の Actions設定例
+openapi: 3.0.0
+paths:
+  /functions/v1/search:
+    post:
+      summary: Search knowledge base
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                category:
+                  type: string
+                limit:
+                  type: integer</code></pre>
+
+  <h4>freee連携</h4>
+  <p>税制改正や法改正の記事をfreee MCP経由の業務と紐付けることで、実務への即時反映を可能にします。例: 新しいインボイス関連の記事 → freeeの設定確認・更新の提案。</p>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション5: 運用設計 -->
+<!-- ============================================ -->
+<div class="card" id="sec5">
+  <h2>5. 運用設計</h2>
+
+  <h3>5.1 日次自動運用フロー</h3>
+  <div class="arch-diagram">
+04:00  ┌─ Schedule #1: Claude Codeリサーチ ─┐
+       │  WebSearch → 記事生成 → HTML保存    │
+       │  → Supabase投入 → Embedding生成     │
+       └─────────────────────────────────────┘
+
+10:00  ┌─ Schedule #2: 会計AI事例リサーチ ──┐
+       │  WebSearch → 記事生成 → HTML保存    │
+       │  → Supabase投入 → Embedding生成     │
+       └─────────────────────────────────────┘
+
+23:00  ┌─ Schedule #3: デイリーダイジェスト ─┐
+       │  今日の新着記事をサマリー化          │
+       │  → Gmail下書き or Slack通知          │
+       └─────────────────────────────────────┘</div>
+
+  <h3>5.2 週次運用フロー</h3>
+  <div class="flow-step">
+    <div class="num">月</div>
+    <div class="content"><strong>週次レポート生成</strong>: 先週の記事をMCP経由で集約。カテゴリ別のトレンドサマリーを自動作成。</div>
+  </div>
+  <div class="flow-step">
+    <div class="num">水</div>
+    <div class="content"><strong>NotebookLM更新</strong>: 週前半の記事をPDF化してNotebookLMに投入。Audio Overviewを再生成。</div>
+  </div>
+  <div class="flow-step">
+    <div class="num">金</div>
+    <div class="content"><strong>ニュースレター下書き</strong>: 週間ハイライトからブログ/ニュースレターの下書きを自動生成。</div>
+  </div>
+
+  <h3>5.3 リサーチトピックの管理</h3>
+
+  <h4>追加</h4>
+  <p>Coworkに「新しいリサーチトピック追加して」と依頼するだけ。内部的にはカテゴリ追加 + スケジュールタスク作成が行われます。</p>
+
+  <h4>変更</h4>
+  <p>既存スケジュールタスクのプロンプトを更新。検索キーワードや対象ソースの変更が即座に反映されます。</p>
+
+  <h4>一時停止・削除</h4>
+  <p>スケジュールタスクのenable/disableで制御。記事データはSupabaseに残り、再開時に継続可能。</p>
+
+  <h3>5.4 データ鮮度管理</h3>
+
+<pre><code>-- 90日以上前の記事を自動アーカイブ
+CREATE OR REPLACE FUNCTION research.archive_old_articles()
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE research.articles
+  SET
+    status = 'archived',
+    archived_at = now()
+  WHERE
+    status = 'published'
+    AND published_at &lt; now() - INTERVAL '90 days'
+    AND is_starred = false;  -- スター付きは保持
+END;
+$$;
+
+-- Supabase Cron（pg_cron）で月次実行
+SELECT cron.schedule(
+  'archive-old-articles',
+  '0 3 1 * *',  -- 毎月1日 03:00
+  $$SELECT research.archive_old_articles()$$
+);</code></pre>
+
+  <p>アーカイブされた記事はembeddingを保持し、セマンティック検索では引き続きヒットしますが、デフォルトの一覧からは除外されます。完全削除は手動操作のみとします。</p>
+
+
+  <h3>5.6 スキーマ分離の運用ガイドライン</h3>
+  <p>本プラットフォームは <span class="inline-code">research</span> スキーマに完全分離されています。同一Supabaseプロジェクトで他のアプリケーション（<span class="inline-code">public</span> スキーマ）と安全に共存できます。</p>
+
+  <h4>他プロジェクトとの共存ルール</h4>
+  <ul>
+    <li><strong>テーブル名の衝突回避:</strong> 他プロジェクトは <span class="inline-code">public</span> スキーマを使用。本プラットフォームは <span class="inline-code">research.*</span> を使用するため、名前衝突は発生しません</li>
+    <li><strong>RLS ポリシーの独立性:</strong> 各スキーマのRLSポリシーは独立して動作。他プロジェクトのポリシー変更は影響しません</li>
+    <li><strong>バックアップ・リストア:</strong> <span class="inline-code">pg_dump --schema=research</span> で本プラットフォームのみの選択的バックアップが可能</li>
+    <li><strong>拡張機能の共有:</strong> pgvector, pg_trgm, pgcrypto は <span class="inline-code">public</span> スキーマにインストールされ、全スキーマから利用可能です</li>
+  </ul>
+
+  <h4>REST APIアクセス時のヘッダー設定</h4>
+<pre><code># GETリクエスト（記事取得など）
+curl -H "Accept-Profile: research" \
+  'https://&lt;PROJECT_ID&gt;.supabase.co/rest/v1/articles'
+
+# POST/PATCH/DELETE リクエスト（記事投入など）
+curl -H "Content-Profile: research" \
+  -H "Content-Type: application/json" \
+  'https://&lt;PROJECT_ID&gt;.supabase.co/rest/v1/articles'
+
+# Supabase JS クライアント
+const { data } = await supabase
+  .schema('research')
+  .from('articles')
+  .select('*')</code></pre>
+
+  <h4>ストレージ容量の目安（Free Plan 500MB共有時）</h4>
+  <ul>
+    <li>他プロジェクト用に 300-400MB を確保</li>
+    <li>本リサーチプラットフォームには <strong>100-200MB</strong> を割り当て</li>
+    <li>年間消費: 記事データ約2MB + Embedding約4.3MB ≈ 約6.3MB/年</li>
+    <li>100MBの予算で約15年分は余裕をもって運用可能</li>
+  </ul>
+
+  <h3>5.7 総合コスト見積もり</h3>
+  <p>1日2記事（年間730記事）の運用を前提とした、各項目の月間・年間コスト見積もりです。</p>
+
+  <h4>前提条件</h4>
+  <ul>
+    <li>1日2記事 × 365日 = 年間730記事</li>
+    <li>1記事あたり: body_html（CSSなし）約5KB、body_text 約2.3KB、body_markdown 約1.5KB</li>
+    <li>Embedding: 1536次元 × float32 = 約6KB/記事</li>
+    <li>検索クエリ: 1日平均5回（月150回）</li>
+  </ul>
+
+  <h4>① ストレージコスト（DB容量）</h4>
+  <table class="cost-table">
+    <tr>
+      <th>項目</th>
+      <th>1記事あたり</th>
+      <th>月間（60記事）</th>
+      <th>年間（730記事）</th>
+    </tr>
+    <tr>
+      <td>記事テーブル（本文 + メタデータ）</td>
+      <td>約8KB</td>
+      <td>0.47MB</td>
+      <td>5.7MB</td>
+    </tr>
+    <tr>
+      <td>Embedding（vector + index）</td>
+      <td>約6KB</td>
+      <td>0.35MB</td>
+      <td>4.3MB</td>
+    </tr>
+    <tr>
+      <td>インデックス（FTS, HNSW等）</td>
+      <td>約2KB</td>
+      <td>0.12MB</td>
+      <td>1.4MB</td>
+    </tr>
+    <tr>
+      <td>タグ・ソース等の関連テーブル</td>
+      <td>約0.5KB</td>
+      <td>0.03MB</td>
+      <td>0.4MB</td>
+    </tr>
+    <tr>
+      <td><strong>合計</strong></td>
+      <td><strong>約16.5KB</strong></td>
+      <td><strong>約1.0MB</strong></td>
+      <td><strong>約11.8MB</strong></td>
+    </tr>
+  </table>
+
+  <h4>② API / Embedding / Edge Function / 帯域コスト</h4>
+  <table class="cost-table">
+    <tr>
+      <th>項目</th>
+      <th>単価</th>
+      <th>月間使用量</th>
+      <th>月間コスト</th>
+      <th>年間コスト</th>
+    </tr>
+    <tr>
+      <td>Supabase REST API（投入 + 検索）</td>
+      <td>Free枠内</td>
+      <td>約210回（投入60 + 検索150）</td>
+      <td><span class="accent">$0</span></td>
+      <td><span class="accent">$0</span></td>
+    </tr>
+    <tr>
+      <td>OpenAI Embedding生成<br><span style="font-size:12px;color:#888;">text-embedding-3-small</span></td>
+      <td>$0.02 / 1Mトークン</td>
+      <td>約60記事 × 1,500トークン<br>= 90,000トークン</td>
+      <td><span class="accent">$0.002</span></td>
+      <td><span class="accent">$0.02</span></td>
+    </tr>
+    <tr>
+      <td>OpenAI Embedding（検索クエリ）</td>
+      <td>$0.02 / 1Mトークン</td>
+      <td>150クエリ × 50トークン<br>= 7,500トークン</td>
+      <td><span class="accent">&lt; $0.001</span></td>
+      <td><span class="accent">$0.002</span></td>
+    </tr>
+    <tr>
+      <td>Edge Functions 呼び出し</td>
+      <td>Free枠内</td>
+      <td>約150回（検索API）</td>
+      <td><span class="accent">$0</span></td>
+      <td><span class="accent">$0</span></td>
+    </tr>
+    <tr>
+      <td>帯域（データ転送）<br><span style="font-size:12px;color:#888;">外部AIツール連携含む</span></td>
+      <td>Free: 5GB/月</td>
+      <td>約50MB（記事本文 + API応答）</td>
+      <td><span class="accent">$0</span></td>
+      <td><span class="accent">$0</span></td>
+    </tr>
+  </table>
+
+  <h4>③ Claude API / スケジュールタスクコスト</h4>
+  <table class="cost-table">
+    <tr>
+      <th>項目</th>
+      <th>単価</th>
+      <th>月間使用量</th>
+      <th>月間コスト</th>
+      <th>年間コスト</th>
+    </tr>
+    <tr>
+      <td>Coworkスケジュールタスク実行<br><span style="font-size:12px;color:#888;">Claude Pro/Maxプランに含まれる</span></td>
+      <td>プラン内</td>
+      <td>60回（1日2回 × 30日）</td>
+      <td>$0（プラン内）</td>
+      <td>$0（プラン内）</td>
+    </tr>
+    <tr>
+      <td>Claude API直接利用の場合<br><span style="font-size:12px;color:#888;">Sonnet: $3/1M input, $15/1M output</span></td>
+      <td>約$0.05/リサーチ</td>
+      <td>60回</td>
+      <td>約$3.00</td>
+      <td>約$36.00</td>
+    </tr>
+  </table>
+
+  <h4>④ Free Plan vs Pro Plan 総合比較</h4>
+  <table class="cost-table">
+    <tr>
+      <th>項目</th>
+      <th>Free Plan</th>
+      <th>Pro Plan ($25/月)</th>
+    </tr>
+    <tr>
+      <td>Supabase DB容量</td>
+      <td>500MB（うち本スキーマ 100-200MB目安）</td>
+      <td>8GB</td>
+    </tr>
+    <tr>
+      <td>REST API</td>
+      <td>無制限（レートリミットあり）</td>
+      <td>無制限（緩和）</td>
+    </tr>
+    <tr>
+      <td>Edge Functions</td>
+      <td>50万回/月（十分）</td>
+      <td>200万回/月</td>
+    </tr>
+    <tr>
+      <td>帯域</td>
+      <td>5GB/月</td>
+      <td>250GB/月</td>
+    </tr>
+    <tr>
+      <td>本スキーマの収容可能年数</td>
+      <td>約15年（100MB割当時）</td>
+      <td>約600年以上</td>
+    </tr>
+    <tr>
+      <td>OpenAI Embedding（年間）</td>
+      <td colspan="2" style="text-align:center"><span class="accent">約$0.02/年</span>（プラン問わず）</td>
+    </tr>
+    <tr>
+      <td>Supabase月額</td>
+      <td><span class="accent">$0</span></td>
+      <td>$25</td>
+    </tr>
+    <tr>
+      <td><strong>年間総コスト（Supabase + Embedding）</strong></td>
+      <td><strong><span class="accent">約$0.02</span></strong></td>
+      <td><strong>$300 + $0.02</strong></td>
+    </tr>
+  </table>
+
+  <h4>⑤ ストレージ最適化による削減効果</h4>
+  <table class="cost-table">
+    <tr>
+      <th>保存方式</th>
+      <th>1記事あたり</th>
+      <th>年間730記事</th>
+      <th>削減率</th>
+    </tr>
+    <tr>
+      <td>従来: CSS込みフルHTML</td>
+      <td>9.2KB</td>
+      <td>6.6MB</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>最適化後: CSSなしbody_html</strong></td>
+      <td><strong>5.0KB</strong></td>
+      <td><strong>3.6MB</strong></td>
+      <td><span class="accent">-45%</span></td>
+    </tr>
+    <tr>
+      <td>body_markdown併用</td>
+      <td>1.5KB</td>
+      <td>1.1MB</td>
+      <td><span class="accent">-84%</span></td>
+    </tr>
+  </table>
+
+  <div class="highlight-box">
+    <h4>推奨: Free プランで開始</h4>
+    <p style="font-size:14px; color:rgba(255,255,255,0.85); margin-top:8px;">
+      ストレージ最適化により、年間のDB消費は約6.3MB（記事データ約2MB + Embedding約4.3MB）。Free Planの500MBのうち100-200MBを本スキーマに割り当てれば<strong>約15年分</strong>は余裕で運用可能です。<br><br>
+      OpenAI Embedding APIのコストは年間約$0.02（≒3円）と無視できるレベル。Coworkスケジュールタスクを利用する場合はClaude Pro/Maxプランの範囲内で追加コスト不要です。<br><br>
+      <strong>結論: 年間コストは実質 $0 に近い水準で運用可能。</strong>
+    </p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション6: 段階的実装ロードマップ -->
+<!-- ============================================ -->
+<div class="card" id="sec6">
+  <h2>6. 段階的実装ロードマップ</h2>
+
+  <div class="phase-card">
+    <div class="phase-title">Phase 1: 最小構成（Supabase + 自動投入）</div>
+    <div class="duration">目安: 1-2日</div>
+    <p><strong>ゴール:</strong> 既存のリサーチ記事がSupabaseに自動蓄積される状態</p>
+    <ul>
+      <li>Supabaseプロジェクト作成（Freeプラン）</li>
+      <li><span class="inline-code">research</span> スキーマ作成 &amp; pgvector拡張の有効化</li>
+      <li>テーブル作成（<span class="inline-code">research.articles</span>, <span class="inline-code">research.categories</span>, <span class="inline-code">research.tags</span>）</li>
+      <li>Exposed schemasに <span class="inline-code">research</span> を追加</li>
+      <li>既存スケジュールタスクのプロンプトに Supabase投入ステップを追加</li>
+      <li>curlコマンドでREST API経由の投入を確認</li>
+    </ul>
+    <p><span class="tag green">成果物</span> 毎朝のリサーチ → HTML保存 + Supabase蓄積が自動化</p>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-title">Phase 2: セマンティック検索 + MCP連携</div>
+    <div class="duration">目安: 2-3日</div>
+    <p><strong>ゴール:</strong> Claude Code/Coworkから自然言語でナレッジ検索できる状態</p>
+    <ul>
+      <li>article_embeddings テーブル作成</li>
+      <li>OpenAI Embedding API連携をパイプラインに追加</li>
+      <li>セマンティック検索SQL関数の作成</li>
+      <li>Supabase Edge Functionで検索APIを構築</li>
+      <li>MCP Serverを構築（search_knowledge, list_recent, get_article）</li>
+      <li>重複検知関数の実装</li>
+    </ul>
+    <p><span class="tag green">成果物</span> 「先週の会計AI事例を教えて」でナレッジ検索が可能に</p>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-title">Phase 3: 外部AIツール連携</div>
+    <div class="duration">目安: 3-5日</div>
+    <p><strong>ゴール:</strong> NotebookLM・ChatGPT等から横断的にナレッジにアクセスできる状態</p>
+    <ul>
+      <li>週次PDF生成スケジュールタスクの作成</li>
+      <li>Google Drive自動アップロード → NotebookLM連携</li>
+      <li>Custom GPT用OpenAPIスキーマの作成</li>
+      <li>Perplexity Spacesとの連携設定</li>
+      <li>デイリーダイジェスト機能（メール/通知）</li>
+    </ul>
+    <p><span class="tag green">成果物</span> 通勤中にNotebookLMでながら聴き / ChatGPTから質問可能</p>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-title">Phase 4: フルオート + フィードバックループ</div>
+    <div class="duration">目安: 1-2週間</div>
+    <p><strong>ゴール:</strong> 使うほど賢くなる自律的なリサーチ基盤</p>
+    <ul>
+      <li>記事の閲覧・スター・アーカイブのトラッキング</li>
+      <li>フィードバックに基づくリサーチトピックの自動調整</li>
+      <li>freee MCP連携（税制改正 → 実務への影響分析）</li>
+      <li>ニュースレター/ブログの自動下書き生成</li>
+      <li>データ鮮度管理の自動アーカイブ運用</li>
+      <li>ダッシュボード（記事数・カテゴリ分布・検索利用状況）</li>
+    </ul>
+    <p><span class="tag green">成果物</span> 完全自律型パーソナルAIリサーチ基盤の完成</p>
+  </div>
+
+  <h3>実装優先度マトリクス</h3>
+  <div class="arch-diagram">
+  影響度 大
+    │
+    │  ★ Phase 1          ★ Phase 2
+    │  Supabase基盤        セマンティック検索
+    │  (労力: 小)          (労力: 中)
+    │
+    │  ○ Phase 3           ○ Phase 4
+    │  外部AI連携           フルオート
+    │  (労力: 中)          (労力: 大)
+    │
+    └───────────────────────────────── 労力
+                                       大</div>
+
+  <div class="highlight-box">
+    <h4>Next Action: Phase 1 を今すぐ始める</h4>
+    <p style="font-size:14px; color:rgba(255,255,255,0.85); margin-top:8px;">
+      Phase 1は1-2日で完了可能。Supabaseプロジェクトを作成し、SQLをコピペでテーブルを構築。既存スケジュールタスクにSupabase投入の数行を追加するだけで、蓄積が始まります。<br><br>
+      「Cowork、Supabaseのセットアップを手伝って」から始めましょう。
+    </p>
+  </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- セクション7: 修正履歴 -->
+<!-- ============================================ -->
+<div class="card" id="sec7">
+  <h2>7. 修正履歴</h2>
+
+  <table class="cost-table">
+    <tr>
+      <th>バージョン</th>
+      <th>日付</th>
+      <th>変更内容</th>
+    </tr>
+    <tr>
+      <td>v1.0</td>
+      <td>2026-04-10</td>
+      <td>初版作成。全体アーキテクチャ、テーブル設計、パイプライン設計、検索レイヤー、運用設計、ロードマップを策定。</td>
+    </tr>
+    <tr>
+      <td>v1.1</td>
+      <td>2026-04-10</td>
+      <td>
+        <strong>スキーマ分離:</strong> 全テーブル・関数を <code>research</code> スキーマに移行。他プロジェクトとの共存方法、REST APIヘッダー設定を追記。<br>
+        <strong>ストレージ最適化:</strong> body_htmlからCSS分離、body_markdown カラム追加、css_templates テーブル新設。1記事あたり約9.2KB→5KB（-45%）に削減。<br>
+        <strong>総合コスト見積もり:</strong> ストレージ、API、Embedding、Edge Function、帯域、Claude APIの6項目に分解。Free Plan vs Pro Plan比較を追加。ストレージ最適化による削減効果を定量化。
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="footer">
+  パーソナルAIリサーチ基盤 アーキテクチャ設計書 v1.1<br>
+  Generated by Claude × Cowork &nbsp;|&nbsp; 2026-04-10
+</div>
+
+</div>
+</body>
+</html>
