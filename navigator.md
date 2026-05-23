@@ -80,8 +80,19 @@
 
 ## 📝 セッション履歴サマリー
 
+- **2026-05-24**: navigator.md / 文書役割分担の後付け失敗を踏まえ、グローバル new-project スキルに Phase 2「文書体系の整備」を追加。詳細 → [learnings/2026-05-24_new-project-phase2.md](learnings/2026-05-24_new-project-phase2.md)
 - **2026-05-23**: 大規模復旧セッション。5週間沈黙していたパイプラインを v2.2 設計（曜日別軸・公式ニュース最優先・自動DR・Worker 中継・Discord 通知）で完全復旧。memory に学び 9件追加（新規4+前回5）。コミット3本（`f128ed4` / `beeaff8` / `de27490`）。詳細は git log と memory を参照
 - それ以前: `git log --oneline` で確認
+
+## 📚 グローバルへの貢献（learnings）
+
+このプロジェクトで得た学びのうち、グローバル設定（~/.claude/）や他プロジェクトに影響したもの。
+
+| 日付 | 学び（project 側） | グローバル反映先 | 起点 commit |
+|---|---|---|---|
+| 2026-05-24 | [navigator.md は初期設定に組み込む](learnings/2026-05-24_new-project-phase2.md) | `~/.claude/skills/new-project/SKILL.md` Phase 2 追加 | `3f2d78b` |
+
+> 集約フロー: project `learnings/` で `promote_to_global: true` のものを、夜間タスク (aggregate-learnings) でグローバル `My-Profile-and-Memory/learnings/` に集約する。
 
 ## 🛠 運用ルール
 
