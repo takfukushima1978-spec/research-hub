@@ -17,10 +17,10 @@
 ## auto-claude-code-watch（毎日 4:00 JST の Claude Code 学習マップ専属タスク）
 
 ### 設定情報
-- **Trigger ID**: （未登録 / Console で新規作成予定）
+- **Trigger ID**: trig_015mNBjdX8Uyq9av2FSRTa2T
 - **スケジュール**: 毎日 4:00 JST（cron: `0 19 * * *` UTC）
 - **環境**: Anthropic クラウド sandbox + 「Cloudflare Workers_My Reserch」環境（research-hub-relay.tak-fukushima1978.workers.dev を Allowed domains に登録済み）
-- **管理画面**: （未登録）
+- **管理画面**: https://claude.ai/code/scheduled/trig_015mNBjdX8Uyq9av2FSRTa2T
 - **プロンプト本体**: `prompts/auto-claude-code-watch-CONSOLE.md`（Console 上の prompt は手動コピペで同期）
 - **役割**:
   1. Claude Code 公式の新規発信（docs 更新 / Anthropic blog / 公式 X / GitHub release）を毎日チェックして記事化
@@ -37,7 +37,7 @@
   3. ローカルで `CONSOLE-READY-auto-claude-code-watch.md` を生成（RELAY_URL / INTERNAL_TOKEN 置換）
   4. Console で trigger 新規作成 → CONSOLE-READY 版を貼り付け → 4:00 JST に登録
   5. このファイルの「Trigger ID」と「最終同期日」を埋める
-- **最終同期日**: （初回未同期）
+- **最終同期日**: 2026-05-26（初回登録）
 - **作成日**: 2026-05-26
 - **既知の未実装**: スタンプラリー UI（index.html に「🎯 学習マップ」タブ追加）は Phase 2
 
