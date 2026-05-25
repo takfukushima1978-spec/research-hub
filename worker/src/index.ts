@@ -98,8 +98,11 @@ export default {
       forwardHeaders["Content-Type"] = req.headers.get("Content-Type") ?? "application/json";
     }
 
-    // research スキーマ向けの REST RPC・articles テーブルは Accept-Profile が必要
-    if (path.startsWith("/rest/v1/")) {
+    // research スキーマのテーブル直叩き (例: /rest/v1/articles) のみ Accept-Profile が必要。
+    // RPC は全て public スキーマに置いてあるため Accept-Profile を付けてはいけない
+    // （付けると research.<rpc_name> を探しに行き PGRST202 になる）。
+    // 参考: CLAUDE.md / memory: postgrest-accept-profile-schema-binding.md
+    if (path.startsWith("/rest/v1/") && !path.startsWith("/rest/v1/rpc/")) {
       forwardHeaders["Accept-Profile"] = "research";
       if (req.method === "POST") {
         forwardHeaders["Content-Profile"] = "research";
