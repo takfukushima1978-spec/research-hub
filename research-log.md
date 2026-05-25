@@ -1,3 +1,80 @@
+## [2026-05-25] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → decisions/ フォルダ未作成のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ GitHub MCP アクセス制限外のためスキップ
+- 新規 ADR: なし（確認可能なリポジトリに decisions/ 未存在）
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**: Claude Code v2.1.149 で Enterprise 向けに `allowAllClaudeAiMcps` 設定が追加。managed-mcp.json と並行してすべての Claude.ai クラウド MCP コネクタを一括ロードできる設定。「xmcp 導入時の 110+ ツール全有効リスク」と同じ構造の問題が Enterprise 管理者レベルで発生しうる。TBP-001 の審査フローを Enterprise MCP 管理ポリシーとして文書化することを検討。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- releasebot.io/updates/anthropic/claude-code（⭐⭐⭐）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+
+#### 🔴 即座に適用すべき事項
+
+**① Enterprise: `allowAllClaudeAiMcps` 設定に注意（v2.1.149）**
+- Enterprise の managed 設定として `allowAllClaudeAiMcps` が追加。managed-mcp.json と並行してすべての Claude.ai クラウド MCP コネクタを一括ロードできる
+- 個人利用では直接影響しないが、組織レベルで Claude Code を展開する際に無制限 MCP 許可になるリスクあり
+- TBP-001「審査→最小権限→段階拡張」の観点から、組織での展開方針として明示的に対処する必要あり
+
+**② v2.1.149 詳細（2026-05-24 レポートで一部触れた内容の補足）**
+- `/usage` コマンド強化: スキル・サブエージェント・プラグイン・MCP サーバーごとの利用状況内訳が表示可能に
+- `/diff` のキーボード対応: 矢印キー・`j`/`k`・`PgUp`/`PgDn`・`Space`・`Home`/`End` でスクロール可能
+- GFM タスクリスト対応: `- [ ] todo` / `- [x] done` がチェックボックス表示に（plain bullet ではなく）
+- Git ワークツリーサンドボックスの書き込み許可を修正（共有 `.git` ディレクトリのみに限定、メインリポジトリルート全体ではなくなった）
+- macOS: `find` コマンドがシステムファイル/inode テーブルを枯渇させてホストをクラッシュさせる問題を修正
+
+**③ v2.1.150（2026-05-23）: ユーザー向け変更なし**
+- 内部インフラストラクチャの改善のみ。アップデート適用は問題なし
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Claude Managed Agents の新機能（dreaming・マルチエージェントオーケストレーション・outcomes・webhooks）**
+- Anthropic が Claude API レベルで Managed Agents 機能を拡張。dreaming（バックグラウンド思考）、マルチエージェントオーケストレーション、outcomes（成果物定義）、webhooks（完了通知）が追加
+- ハーネス設計への応用: research タスクを Managed Agent 化し、webhook で完了通知を受け取る設計が可能になる
+- 参考: Anthropic Developer Platform の新機能として発表
+
+**② `/usage` コマンドでスキル・MCP 別利用状況を確認**
+- どのスキルが最も消費しているか、MCP サーバーの利用頻度がわかるようになった
+- 特に 6 月 15 日料金変更前に、プログラマティック利用の内訳を把握しておくことが重要
+
+**③ Claude for Small Business のコネクタ確認（会計用途）**
+- Intuit QuickBooks・PayPal・HubSpot・Canva・DocuSign・Google Workspace・Microsoft 365 の接続が標準提供
+- 会計・経理用途（QuickBooks 連携等）は TBP-001 の審査フローを適用して評価すべき対象
+
+#### 🟢 参考情報
+- **KPMG グローバルアライアンス（2026-05-19）**: 276,000 人全員に Claude アクセス。Digital Gateway に Claude を組み込み。経理・監査領域での Claude 活用事例が今後増加する見込み
+- **PwC 拡張パートナーシップ（2026-05-14）**: Claude Code + Cowork を米国チームから全世界展開。Big4 が Claude Code を標準ツールとして採用
+- **会計×AI 一般動向**: 仕訳入力工数 80% 削減・請求書処理 70% 短縮・月次決算 5 営業日早期化が事例として一般化。PEPPOL 普及で構造化取込みが加速
+- **Claude Security（公開ベータ）**: コードベーススキャン・脆弱性トリアージ・修正生成が利用可能に。security-review スキルとの連携評価が今後の課題
+
+#### references.md 更新提案
+以下の変更が harness-design-guide の参照情報に影響する可能性：
+1. **Claude Managed Agents の新機能（dreaming・orchestration・outcomes・webhooks）**: ハーネス設計における「エージェント間通信」パターンの見直し候補
+2. **`allowAllClaudeAiMcps` Enterprise 設定**: MCP 管理方針セクションへの追記を提案（TBP-001 と関連付けて）
+3. **Git ワークツリーサンドボックス修正**: worktree 分離モードを使う場合の書き込み許可範囲が変わった点を記載
+
+#### 新規発見ソース候補
+なし（昨日の候補を評価継続中）
+
+#### 次回リサーチ推奨日
+2026-05-31（6 月 15 日料金変更まで 2 週間を切るタイミング）
+注目点: ① 6 月 15 日料金変更の最終確認・クレジット消費試算 ② Claude Managed Agents 新機能の実践レポート ③ KPMG/PwC 事例から見る Big4 での Claude Code 活用パターン
+
+---
+
+
 ## [2026-05-24] デイリーレポート
 
 ### 内部知見（機能A）
