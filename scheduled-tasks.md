@@ -14,6 +14,33 @@
 - **教訓**: Console prompt とリポジトリ `prompts/` の同期は手動運用。prompt 更新時は scheduled-tasks.md の「最終同期日」を更新すること
 - **最終同期日**: （未同期 / 復旧作業中）
 
+## auto-claude-code-watch（毎日 4:00 JST の Claude Code 学習マップ専属タスク）
+
+### 設定情報
+- **Trigger ID**: （未登録 / Console で新規作成予定）
+- **スケジュール**: 毎日 4:00 JST（cron: `0 19 * * *` UTC）
+- **環境**: Anthropic クラウド sandbox + 「Cloudflare Workers_My Reserch」環境（research-hub-relay.tak-fukushima1978.workers.dev を Allowed domains に登録済み）
+- **管理画面**: （未登録）
+- **プロンプト本体**: `prompts/auto-claude-code-watch-CONSOLE.md`（Console 上の prompt は手動コピペで同期）
+- **役割**:
+  1. Claude Code 公式の新規発信（docs 更新 / Anthropic blog / 公式 X / GitHub release）を毎日チェックして記事化
+  2. 新規がない / 不足する日は既存ドキュメントの未カバートピックを解説記事化（合計 3 件保証）
+  3. 学習マップ（`research.claude_code_topics`）の coverage を更新し、Discord サマリーに進捗バーを含める
+- **依存**:
+  - migration `20260526000001_claude_code_topics.sql`（テーブル）
+  - migration `20260526000002_claude_code_topics_rpc.sql`（RPC 4 本）
+  - SSOT: `docs/claude-code-learning-map.md`
+  - seed スクリプト: `node scripts/seed-claude-code-topics.mjs`
+- **初期セットアップ手順**:
+  1. Supabase SQL Editor で migration 2 本を実行
+  2. ローカルで `node scripts/seed-claude-code-topics.mjs` を実行（36 トピック初期投入）
+  3. ローカルで `CONSOLE-READY-auto-claude-code-watch.md` を生成（RELAY_URL / INTERNAL_TOKEN 置換）
+  4. Console で trigger 新規作成 → CONSOLE-READY 版を貼り付け → 4:00 JST に登録
+  5. このファイルの「Trigger ID」と「最終同期日」を埋める
+- **最終同期日**: （初回未同期）
+- **作成日**: 2026-05-26
+- **既知の未実装**: スタンプラリー UI（index.html に「🎯 学習マップ」タブ追加）は Phase 2
+
 ## auto-research-morning-discord（朝6:57 JST の Discord サマリー通知）
 
 > **2026-05-24 更新**: 旧 name `auto-research-morning-email` から `auto-research-morning-discord` に改名済（Discord 切替時の改名が反映されていなかった drift を修正）。trigger_id 自体は不変。prompt ファイル名 `prompts/morning-email-CONSOLE.md` は依然旧名で残存中、scheduled-tasks 集約セッション（tak-orchestrator/scheduled-tasks.md 新設時）で `morning-discord-CONSOLE.md` にリネーム予定。
