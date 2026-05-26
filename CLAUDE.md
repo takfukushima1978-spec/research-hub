@@ -142,7 +142,15 @@ auto-research-collect の連日重複・薄っぺら問題対策として `inser
 | `tag_names` 件数 | 4 | `MIN_TAG_NAMES` |
 
 ノルマ未達時は 400 を返し、`details` に不足項目を列挙する。
-手動投入で一時的にスキップしたい場合のみ payload に `quality_override: true` を付ける。
+手動投入で一時的にスキップしたい場合は payload に `quality_override: true` を付けつつ、
+**かつ HTTP リクエストヘッダー `X-Allow-Override: yes` を併せて送る**必要がある（2026-05-26 強化）。
+Worker (`research-hub-relay`) は転送ヘッダーを最小限に絞っており `X-Allow-Override` を**転送しない**ため、
+Routine やクラウド sandbox 経由では構造的に override 不可。手動 curl で test-article.json 等を投入する際は
+`-H "X-Allow-Override: yes"` を追加すること。
+
+経緯: 2026-05-26 の auto-claude-code-watch 初回実行で、エージェントがプロンプト指示
+（`quality_override は使わない`）を無視して `quality_override:true` をペイロードに含め、
+タグ数 0〜1 の記事 4 本を素通りさせた事故 → ペイロード単独では override 効かない構造に変更。
 
 スケジュールタスク側の対応プロンプトは `prompts/auto-research-collect-CONSOLE.md` を参照（リポジトリ版は手動同期、Console 上は固定文字列でコピーされる仕様）。
 収集前に `get_recent_article_digests` を呼んで重複テーマを除外し、JST曜日別の軸ローテーションでネタ偏りを防ぐ。

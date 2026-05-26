@@ -235,8 +235,20 @@ Deno.serve(async (req) => {
   // body_text自動生成（未指定時）
   const bodyText = data.body_text?.trim() || stripHtml(data.body_html);
 
-  // 品質ノルマ検証（quality_override:true でスキップ可能）
-  if (!data.quality_override) {
+  // quality_override は X-Allow-Override: yes ヘッダーがある場合のみ有効
+  // （Worker は X-Allow-Override を転送しないので、Routine 経由では override 不可）
+  // 参考: 2026-05-26 auto-claude-code-watch 初回実行でエージェントが prompt 指示を無視し
+  //   quality_override:true を投げてノルマを素通りさせた事故 → 構造的防御を導入
+  const allowOverrideHeader = req.headers.get("X-Allow-Override")?.toLowerCase();
+  const overrideAllowed = allowOverrideHeader === "yes" || allowOverrideHeader === "true";
+  const effectiveOverride = data.quality_override === true && overrideAllowed;
+
+  if (data.quality_override === true && !overrideAllowed) {
+    console.warn("quality_override が要求されたが X-Allow-Override ヘッダーが無いため無視");
+  }
+
+  // 品質ノルマ検証（effectiveOverride=true でスキップ可能）
+  if (!effectiveOverride) {
     const qualityErrors: string[] = [];
     if (bodyText.length < MIN_BODY_TEXT_LENGTH) {
       qualityErrors.push(
@@ -261,7 +273,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           error: "記事品質ノルマを満たしていません",
           details: qualityErrors,
-          hint: "auto-research-collect では body_text 1500-2500字 / source_urls 3件以上 / tag_names 4件以上 が必須です。手動投入時のみ quality_override:true で回避可能。",
+          hint: "auto-research-collect では body_text 1500-2500字 / source_urls 3件以上 / tag_names 4件以上 が必須です。手動投入時のみ X-Allow-Override: yes ヘッダー + quality_override:true で回避可能（Worker 経由では転送されないため Routine からは override 不可）。",
         }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
       );
