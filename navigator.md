@@ -4,7 +4,7 @@
 > 仕様詳細は `CLAUDE.md`、Routine 詳細は `scheduled-tasks.md`、
 > 横断的な学びは global memory (`C:\dev\.claude\projects\c--dev-research-hub\memory\`) を参照。
 
-最終更新: 2026-05-23
+最終更新: 2026-05-26
 
 ---
 
@@ -13,33 +13,44 @@
 | 項目 | 値 |
 |---|---|
 | パイプライン状態 | ✅ **稼働中**（2026-05-23 完全復旧、5週間沈黙から復帰）|
-| 累計記事数 | 50 件前後（system-test 含む過去、本日テスト記事は削除済） |
-| 最終投入日 | 2026-05-23 (auto-research-collect が3件投入) |
-| 稼働中の Routine | 3つ（auto-research-collect / deep-research-runner / auto-research-morning-email）|
-| Worker | `research-hub-relay` デプロイ済（Version `c7ce95e9` 系）|
+| 累計記事数 | 50 件前後 |
+| 最終投入日 | 2026-05-26 (auto-research-collect 2件 + auto-claude-code-watch 3件) |
+| 稼働中の Routine | **4つ**（auto-research-collect / auto-claude-code-watch / deep-research-runner / auto-research-morning-discord）|
+| Worker | `research-hub-relay` デプロイ済（Version `3a5b642c` 系。2026-05-26 RPC ルート Accept-Profile バグ修正）|
+| Edge Function | `insert-article` 2026-05-26 強化（quality_override は X-Allow-Override ヘッダー必須）|
+| 学習マップ | 36 トピック × 7 領域、進捗 1/36 (2.8%)。📕拡張機構が 1/6 で先行 |
 | 通知チャネル | Discord `#research-hub-notify` で稼働確認済 |
-| 直近の問題 | 5/17 の Routine × (詳細未確認)、DR 自動 completed 現象（要 Phase 2 調査）|
+| 直近の問題 | DR 自動 completed 現象（要 Phase 2 調査）|
 
 ## 🎯 直近の重点
 
-- **明朝 2026-05-24 3:03 JST から本番自動運用が始まる**。各 Routine の動作確認を Tak が朝6:57の Discord 通知で行う
-- 5/24-5/28 の 5日間で安定運用を観察し、ハマりが出なければ Phase 2 に着手
-- Phase 2 着手時の優先順位: フィードバックループ復活 > URL hash 対応 > DR 自動 completed 原因究明
+- **2026-05-27 04:00 JST から auto-claude-code-watch 本格運用**。X-Allow-Override 防御が効いてタグ必達されるか観察
+- 学習マップ進捗が領域バランスを取りながら 12 日程度で全領域カバーするか確認
+- 不調が出なければ Phase 2 (UI スタンプラリー + Discord 進捗バー) に着手
 
 ## 📋 残タスク (Phase 2)
 
-1. **Discord フィードバックループ復活**
+1. **学習マップ スタンプラリー UI**
+   - `index.html` に「🎯 学習マップ」タブ追加
+   - 領域別カードで進捗バー表示、サブトピックは clickable で関連記事リンク
+   - 関連 RPC: `get_claude_code_coverage_summary`
+
+2. **Discord 通知に学習マップ進捗バー埋め込み**
+   - `auto-research-morning-discord` の embed に「🎯 X/36 (Y%)」表示
+   - 領域別の差分も提示（前日 → 今日の覆い率）
+
+3. **Discord フィードバックループ復活**
    - Discord メッセージに 1-5 reaction を Bot で自動付与
    - Reaction Events を Cloudflare Workers Bot で受信 → `user_feedback` テーブルに記録
    - auto-research-collect の翌朝リサーチで feedback を読み取って優先度反映
    - 関連 memory: [[discord-webhook-notification-pattern]]
 
-2. **ビューワー index.html を URL hash 対応に**
+4. **ビューワー index.html を URL hash 対応に**
    - `index.html#article=<slug>` で個別記事ページに直リンク可能にする
    - Discord embed の `url` フィールドを slug ベースに切替
    - メール / Discord から記事を1タップで開けるようにする
 
-3. **DR 自動 completed 現象の調査**
+5. **DR 自動 completed 現象の調査**
    - auto-research-collect が `action=request` した直後、同セッション内で DR が completed になっている
    - 関連 memory: [[dr-self-completion-mystery]]
    - Run 詳細ログ + `supabase/functions/deep-research/index.ts` ソース再読
@@ -61,8 +72,9 @@
 ### Trigger ID 一覧
 
 - auto-research-collect: `trig_01M35mr4nxRZZVWjFrtRdZyf`
+- auto-claude-code-watch: `trig_015mNBjdX8Uyq9av2FSRTa2T`
 - deep-research-runner: `trig_01C2e5bSQA4xqznQ3oY3QgQU`
-- auto-research-morning-email: `trig_01849zsAtA2CXcHwXoVwyKhv`
+- auto-research-morning-discord: `trig_01849zsAtA2CXcHwXoVwyKhv`
 
 ## 📚 関連ドキュメント
 
@@ -80,6 +92,7 @@
 
 ## 📝 セッション履歴サマリー
 
+- **2026-05-26**: auto-claude-code-watch Phase1 導入（学習マップ駆動の毎日記事化 + スタンプラリー方式）。新規 Routine + テーブル + 4 RPC + seed スクリプト + CONSOLE-READY 生成スクリプト追加。Worker の RPC ルート Accept-Profile バグを構造的に修正。Edge Function に X-Allow-Override 防御追加（quality_override 悪用防止）。コミット4本（`e83a60b` / `43ad174` / `ccc5fd1` / `2042d1b`）。詳細 → [learnings/2026-05-26_claude-code-watch-launch.md](learnings/2026-05-26_claude-code-watch-launch.md)
 - **2026-05-24**: navigator.md / 文書役割分担の後付け失敗を踏まえ、グローバル new-project スキルに Phase 2「文書体系の整備」を追加。詳細 → [learnings/2026-05-24_new-project-phase2.md](learnings/2026-05-24_new-project-phase2.md)
 - **2026-05-23**: 大規模復旧セッション。5週間沈黙していたパイプラインを v2.2 設計（曜日別軸・公式ニュース最優先・自動DR・Worker 中継・Discord 通知）で完全復旧。memory に学び 9件追加（新規4+前回5）。コミット3本（`f128ed4` / `beeaff8` / `de27490`）。詳細は git log と memory を参照
 - それ以前: `git log --oneline` で確認
@@ -91,6 +104,7 @@
 | 日付 | 学び（project 側） | グローバル反映先 | 起点 commit |
 |---|---|---|---|
 | 2026-05-24 | [navigator.md は初期設定に組み込む](learnings/2026-05-24_new-project-phase2.md) | `~/.claude/skills/new-project/SKILL.md` Phase 2 追加 | `3f2d78b` |
+| 2026-05-26 | [エージェント指示は破られる前提で構造的防御を組む](learnings/2026-05-26_claude-code-watch-launch.md) | `~/.claude/rules/design-patterns.md` 追加候補 | `2042d1b` |
 
 > 集約フロー: project `learnings/` で `promote_to_global: true` のものを、夜間タスク (aggregate-learnings) でグローバル `My-Profile-and-Memory/learnings/` に集約する。
 
