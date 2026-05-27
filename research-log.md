@@ -1,3 +1,95 @@
+## [2026-05-27] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → decisions/ フォルダ未作成のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ GitHub MCP アクセス制限外のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」** に関連する外部情報が3件：
+  1. **`pluginSuggestionMarketplaces` managed設定（2026-05-27）**: Enterprise管理者が組織の allowlist プラグインマーケットプレイスを管理できる設定が追加。allowlist されたマーケットプレイスからのプラグインでも、TBP-001 の審査フロー（external-audit → 最小権限 → 段階拡張）を省略してよいわけではない。
+  2. **security-guidance プラグイン（2026-05-27）**: Anthropic 公式・無料・全ユーザー対象。TBP-001 審査フロー適用結果 → ①Anthropic 一次情報源・②読み取り/分析のみ・③シンプル機能 → **即時導入推奨**案件。
+  3. **Claude Managed Agents サンドボックス対応（2026-05-27）**: 外部 MCP サーバーへの接続が増える場面で TBP-001「審査→最小権限」が適用される。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- claudefa.st/blog/guide/changelog（⭐⭐⭐⭐）
+- releasebot.io/updates/anthropic（⭐⭐⭐）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- helpnetsecurity.com / securityweek.com（security-guidance プラグイン詳細）
+- 会計×AI 各種（keihi.com / freee.co.jp / biz.moneyforward.com 等）
+
+#### 🔴 即座に適用すべき事項
+
+**① security-guidance プラグイン（Anthropic 公式・無料・2026-05-27）**
+- Claude Code の `/plugins` マーケットプレイスからインストール可能。全ユーザー・全プラン無料
+- 3段階リアルタイム検出: ①ファイル編集時（モデル呼び出しなし）→ eval/os.system/pickle/DOM injection等 25パターンを即時フラグ、②モデルターン時 → 認可バイパス/SSRF/インジェクション等、③コミット時 → 関連ファイル横断で偽陽性削減
+- 内部ロールアウトで PR セキュリティ関連コメント 30-40% 削減の実績
+- TBP-001 審査: 公式一次情報源・分析のみ（書き込みなし）・シンプル機能 → **即時導入推奨**
+
+**② スキルフロントマターに `disallowed-tools` 設定可能（2026-05-27）**
+- スキル・スラッシュコマンドの YAML フロントマターに `disallowed-tools:` を追加すると、そのスキル実行中はリスト内のツールをモデルが使用不可になる
+- ハーネスへの直接応用: 読み取り専用スキル（research スキル等）に `disallowed-tools: [Write, Edit]` を設定してガードレール化できる
+- TBP-001「最小権限で開始」原則をスキルレベルで宣言的に実装可能
+
+**③ `/reload-skills` コマンド追加（2026-05-27）**
+- セッション再起動なしでスキルディレクトリを再スキャンするコマンドが追加
+- SessionStart フックが `reloadSkills: true` を返すことで、フックがインストールしたスキルを同一セッション内で即時利用可能に
+- スキル開発・デバッグのイテレーション速度が大幅向上
+
+**④ `MessageDisplay` フックイベント追加（2026-05-27）**
+- アシスタントのメッセージテキストを表示前に変換・非表示にできる新フックイベント
+- 活用例: 機密パターンのマスキング・出力フォーマット統一・ログ記録
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① research スキルに `disallowed-tools: [Write, Edit, Bash]` を設定**
+- research スキルが誤って書き込まないよう構造的に防止する（現状は慣習による防止のみ）
+- `/reload-skills` でセッション再起動なしにテスト可能になったため実装しやすくなった
+
+**② SessionStart フックに `reloadSkills: true` と `sessionTitle` を追加**
+- フックによるスキルインストール後、同一セッションですぐ使えるようになる
+- `hookSpecificOutput.sessionTitle` でセッション名を自動設定してセッション管理を改善
+
+**③ security-guidance プラグインを導入して評価**
+- `/plugins` からインストール → TBP-001 審査記録（AUDIT-REPORT.md）を作成して事例追加
+- PR セキュリティコメント削減効果を実測
+
+#### 🟢 参考情報
+- **Anthropic 資金調達ラウンドクローズ（2026-05-26〜27）**: $300億ドル超調達・バリュエーション $900億ドル超。Sequoia/Dragoneer/Altimeter/Greenoaks が各約$20億ドル。OpenAI を超えて世界最高バリュエーションのプライベートAIスタートアップに。2026年10月 IPO が最終プライベートラウンドとなる見込み
+- **Anthropic 韓国オフィス代表取締役任命（2026-05-26）**: KiYoung Choi 氏が就任。ソウルオフィス開設へ
+- **Claude Managed Agents サンドボックス＋プライベートMCP接続（2026-05-27）**: エージェントがユーザー管理のサンドボックス内で動作し、プライベートMCPサーバーに接続可能に。Enterprise 活用範囲が大幅拡大
+- **`/code-review --fix` 更新（2026-05-27）**: 修正をワーキングツリーに直接適用。`/simplify` は今後 `/code-review --fix` の呼び出しになった
+- **freee 「shadow AI」検知拡張**: 15,000以上のAIツールを検知対象に追加。組織での AI ツール統制強化
+- **マネーフォワード AI Cowork**: 2026年7月リリース予定（変更なし）
+- **会計×AI 国内現状調査（2026年5月）**: 中堅企業の仕訳入力 約7割が手入力・月末残業平均32時間。AI自動化の余地が依然大きい
+
+#### references.md 更新提案
+以下の変更が harness-design-guide の参照情報に影響する可能性：
+1. **`disallowed-tools` フロントマター**: スキル設計セクションへの追記を提案（スキル実行中のツール除外が可能に）
+2. **`MessageDisplay` フックイベント**: フック設計セクション（フックイベント一覧）への追記を提案
+3. **`/reload-skills` コマンド**: スキル管理・開発デバッグセクションへの追記を提案
+4. **SessionStart フック新機能（`reloadSkills: true`, `hookSpecificOutput.sessionTitle`）**: セッション管理セクションへの追記を提案
+5. **`/code-review --fix` と `/simplify` の動作変更**: コードレビューセクションの記述更新を提案（`/simplify` = `/code-review --fix` の別名に変更）
+
+#### 新規発見ソース候補
+- **helpnetsecurity.com**: Claude Code セキュリティ関連の詳細技術記事あり（評価候補: ⭐⭐⭐）
+- **securityweek.com**: Anthropic セキュリティ関連発表の速報として有効（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-05-31
+注目点: ① 6月15日料金変更最終確認・クレジット消費試算 ② security-guidance プラグイン導入・TBP-001 審査記録作成 ③ `disallowed-tools` フロントマターのハーネス実装
+
+---
+
 ## [2026-05-25] デイリーレポート
 
 ### 内部知見（機能A）
