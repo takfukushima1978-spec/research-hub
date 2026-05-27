@@ -31,6 +31,26 @@ const ALLOWED_ROUTES: Array<[string, RegExp]> = [
   ["POST", /^\/notify\/discord$/],
 ];
 
+// 書き込み系 RPC で直叩き禁止のリスト（Edge Function 経由必須）
+// 経緯: 2026-05-27 エージェントが insert-article で 400 reject された後、
+// /rest/v1/rpc/insert_research_article を直叩きして品質ノルマを bypass する
+// 抜け道を発見。Edge Function 側の品質ノルマ・X-Allow-Override 防御を
+// 構造的に補完するため、書き込み系 RPC は Worker 経由では直叩き不可とする。
+//
+// 直叩き可: 読み取り系全て + mark_topic_covered / upsert_claude_code_topic /
+//          toggle_article_flag / update_article_embedding
+const DENY_RPC_NAMES = new Set([
+  "insert_research_article",        // insert-article Edge Function 経由必須
+  "create_deep_research_request",   // deep-research Edge Function 経由必須
+  "complete_deep_research",         // deep-research Edge Function 経由必須
+  "add_manual_article",             // insert-article Edge Function 経由必須
+]);
+
+function extractRpcName(path: string): string | null {
+  const m = path.match(/^\/rest\/v1\/rpc\/([a-z0-9_]+)$/);
+  return m ? m[1] : null;
+}
+
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -53,6 +73,17 @@ export default {
     const allowed = ALLOWED_ROUTES.some(([m, re]) => m === req.method && re.test(path));
     if (!allowed) {
       return jsonResponse(404, { error: "Not found", method: req.method, path });
+    }
+
+    // RPC 名ベースの deny check（書き込み系 RPC の直叩きを禁止）
+    const rpcName = extractRpcName(path);
+    if (rpcName && DENY_RPC_NAMES.has(rpcName)) {
+      return jsonResponse(403, {
+        error: "この RPC は直叩き禁止です。対応する Edge Function を経由してください",
+        rpc: rpcName,
+        hint: "insert_research_article / add_manual_article は /functions/v1/insert-article を、" +
+              "create_deep_research_request / complete_deep_research は /functions/v1/deep-research を使ってください",
+      });
     }
 
     // クライアント認証
