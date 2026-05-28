@@ -1,3 +1,94 @@
+## [2026-05-28] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → decisions/ フォルダ未作成のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ GitHub MCP アクセス制限外のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**: Dynamic Workflows（2026-05-28 リリース）で最大1,000サブエージェントが並列実行できるようになった。各サブエージェントが独立してツールを呼び出す新パラダイムでは、TBP-001の「最小権限」原則の適用範囲がワークフロー全体の設計レベルまで拡大する必要がある。また `defaultEnabled: false` プラグイン設定はTBP-001の「最小権限で開始」を宣言的に実装する手段として重要。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- claudefa.st（⭐⭐⭐⭐）
+- 会計×AI: keihi.com / biz.moneyforward.com / freee.co.jp
+
+#### 🔴 即座に適用すべき事項
+
+**① Dynamic Workflows + Claude Opus 4.8（v2.1.154・2026-05-28・リサーチプレビュー）**
+- Claude Codeが自動でオーケストレーションスクリプトを生成し、最大1,000サブエージェントを並列実行（最大16同時実行）
+- `/workflows` で実行状況確認、`/deep-research` が組み込みワークフローとして即時利用可能
+- Max・Team・Enterprise プランで利用可能（CLI / Desktop / VS Code拡張 / API / Bedrock / Vertex / Foundry）
+- TBP-001との関連: 1,000エージェントが各自ツールを呼び出す環境では最小権限設計が今まで以上に重要
+- ハーネス設計への影響: `/autopilot` スキルや research スキルがDynamic Workflowsによって大幅に性能向上する可能性あり
+
+**② Opus 4.8 リリース + 自動高努力モード（2026-05-28）**
+- Opus 4.8がデフォルトモデルに昇格。難しいタスクに自動的に高努力（xhigh）を適用
+- `/effort xhigh` コマンドで最高努力を明示指定可能
+- リーンシステムプロンプトがHaiku・Sonnet・Opus 4.7以前を除くすべてのモデルでデフォルト化
+
+**③ Opus 4.8 Fast Mode 価格改善（2026-05-28）**
+- 改善前: 標準の6倍（$30/M input, $150/M output）
+- 改善後: 標準の2倍で2.5倍の速度（大幅な価格改善）
+- 6月15日料金変更（プログラマティック利用の別クレジット化）との組み合わせコスト試算が必要
+
+**④ v2.1.153: skipLfs + 環境変数（2026-05-28）**
+- `skipLfs` オプションでgit/githubプラグインのLFSダウンロードをスキップ可能
+- ステータスラインコマンドが `COLUMNS` と `LINES` 環境変数を受け取れるようになった
+- MCP サーバーの SSE ストリーム再接続ループの修正
+- カスタム API ゲートウェイへの OAuth 認証情報の誤送信を修正（セキュリティ関連）
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `/deep-research` ワークフローをresearchスキルの代替として評価**
+- 組み込みワークフロー `/deep-research` と現在のresearchスキルを比較評価
+- 最大1,000エージェントによる並列リサーチの品質・コスト・時間を測定
+- Dynamic Workflowsが当デイリーリサーチ自体を代替できるかどうか検討
+
+**② Opus 4.8 Fast Mode コスト最適化試算**
+- Fast Mode（標準2倍）vs 通常Opus 4.8の使い分け基準を策定
+- 6月15日料金変更（プログラマティック利用クレジット化）と合わせたコスト計画更新
+
+**③ `defaultEnabled: false` をTBP-001実装として標準化**
+- 新規プラグイン導入時のデフォルト設定として `defaultEnabled: false` を標準化
+- TBP-001の「最小権限で開始」の宣言的実装手段として記録し、AUDIT-REPORT.md に反映
+
+#### 🟢 参考情報
+- **Anthropic Series H $650億調達・バリュエーション $9,650億（2026-05-28）**: IPO前最終ラウンドの可能性。2026年10月IPO予定に向けた動き
+- **GitHub Issues: VS Code利用量急増（Issue #58557）**: 2026-05-06以降にVS Code経由のweekly limit消費量が約2倍に。ハーネスでのコスト管理に注意
+- **GitHub Issues: モバイルアプリのリポジトリ表示問題（Issue #61019）**: GitHub App設定済みでも表示されない問題継続
+- **Anthropic Milanオフィス開設（2026-05-27）**: イタリア拠点追加（韓国ソウルに続く海外拠点拡大）
+- **freee MCP リモート版**: 約270種類の会計API操作がローカル環境なしで実行可能（3月公開済み・引き続き有効）
+- **マネーフォワード AI Cowork**: 2026年7月リリース予定（変更なし）
+- **経理AI 2026年最新動向**: 仕訳自動化90%超精度が一般化。経費精算処理工数70%削減事例が標準化
+
+#### references.md 更新提案
+以下の変更がharness-design-guideの参照情報に影響する可能性：
+1. **Dynamic Workflows / `/workflows` / `/deep-research`**: マルチエージェント実行パターンの大幅刷新。最大1,000エージェントの新スケール記載追加を提案
+2. **Opus 4.8 デフォルトモデル化 + リーンシステムプロンプトのデフォルト化**: モデル選択ガイドとシステムプロンプト設計セクションの更新を提案
+3. **Opus 4.8 Fast Mode価格改善（6倍→2倍）**: コスト計画セクション（6月15日料金変更対応）と合わせて更新を提案
+4. **`defaultEnabled: false` プラグイン設定**: プラグイン管理セクションへの追記を提案（TBP-001の実装手段として）
+5. **`skipLfs` オプション（github/gitプラグイン）**: Git LFS環境での注意事項として追記を提案
+
+#### 新規発見ソース候補
+- **agentpedia.codes**: Opus 4.8 / Dynamic Workflows の詳細技術解説あり（評価候補: ⭐⭐⭐）
+- **marktechpost.com**: Anthropic新機能のスピード速報として有効（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-01（月曜日）
+注目点: ① Dynamic Workflows / `/deep-research` の実運用評価（コスト・品質） ② 6月15日料金変更に向けたOpus 4.8 Fast Modeコスト試算 ③ security-guidance プラグインの導入評価（TBP-001 AUDIT-REPORT 作成）④ `disallowed-tools` フロントマターのハーネス実装
+
+---
+
 ## [2026-05-27] デイリーレポート
 
 ### 内部知見（機能A）
