@@ -1,3 +1,86 @@
+## [2026-05-29] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → decisions/ フォルダ未作成のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ GitHub MCP アクセス制限外のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**: v2.1.157 で `.claude/skills` 配下のプラグインが**マーケットプレイスを経由せずに自動ロード**される仕様になった。これまでマーケットプレイスを通じていた審査フローの一部が省略されうる構造変化。TBP-001 の「審査」ステップを `.claude/skills` への配置前に行うことを明示する必要がある。また `claude plugin init <name>` で新規プラグインの scaffold が簡単になったため、審査なし導入が増えるリスクに注意。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- 会計×AI: keihi.com / biz.moneyforward.com / freee.co.jp / renue.co.jp
+
+#### 🔴 即座に適用すべき事項
+
+**① v2.1.157: `.claude/skills` 自動ロードとプラグイン管理の大幅改善（2026-05-29）**
+- `.claude/skills` 配下のプラグインが**マーケットプレイスを経由せずに自動ロード**されるようになった
+- `claude plugin init <name>` コマンドで新規プラグインの scaffold を生成可能
+- `/plugin` 引数のオートコンプリート（サブコマンド・インストール済み名・マーケットプレイスプラグイン）が追加
+- TBP-001 への影響: 自動ロードにより審査なしで有効化されるリスクが生まれた。`.claude/skills` 配置前に TBP-001 審査フローを必ず実施すること
+
+**② v2.1.157: エージェント管理の強化（2026-05-29）**
+- `settings.json` の `agent` フィールドがディスパッチセッションでも反映されるようになった
+- `--agent <name>` フラグで settings のデフォルトエージェントをオーバーライド可能
+- `EnterWorktree` フックがセッション中に Claude 管理の worktree 間を切り替えられるようになった
+- ワークツリー管理: 完了後に unlocked 状態で残るようになり `git worktree remove/prune` が容易に
+
+**③ v2.1.157: テレメトリ強化（2026-05-29）**
+- `OTEL_LOG_TOOL_DETAILS=1` 環境変数を設定すると `tool_decision` テレメトリに `tool_parameters`（bash コマンド・MCP/スキル名）が含まれるようになった
+- ハーネスのデバッグ・監査証跡に活用可能
+
+**④ v2.1.156: Opus 4.8 thinking blocks バグ修正（2026-05-29）**
+- Opus 4.8 で thinking blocks が変更され API エラーが発生する問題を修正
+- 昨日（2026-05-28）から Dynamic Workflows / Opus 4.8 を使っている場合は最新版へのアップデートを推奨
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `claude plugin init <name>` でカスタムプラグインの scaffold 実験**
+- ハーネス用プラグインを正式な scaffold 構造で作成し、TBP-001 審査フローのテンプレート化を図る
+- `defaultEnabled: false` を scaffold に含め、安全なデフォルト設定を標準化
+
+**② `--agent <name>` フラグと `settings.json` agent フィールドの活用**
+- daily research タスク専用のエージェント設定を `settings.json` に記載し、ディスパッチセッション起動をシンプル化
+- 研究・執筆・コーディングでエージェントプロファイルを使い分ける仕組みを構築
+
+**③ `EnterWorktree` フックの実装評価**
+- セッション中に worktree を切り替えるフックを実装し、マルチリポジトリ研究タスクへの応用を検討
+- Dynamic Workflows との組み合わせで並列ブランチ作業の自動化を評価
+
+#### 🟢 参考情報
+- **Anthropic バリュエーション $965B 確定（2026-05-29）**: Series H クローズ・$650 億調達。OpenAI（$852B）を超えて世界最高バリュエーションのプライベート AI スタートアップに正式確定。ランレート $47B を発表
+- **GitHub Issues: 新規 Issue 多数（2026-05-29）**: #63742〜#63747 が本日開設（VS Code/Windows バグ・Agent SDK 要望等）。VS Code 2x 消費問題（#58557）は未解決継続
+- **会計×AI 2026年現状**: 経理の役割が「入力→判断支援」へ移行フェーズ。定型仕訳 90%以上自動化・経費精算 75%工数削減が一般化。PEPPOL で請求書の構造化取込みが加速
+- **Zenn: Dynamic Workflows 解説記事**（zenn.dev/akasara）: Subagents・Skills との違いと実務での使い方を解説（本文未取得・次回確認推奨）
+
+#### references.md 更新提案
+以下の変更が harness-design-guide の参照情報に影響する可能性：
+1. **`.claude/skills` 自動ロード（v2.1.157）**: プラグイン・スキル設計セクションの大幅更新を提案。マーケットプレイス経由不要になったことで、スキル配置のフローが変わる
+2. **`claude plugin init <name>`**: プラグイン管理セクションへの追記を提案（scaffold コマンドの使い方）
+3. **`--agent <name>` フラグ / `settings.json` agent フィールド**: エージェント管理セクションへの追記を提案
+4. **`EnterWorktree` フック（mid-session 切り替え）**: フック設計セクション（フックイベント一覧）への追記を提案
+5. **`OTEL_LOG_TOOL_DETAILS=1`**: テレメトリ設定セクションへの追記を提案
+
+#### 新規発見ソース候補
+なし（昨日の候補を評価継続中）
+
+#### 次回リサーチ推奨日
+2026-06-01（月曜日）
+注目点: ① `.claude/skills` 自動ロードと TBP-001 審査フローの接続確認 ② Dynamic Workflows 実運用評価（コスト・品質） ③ 6月15日料金変更に向けたクレジット消費試算 ④ `claude plugin init` を使ったプラグイン scaffold テンプレート作成
+
+---
+
 ## [2026-05-28] デイリーレポート
 
 ### 内部知見（機能A）
