@@ -1,3 +1,70 @@
+## [2026-05-30] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → decisions/ フォルダ未作成のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ GitHub MCP アクセス制限外のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**: v2.1.158（2026-05-30）で `CLAUDE_CODE_ENABLE_AUTO_MODE=1` を設定すると Bedrock・Vertex・Foundry 上でも Opus 4.7/4.8 の Auto mode が有効になった。新クラウドプロバイダー環境で Auto mode を有効化する際は、そのプロバイダー固有の権限設定・ネットワーク境界に対しても TBP-001「審査→最小権限」原則を適用すること。特に Foundry（今回初出）は従来未確認環境のため、導入前に外部監査相当の評価を推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- qiita.com/tags/ClaudeCode（⭐⭐⭐）
+- keihi.com / biz.moneyforward.com / freee.co.jp（会計×AI）
+
+#### 🔴 即座に適用すべき事項
+
+**① v2.1.158: Auto mode が Bedrock・Vertex・Foundry に拡張（2026-05-30）**
+- `CLAUDE_CODE_ENABLE_AUTO_MODE=1` 環境変数を設定すると、Bedrock・Vertex・Foundry 上で Opus 4.7 および Opus 4.8 の Auto mode が利用可能に
+- Auto mode: タスクの複雑さに応じてモデルが自動でモード（速度/品質）を切り替える機能
+- TBP-001 との関連: 新クラウドプロバイダーで有効化する際は事前審査を推奨（特に Foundry は初出環境）
+- **対応**: Bedrock/Vertex/Foundry を利用している場合、Auto mode の試験導入前に各プロバイダーの IAM/権限設定を確認
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Bedrock/Vertex 上での Auto mode 有効化と動作評価**
+- 既存の Bedrock/Vertex 接続環境があれば `CLAUDE_CODE_ENABLE_AUTO_MODE=1` を設定して品質・コスト変化を測定
+- Auto mode が Daily Research タスクのコスト効率にどう影響するか試算
+
+**② GitHub Issues 新規動向の継続追跡（#64067〜#64073）**
+- 本日開設の Issue のうち MCP・メモリ関連（#64072: Windows MCP メモリ問題）が今後のハーネス設計に影響する可能性
+- 特に #64070（hooks + MCP enhancement request）は TBP-001/ハーネス設計に関連する内容の可能性あり
+
+**③ 「cc-safe-setup」（GitHub）の評価**
+- Zenn/Qiita に掲載されている GitHub の Claude Code 安全設定セット「cc-safe-setup」が TBP-001 審査フローと重複する可能性あり
+- TBP-001 の AUDIT-REPORT テンプレート化の参考として評価価値あり
+
+#### 🟢 参考情報
+- **Claude Mythos Preview（Anthropic Red Team）**: red.anthropic.com にて Mythos のプレビューが公開確認。詳細未取得・次回確認推奨
+- **GitHub Issues 本日の新規（#64067〜#64073）**: TUI バグ（macOS/Linux）、MCP メモリ問題（Windows）、認証問題（macOS）が複数報告。デスクトップアプリ利用者は最新版確認推奨
+- **freee が Claude Cowork MCP 統合に対応**: MCP プロトコル経由で freee 会計データに AI エージェントが直接アクセス可能に（Shopify データ取込みとの相性良好）
+- **マネーフォワード AI Cowork**: 2026年7月リリース予定（変更なし）
+- **会計×AI 2026年現状**: 仕訳自動化 90%+ 精度・請求書処理 70% 工数削減が一般化。PEPPOL 普及継続。花王ビューティブランズが経費精算 AI 導入で年間 5.5 万時間削減
+
+#### references.md 更新提案
+1. **Auto mode の Bedrock/Vertex/Foundry 対応（v2.1.158）**: `CLAUDE_CODE_ENABLE_AUTO_MODE=1` 環境変数の説明をモデル設定・マルチプロバイダーセクションに追記を提案
+2. **前日（v2.1.157）からの未反映提案継続**: `.claude/skills` 自動ロード・`claude plugin init`・`--agent <name>` フラグ・`EnterWorktree` フック・`OTEL_LOG_TOOL_DETAILS=1` の harness-design-guide への追記（前日提案再掲）
+
+#### 新規発見ソース候補
+- **red.anthropic.com**: Anthropic Red Team のプレビュー・実験的発表ページ（Mythos Preview 公開確認）（評価候補: ⭐⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-01（月曜日）
+注目点: ① Auto mode（Bedrock/Vertex/Foundry）の実運用評価 ② 6月15日料金変更最終確認・Auto mode コスト影響試算 ③ Claude Mythos Preview の内容確認 ④ `claude plugin init` を使ったプラグイン scaffold テンプレート作成（前日継続）
+
+---
+
 ## [2026-05-29] デイリーレポート
 
 ### 内部知見（機能A）
