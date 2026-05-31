@@ -1,3 +1,80 @@
+## [2026-05-31] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → フォルダ未存在のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ GitHub MCP アクセス制限外のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**: Anthropic が Mythos レベルモデルを「数週間以内に全ユーザーへリリース」すると発表（2026-05-28〜29）。Mythos はコーディング・サイバーセキュリティ能力が際立って高く（専門的ハッキングタスク 73% 成功率）、TBP-001 の「導入前審査」原則が新モデル採用時にも適用されるべき。特に security-guidance プラグインとの組み合わせ評価を推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- red.anthropic.com（Mythos Preview）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- keihi.com / biz.moneyforward.com（会計×AI）
+
+#### 🔴 即座に適用すべき事項
+
+**① v2.1.159（2026-05-31）: 内部インフラ改善のみ**
+- ユーザー向け変更なし
+- アップデート適用は安全・推奨（変更リスクなし）
+
+**② Mythos レベルモデルの近日一般公開（Anthropic 発表: 2026-05-28〜29）**
+- Anthropic が「数週間以内」に全ユーザーへ Mythos レベルモデルを提供予定と正式発表
+- 現在は Project Glasswing（重要インフラ防衛者・OSS 開発者限定）で限定公開中
+- Mythos の能力: 数学オリンピック 97.6%・専門的ハッキングタスク 73% 成功率（2025年4月時点では不可能だったタスク）
+- **TBP-001 適用**: 新モデル採用前に審査フロー（external-audit 相当）を実施。特に security-guidance プラグインと組み合わせた能力評価が推奨
+- **対応**: Mythos 一般公開のアナウンスを注視し、公開時点で TBP-001 審査記録（AUDIT-REPORT.md）を作成してから採用を検討すること
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Mythos 一般公開後の採用評価（TBP-001 審査フロー適用）**
+- 公開次第、security-guidance プラグインを使ったコード脆弱性スキャンに Mythos を投入し評価
+- harness 内のデフォルトモデルを Mythos に変更する前に最小権限環境でのテストを徹底
+- Mythos の「自己修正ループ」能力（コード修正途中で誤りを発見し修正し直す）がハーネス設計に与える影響を評価
+
+**② Claude Code と Codex の使い分け評価（Zenn 新着記事参照）**
+- 「settings.json を育てた側が速い」という実証 → Tak の settings.json / CLAUDE.md の充実度確認
+- Codex が「PR 自動レビュー・大規模一括変更」に向くという知見 → research ワークフローへの応用検討
+- Claude Code（日常開発全般）vs Codex（PR レビュー・大規模変更）の役割分担を明示化する価値あり
+
+**③ Project Glasswing の情報収集と TBP-001 への反映**
+- Anthropic が Glasswing で「重要ソフトウェアのセキュリティ確保」を目的とした AI 活用フレームを公開
+- TBP-001「外部ツール導入は審査→最小権限→段階拡張」の審査テンプレートに Glasswing の考え方を参照できるか評価
+- glasswing.anthropic.com の内容確認と TBP-001 AUDIT-REPORT テンプレートへの適用可否検討
+
+#### 🟢 参考情報
+- **GitHub Issues 新規（#64334〜#64341, 2026-05-31）**: TUI キーバインド（macOS）・認証（macOS）・Bash/権限バグ（macOS）・Windows デスクトップバグが複数報告。デスクトップアプリ最新版への更新を推奨
+- **Project Glasswing（Anthropic 公式）**: Mythos を使って重要インフラの脆弱性を防衛者が先行発見・修正するプログラム。OSS 開発者も対象。glasswing.anthropic.com 確認推奨
+- **Zenn 新着「Claude CodeとCodexを2ヶ月使い比べた」（2026-05-31公開）**: settings.json の充実度が生産性に直結することを実証。research-hub ハーネスの CLAUDE.md / settings.json 見直しの参考に
+- **会計×AI 2026年5月最新**: freee AI-OCR が印刷レシート 90% 超・手書き 75% 前後の精度に到達。バクラク × freee/マネーフォワード API 連携が強化継続。マネーフォワード AI Cowork は 7 月リリース変更なし
+- **Anthropic バリュエーション $965B 確定（継続確認）**: ランレート $47B/年。2026 年 10 月 IPO へ向けた動き継続中
+
+#### references.md 更新提案
+1. **Mythos レベルモデルの近日公開**: harness-design-guide のモデル選択セクションに「Mythos クラスモデルへの移行前は TBP-001 審査を実施すること」として追記を提案
+2. **Project Glasswing**: セキュリティレビュースキル・security-guidance プラグインのセクションに関連リソースとして追記を提案
+3. **前日（v2.1.158）からの未反映提案継続**: Auto mode（Bedrock/Vertex/Foundry）の環境変数 `CLAUDE_CODE_ENABLE_AUTO_MODE=1` の説明を harness-design-guide に追記（前日提案再掲）
+
+#### 新規発見ソース候補
+- **glasswing.anthropic.com**: Anthropic のセキュリティ AI プログラム Glasswing の公式ページ。Mythos レベルの能力評価・セキュリティ活用の一次情報（評価候補: ⭐⭐⭐⭐⭐）
+- **red.anthropic.com**: Anthropic Red Team のプレビュー・実験的発表ページ。Mythos Preview 公開中（評価候補: ⭐⭐⭐⭐ 継続）
+
+#### 次回リサーチ推奨日
+2026-06-02（月曜日）
+注目点: ① Mythos 一般公開確認と TBP-001 審査フロー適用 ② Auto mode（Bedrock/Vertex/Foundry）の実運用評価継続 ③ 6 月 15 日料金変更最終確認・クレジット消費試算 ④ Project Glasswing への参加可否評価
+
+---
+
 ## [2026-05-30] デイリーレポート
 
 ### 内部知見（機能A）
