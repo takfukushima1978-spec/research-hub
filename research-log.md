@@ -1,3 +1,98 @@
+## [2026-06-02] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → フォルダ未存在のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ GitHub MCP アクセス制限外のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**: v2.1.160（2026-06-02）でシェル起動ファイル（`.zshenv`, `.zlogin`, `.bash_login`, `~/.config/git/`）への書き込み前に確認プロンプトが追加。また `acceptEdits` モードがビルドツール設定ファイル（`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`）への書き込み前にも確認するように変更。TBP-001「最小権限で開始」原則と整合する公式変更で、`acceptEdits` モードを設定している環境では挙動変化の確認を推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/releases（⭐⭐⭐⭐⭐）
+- devtoolpicks.com / codersera.com（Anthropic subscription changes）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- qiita.com/tags/ClaudeCode（⭐⭐⭐）
+- ai-revolution.co.jp / freee.co.jp / prtimes.jp（会計×AI）
+
+#### 🔴 即座に適用すべき事項
+
+**① v2.1.160（2026-06-02）: セキュリティ強化**
+- シェル起動ファイル（`.zshenv`, `.zlogin`, `.bash_login`, `~/.config/git/`）への書き込み前に確認プロンプトを追加（意図しないコマンド実行を防止）
+- `acceptEdits` モードがビルドツール設定ファイル（`.npmrc`, `.yarnrc*`, `bunfig.toml`, `.bazelrc`, `.pre-commit-config.yaml`, `.devcontainer/`）への書き込み前に確認するように（コード実行権限を持つファイルへの予期しない書き込みを防止）
+- grep でファイルを確認した後の Edit に別途 Read が不要になった（利便性向上）
+- WSL 上での Windows クリップボードへのコピーを修正（PowerShell interop 方式に変更。MobaXterm 等 OSC 52 非対応ターミナルでも動作）
+
+**② v2.1.161（2026-06-02）: 多数のバグ修正**
+- 並列ツール呼び出しで失敗した Bash コマンドが他のバッチ呼び出しをキャンセルしなくなった（Dynamic Workflows・並列処理設計に重要）
+- `claude agents` が work ファンアウト時に `done/total` を表示するように
+- `/mcp` が未使用の claude.ai コネクタを「Show unused connectors」に折り畳むように
+- `OTEL_RESOURCE_ATTRIBUTES` の値がメトリクスデータポイントのラベルに含まれるように
+- OpenTelemetry ログイベントの初期化前ドロップを修正
+- フルスクリーンモードで Linux クリップボード（wl-copy/xclip/xsel）が機能するように
+- Windows hooks で bash が "command not found" になる問題を修正
+- バックグラウンドサブエージェントの出力が `claude -p` stdout を壊す問題を修正
+- Workflow agents の `isolation: "worktree"` でファイル編集がブロックされる問題を修正
+- `/autofix-pr` が git worktree でエラーを報告する問題を修正
+
+**③ Anthropic が S-1 を SEC に機密提出 → IPO 準備本格化（2026-06-01）**
+- Anthropic が米 SEC にフォーム S-1 を機密提出（2026-06-01）。OpenAI に先行する形で IPO レース入り
+- バリュエーション $9,650 億（Series H クローズ済み、$650 億調達）、ランレート $47B/年
+- 「公開の選択肢を確保するため」の提出。IPO 実施は SEC レビュー完了後・市場状況次第
+- **ハーネス設計への示唆**: Anthropic が公開企業化すると価格設定・機能提供方針が投資家圧力で変わる可能性。TBP-001 審査フローへ「ベンダー財務健全性・事業継続リスク」軸の追加を提案（Tak の判断待ち）
+
+**④ 6月15日 料金変更まで13日（プログラマティック利用課金分離）【最終確認】**
+- 前回（2026-05-31）でも確認済み。残り13日で最終準備フェーズ
+- 対象: Agent SDK・`claude -p`（非インタラクティブ）・GitHub Actions・サードパーティエージェント
+- 月次クレジット: Pro $20 / Max 5x $100 / Max 20x $200（フル API 価格、ロールオーバーなし）
+- この daily-research Routine 自体も claude -p 相当で対象になりうるため、消費クレジットの事前試算を推奨
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① v2.1.161 の並列ツール呼び出し修正を活用（ハーネス設計）**
+- 失敗した Bash コマンドが他のバッチを止めなくなったため、research タスクで複数リポジトリを並列確認する際のエラー耐性が向上
+- Dynamic Workflows との組み合わせで並列リサーチの信頼性が上がる → 試験導入を検討
+
+**② acceptEdits モードの設定見直し**
+- v2.1.160 の変更で `acceptEdits` モード時にビルドツール設定ファイル書き込み前プロンプトが追加
+- ハーネス内で `acceptEdits` を設定している場合、既存フローとの整合性確認を推奨（`.npmrc` 等への誤書き込み防止として有効だが、CI 環境ではプロンプトが止まる可能性あり）
+
+**③ マネーフォワード AI Cowork の技術詳細確認（7月リリース予定）**
+- Claude Agent SDK + MCP を採用したバックオフィス AI 自動化製品
+- Tak の本業（経理部長・組織内会計士）への応用可能性を評価。7月リリース前に技術アーキテクチャ・料金・機能範囲を把握
+
+#### 🟢 参考情報
+- **Anthropic 新利用規約（2026-06-01 施行）**: プロフェッショナル向け利用規約が更新。詳細確認推奨
+- **freee「AIおまかせ明細取得」β版**: モバイルSuica PDF から明細を自動抽出（2026-03-26〜）。AI-OCR 精度 99% 以上
+- **Zenn「Claude Code の hook を無料公開してきた実録」（3日前公開）**: 無料 hook 公開が有料技術書販売につながった事例。コミュニティへの貢献戦略の参考
+- **「0から分かる Claude Code 完全ガイド」（Zenn本）**: 2026/05/29 時点の Anthropic 公式ベストプラクティスをまとめた日本語書籍。確認推奨
+- **会計×AI 業界**: 導入企業で作業時間 50〜90% 削減事例が一般化。イレギュラー取引判断・税務戦略立案は依然人間の役割。freee ARPU が前年比 11.2% 上昇（年 60,800 円）
+
+#### references.md 更新提案
+1. **v2.1.160 セキュリティ強化**: `acceptEdits` モードでのビルドツール設定ファイル保護（`.npmrc`, `.yarnrc*` 等）を harness-design-guide の acceptEdits 設定セクションに追記を提案
+2. **v2.1.161 並列ツール呼び出し修正**: Dynamic Workflows・並列処理設計セクションへの追記を提案（失敗 Bash が他の並列コールをキャンセルしなくなった）
+3. **references.md 最終確認が 2026-03-29 で約3ヶ月経過**: 参照 URL 群（best-practices / agent-skills）の内容が最新か確認を推奨。公式ドキュメントが大幅更新されている可能性あり
+4. **継続提案（前回からの未反映）**: Mythos クラスモデル採用前の TBP-001 審査フロー適用 / `.claude/skills` 自動ロード記載 / Dynamic Workflows 追記 / `disallowed-tools` フロントマター
+
+#### 新規発見ソース候補
+- **devtoolpicks.com**: Anthropic 課金変更・機能変更の詳細解説記事あり。実務影響の整理に有用（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-04（水曜日）
+注目点: ① 6月15日料金変更まで11日 → daily-research Routine のクレジット消費試算完了 ② acceptEdits モード挙動確認（v2.1.160 変更との整合） ③ マネーフォワード AI Cowork 技術詳細 ④ Anthropic IPO 進捗・利用規約変更の実務影響確認
+
+---
+
+
 ## [2026-05-31] デイリーレポート
 
 ### 内部知見（機能A）
