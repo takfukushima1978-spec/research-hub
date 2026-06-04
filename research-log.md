@@ -1,3 +1,85 @@
+## [2026-06-04] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → フォルダ未存在のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ GitHub MCP アクセス制限外のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**: Claude Code GitHub Actions に重大な脆弱性（CVSS 7.8）が発見・修正（claude-code-action v1.0.94）。`checkWritePermissions` 関数が `[bot]` で終わるアクターを無条件に信頼していた欠陥 + プロンプトインジェクションで、OIDC トークン窃取・サプライチェーン汚染が可能だった。これは TBP-001「審査ステップで外部ツールのアクター検証を確認すること」の重要性を裏付ける事例。
+- **TBP-001（継続）**: SecurityWeek が「Claude Code・Gemini CLI・GitHub Copilot Agents が GitHub コメント経由のプロンプトインジェクションに脆弱」と報告。AI コーディングエージェントの GitHub 統合全般がプロンプトインジェクション攻撃ベクトルになりうることが明確化。TBP-001 審査フローに「プロンプトインジェクション耐性確認」の観点を追加することを提案（Tak 確認待ち）。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/releases（⭐⭐⭐⭐⭐）
+- thehackernews.com / cybersecuritynews.com / securityweek.com（セキュリティ脆弱性情報）
+- flatt.tech/research（GMO Flatt Security 研究レポート）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- qiita.com/tags/ClaudeCode（⭐⭐⭐）
+- keihi.com / renue.co.jp / freee.co.jp（会計×AI）
+
+#### 🔴 即座に適用すべき事項
+
+**① claude-code-action に CVSS 7.8 の重大脆弱性 → v1.0.94 で修正済み（要アップデート）**
+
+- 発見者: RyotaK（GMO Flatt Security）→ 1月に報告、Anthropic が4日で修正、春を通じて追加強化
+- 攻撃手法: `checkWritePermissions` が `[bot]` で終わるアクターを無条件信頼 → GitHub App を使ったなりすましが可能
+- プロンプトインジェクション組み合わせで: OIDC トークン窃取 → 下流リポジトリへの悪意あるコード注入（サプライチェーン攻撃）が可能だった
+- 修正内容 (v1.0.94): `checkHumanActor` 呼び出し追加、ワークフローサマリ無効化デフォルト化、子プロセスへの環境変数スクラビング、カスタム `gh` コマンドラッパー（URL 持ち出しブロック）、トリガー後のイシュー編集無視
+- Anthropic は bug bounty $4,800 を支払い（ベース $3,800 + ボーナス $1,000）
+- **対応**: claude-code-action を使っている GitHub Actions ワークフローは即刻 v1.0.94 以降に更新すること（`.github/workflows/` 内の `uses: anthropics/claude-code-action@` のバージョン指定を確認）
+
+**② Claude Code・Gemini CLI・GitHub Copilot Agents、GitHub コメント経由のプロンプトインジェクション脆弱性（SecurityWeek）**
+
+- 3つの主要 AI コーディングエージェントがすべて、GitHub Issues/PR コメントへの悪意ある内容の埋め込みによるプロンプトインジェクションに脆弱であることが報告
+- 教訓: AI エージェントが GitHub 統合を持つ場合、外部からのコンテンツ（Issue/PR コメント）をプロンプトとして処理する際のサニタイズが必須
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① claude-code-action バージョン確認と v1.0.94 へのアップデート**
+- research-hub / My-Profile-and-Memory の GitHub Actions ワークフローで claude-code-action を使っている場合、バージョンを確認して v1.0.94 以降に更新
+
+**② TBP-001 審査フローへ「プロンプトインジェクション耐性確認」観点の追加を Tak に提案**
+- 現行 TBP-001 は「審査→最小権限→段階拡張」。今回の脆弱性事例を受け、審査ステップに「外部コンテンツ処理時のプロンプトインジェクション耐性確認」を明示的に追加（TBP-001 更新案として提案）
+
+**③ freee 統合ワールド 2026（6月16日）の事前情報収集**
+- 12日後に迫った freee イベント。AI機能・MCP連携のアップデートが発表される見込み
+- freee-mcp がオープンソース公開済み（約270種類の会計 API 操作対応）。Tak の本業（経理部長）への直接インパクトを事前評価
+
+#### 🟢 参考情報
+- **Claude Code が GitHub 公開コミットの 4% を占める（Gigazine）**: 2026年末には20%超を占めると予測。AI コーディングが主流化している背景として記録
+- **Claude Code 6月15日料金変更まで11日**: プログラマティック利用（claude -p / GitHub Actions / Agent SDK）が別クレジット化。残り11日で準備完了が必要
+- **Zenn 新着記事（2026-06-04前後）**:
+  - 「Claude Code 使い放題は終わるのか？6月改定の全容と開発者がやるべきこと」（zenn.dev/sanpi34）: 6月15日料金変更の詳細解説。Max プランの使い分けが焦点
+  - 「コードを書けない私が、AIに『チーム』を持たせるまで」（Qiita/saitoko）: 非エンジニアが Claude Code でサブエージェントチームを組んで Zenn Book を出版した実録
+  - 「Claude Code の無料 hook を配り続けて有料 Zenn 本が売れた理由」（Qiita/yurukusa）: コミュニティ貢献戦略の参考事例
+- **freee-mcp オープンソース公開**: 約270種類の freee 会計 API をローカル環境なしで利用可能。TBP-001 審査対象として評価価値あり
+- **国税庁 KSK2 移行（2026年9月）**: 基幹システムが次世代「KSK2」に全面移行予定。Tak の本業（経理部長・内部統制）に直結する変化として注視
+- **経理 AI 2026年最新動向**: 生成AIが「判断支援」段階に進化（ルールベースRPA → 生成AI判断）。PEPPOL で請求書標準化加速。経費精算工数75%削減事例が一般化
+
+#### references.md 更新提案
+1. **claude-code-action セキュリティ（v1.0.94 で修正）**: harness-design-guide のセキュリティ・GitHub Actions セクションに「claude-code-action を使う場合は v1.0.94 以降を使用し、外部コンテンツ経由のプロンプトインジェクション耐性を確認すること」を追記することを提案
+2. **AI エージェントのプロンプトインジェクション全般**: TBP-001 審査フローの「審査項目」に「GitHub Issues/PR コメント等の外部コンテンツ経由プロンプトインジェクション耐性確認」を追加提案
+3. **継続提案（前日からの未反映）**: v2.1.162 WebFetch 権限ルール修正 / references.md 最終確認 2026-03-29 以降約3ヶ月未更新。早急な棚卸しを推奨
+
+#### 新規発見ソース候補
+- **flatt.tech/research**: GMO Flatt Security の研究レポート。Claude Code / AI エージェントのセキュリティ脆弱性に関する深掘り記事あり（評価候補: ⭐⭐⭐⭐）
+- **securityweek.com**: AI セキュリティ関連報道の速報として有効（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-05（木曜日）
+注目点: ① 6月15日料金変更まで10日 → プログラマティック利用消費量の最終試算 ② claude-code-action v1.0.94 アップデート対応確認 ③ freee 統合ワールド 2026（6月16日）事前情報収集 ④ TBP-001 プロンプトインジェクション観点追加案の確認
+
+---
+
 ## [2026-06-03] デイリーレポート
 
 ### 内部知見（機能A）
