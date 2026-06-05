@@ -1,3 +1,86 @@
+## [2026-06-05] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → フォルダ未存在のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ decisions/ フォルダ未存在のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**:
+  1. v2.1.163（2026-06-04）で `requiredMinimumVersion`/`requiredMaximumVersion` managed settings が追加。Claude Code がバージョン範囲外の場合に起動拒否し承認済みバージョンへ誘導する機能。TBP-001「段階拡張」に「バージョン強制管理」という運用軸が加わることを示唆。Enterprise 管理者が構造的にバージョンを固定できるようになった。
+  2. `/plugin list --enabled/--disabled` コマンド追加により、プラグインの有効/無効状態の棚卸しが容易に。TBP-001「最小権限で開始」後の定期棚卸しにそのまま使えるコマンド。
+  3. Stop/SubagentStop フックが `hookSpecificOutput.additionalContext` を返せるようになり、フック終了後もターンを継続させながら Claude へフィードバックを渡せる機構が追加。TBP-001 審査フローのフック設計でフィードバックループを組む際の実装手段として活用できる。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- qiita.com/tags/ClaudeCode（⭐⭐⭐）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- keihi.com / luvina.jp / renue.co.jp（会計×AI）
+
+#### 🔴 即座に適用すべき事項
+
+**① v2.1.163（2026-06-04）: バージョン強制・プラグイン管理・フック強化**
+
+- **`requiredMinimumVersion`/`requiredMaximumVersion` managed settings**: 許可バージョン範囲外では Claude Code が起動拒否。Enterprise 管理者がバージョンを固定管理できる構造的コントロールが可能に
+- **`/plugin list --enabled/--disabled`**: 有効/無効フィルタでプラグイン一覧確認。TBP-001 棚卸しに直接使えるコマンド
+- **Stop/SubagentStop フックの `hookSpecificOutput.additionalContext`**: フック終了後もターンを継続しながら Claude にフィードバックを渡せる新フィールド。エラー扱いにならずにコンテキストを追加できる
+- **`\$` escape syntax**: スキルコマンドボディで数字前のリテラル `$` をエスケープ可能（`\$1` → `$1` として展開されない）
+- **MCP Stdio `--resume` 時 `CLAUDE_CODE_SESSION_ID` 取得**: セッション再開時のセッション ID を MCP サーバー側で受け取れるようになった
+- **`claude -p` hanging 修正**: バックグラウンドコマンドが終了しない場合、最終結果出力後 ~5秒でシェルが停止するように修正
+- **Bedrock/Vertex/Foundry 修正**: `CI=true` かつ Anthropic API キーなしで "ANTHROPIC_API_KEY required" エラーになる問題を修正
+- **Windows**: セッション環境ディレクトリへの "EEXIST: file already exists" エラーを修正（OneDrive 環境等）
+- **フック条件修正**: `if: "Bash(...)"` 条件が `$()` や `$VAR` を含む全コマンドで誤発火する問題を修正（サブシェル・バックティックのみに限定）
+- **`$HOME` パスの deny ルール修正**: ホームディレクトリパスへの deny ルールが `$HOME` 経由でも正しくブロックするように修正
+
+**② v2.1.165（2026-06-05）: バグ修正と安定性改善**
+- 一般的なバグ修正と信頼性向上
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `hookSpecificOutput.additionalContext` の活用**
+- research タスクの StopHook で「次のリサーチテーマ」や「取り残した調査項目」を additionalContext として Claude に渡し、セッション引き継ぎを改善
+- TBP-001 審査フローのフック設計でフィードバックループを組む実装手段として評価
+
+**② `/plugin list --disabled` で定期棚卸し**
+- インストール済みだが無効化されているプラグインを確認し、不要なものをアンインストール
+- TBP-001「最小権限で開始」の事後点検として定期実行をルーティン化
+
+**③ freee 統合ワールド 2026（6月16日）の事前情報収集（再掲）**
+- 11日後。AI機能・MCP連携アップデートの発表が見込まれる
+- Tak の本業（経理部長・内部統制）への直接インパクトを事前評価
+
+#### 🟢 参考情報
+- **Anthropic、AI の自己改善ループ到達前に国際的パウズを呼びかけ（2026-06-04）**: 「AI が間もなく人間の監視なしに自己改善できる段階に達しかねない」と警告し、フロンティアモデル開発の協調一時停止を提案（SiliconAngle）。長期的に TBP-001 の外部ツール審査フレームワークの重要性が高まる背景として把握
+- **GitHub Issues 新規（2026-06-05）**: #65736（TUI キーバインド Enhancement）、#65735（Web版 Co-working コストバグ）、#65734（フック Enhancement）、#65739（macOS + VS Code MCP バグ）
+- **Qiita: Claude Code v2.1.163 バージョン強制機能解説（@picnic）**: `requiredMinimumVersion`/`requiredMaximumVersion` の実践解説記事（qiita.com）
+- **Zenn: Claude Code と Zenn 執筆環境の育て方（@shimo4228）**: Claude Code を使ったコンテンツ制作ワークフロー構築記録（zenn.dev）
+- **Zenn: Claude Code 日本語入力拡張に翻訳機能追加（@genkis）**: 日本語 ↔ 英語翻訳インライン統合の実装事例（zenn.dev）
+- **会計×AI 2026年6月動向**: 経理×AI 導入企業が全体の71%（KPMG グローバル調査）、うち過半数が生成AIを本格運用。経費精算工数75%削減が標準化。生成AIが「ルールベース仕訳 → 判断支援」へ進化中
+- **freee 統合ワールド 2026（6月16日）**: 経営・バックオフィス・AI テーマの年次カンファレンス。AI 機能・MCP 連携強化の発表を注視
+
+#### references.md 更新提案
+1. **`requiredMinimumVersion`/`requiredMaximumVersion`（v2.1.163）**: harness-design-guide の Enterprise 管理 / managed settings セクションに「組織でのバージョン強制機能」として追記を提案。承認済みバージョン範囲外で起動拒否する仕組みの解説を含める
+2. **`hookSpecificOutput.additionalContext`（Stop/SubagentStop フック）**: フック設計セクションへの追記を提案（ターン継続しながら Claude にフィードバックを渡す仕組み）
+3. **継続提案（4週間連続未反映）**: references.md 最終確認が 2026-03-29 以降、約3ヶ月未更新。直近1ヶ月で `disallowed-tools`/`MessageDisplay`/`hookSpecificOutput`/`/plugin list`/バージョン強制 など重要な追記候補が10件超蓄積済み。Tak の判断で一括更新セッションを強く推奨
+
+#### 新規発見ソース候補
+なし（既存ソースで十分カバー）
+
+#### 次回リサーチ推奨日
+2026-06-06（金曜日）
+注目点: ① 6月15日料金変更まで9日 → プログラマティック利用消費量の最終試算 ② claude-code-action v1.0.94 アップデート対応確認（昨日からの継続） ③ freee 統合ワールド 2026（6月16日）事前情報収集 ④ references.md 一括更新セッションの検討
+
+---
+
 ## [2026-06-04] デイリーレポート
 
 ### 内部知見（機能A）
