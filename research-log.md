@@ -1,3 +1,84 @@
+## [2026-06-06] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- my-profile-and-memory/decisions/ → フォルダ未存在のためスキップ
+- その他リポジトリ（StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal）→ decisions/ フォルダ未存在のためスキップ
+- tak-best-practices/ → フォルダ未存在のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**: v2.1.166 で deny ルールのツール名位置にグロブパターン（`"*"` ですべてのツールを拒否）が使えるようになった。TBP-001「最小権限で開始」の宣言的実装として「デフォルト全拒否→必要ツールのみ allow」設定パターンが構造的に実現可能になった。
+- **TBP-001（セキュリティ継続）**: v2.1.166 でクロスセッションメッセージング（他セッションからの SendMessage 中継）がユーザー権限を引き継がないように変更。マルチエージェント設計でのセッション間権限エスカレーション防止が強化。Dynamic Workflows を使うハーネスに直接影響。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- qiita.com/tags/ClaudeCode（⭐⭐⭐）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- keihi.com / uravation.com（会計×AI）
+
+#### 🔴 即座に適用すべき事項
+
+**① v2.1.166（2026-06-06）: fallbackModel・セキュリティ強化・大量バグ修正**
+
+- **`fallbackModel` 設定（最重要）**: プライマリモデルが過負荷・利用不可の際に最大3つのフォールバックモデルを順番に試行できるようになった。Routines や長時間タスクでの耐障害性が大幅向上。`--fallback-model` フラグもインタラクティブセッションに適用されるように改善
+- **deny ルールにグロブパターン対応**: `"*"` ですべてのツールを拒否、`"Bash*"` などでパターンマッチ拒否が可能に。TBP-001「最小権限で開始」の実装が大幅に強化される
+- **クロスセッションメッセージングのセキュリティ強化**: 他セッションから SendMessage 経由で中継されたメッセージはユーザー権限を持たなくなった。マルチエージェント環境での権限エスカレーション防止に重要
+- **JetBrains IDE フリッカー修正（2026.1+）**: IntelliJ・PyCharm・WebStorm 等で同期出力を有効化することでフリッカーを修正
+- **Windows PowerShell コマンド検証ハング修正**
+- **macOS `claude --bg-pty-host` 孤立プロセス 100% CPU 使用修正**
+- **Kitty キーボードプロトコル Shift+非ASCII 文字ドロップ修正**（Shift+ä → Ä が正常に入力されるように）
+- **音声モード `/voice` トグル後に `/login` が必要になる問題を修正**
+- **`claude agents` が git worktree 内でクラッシュループする問題を修正**
+- **Ctrl+O トランスクリプトビューで思考テキストが重複する問題を修正**
+
+**② v2.1.167（2026-06-06）: バグ修正と信頼性改善**
+- 一般的なバグ修正と信頼性向上
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `fallbackModel` 設定の Routines への実装（耐障害性向上）**
+- daily-research Routine に `fallbackModel: ["claude-opus-4-6", "claude-sonnet-4-6"]` を設定し、プライマリモデル過負荷時の自動フォールバックを実装
+- 6月15日料金変更と組み合わせたコスト試算：フォールバック先が安価なモデルの場合のコスト差を事前把握
+
+**② deny ルールのグロブパターンを使った最小権限設計**
+- research スキルに `"*"` でデフォルト全拒否 → `Read`・`WebSearch`・`WebFetch`・`mcp__github__*` のみ allow という最小権限設定を試験実装
+- TBP-001「最小権限で開始」の宣言的実装として記録
+
+**③ freee 統合ワールド 2026（6月16日）最終事前調査（残り10日）**
+- freee が会計×AI・MCP 連携でどのようなアップデートを発表するか事前情報収集
+- Tak の本業（経理部長・内部統制）への直接インパクトを評価。特に AI 仕訳・freee-MCP の機能拡張に注目
+
+#### 🟢 参考情報
+- **Anthropic Science Blog「Making Claude a chemist」（2026-06-05）**: 化学研究領域への Claude 応用に関する科学ブログ記事。Claude の専門ドメイン適用研究の一環として把握
+- **GitHub Issues 新規（2026-06-06, #65899〜#65906）**: TUI・API・コスト・MCP・skills 関連のバグ・Enhancement が多数。特に #65901（macOS + MCP メモリ性能）・#65904（コスト・API バグ）が Routines に関連する可能性あり
+- **Qiita: Claude Code v2.1.166 解説（@picnic）**: `fallbackModel` 設定・セキュリティ強化・バグ修正のまとめ記事（qiita.com/picnic）
+- **Claude Code 週次アップデートまとめ（2026-05-30 週）（@saitoko, Qiita）**: 先週分の総括。定期フォローアップ推奨
+- **会計×AI 2026年6月動向**: AIエージェントが「請求書受信→仕訳起票→会計システム入力→担当者確認依頼」を人間の逐一指示なしに実行できる水準に到達（uravation.com）。経理特化型 AI エージェント（TOKIUM・UPSIDER・マネーフォワード AI 仕訳等）が市場拡大。Tak の本業における「人間の役割 = イレギュラー判断・税務戦略立案」への移行が加速中
+- **6月15日料金変更まで残り9日**: プログラマティック利用（`claude -p`/GitHub Actions/Agent SDK）の別クレジット化まで9日。この daily-research Routine も対象。最終消費量試算を強く推奨
+
+#### references.md 更新提案
+1. **`fallbackModel` 設定（v2.1.166）**: harness-design-guide のモデル設定・信頼性セクションに「プライマリ過負荷時のフォールバックモデル設定（最大3つ）」として追記を提案
+2. **deny ルールのグロブパターン対応（v2.1.166）**: アクセス制御セクションに「ツール名位置でのグロブパターン使用（`"*"` で全拒否）」を追記提案。TBP-001 実装例として有用
+3. **クロスセッションメッセージングのセキュリティ（v2.1.166）**: マルチエージェント設計セクションに「他セッションからの中継メッセージはユーザー権限を持たない」を追記提案
+4. **継続提案（5週間連続未反映）**: references.md 最終確認 2026-03-29 以降、約3ヶ月未更新。直近1ヶ月で `fallbackModel`/`hookSpecificOutput.additionalContext`/`requiredMinimumVersion`/`disallowed-tools`/`MessageDisplay`/`/plugin list` など重要追記候補が15件超蓄積。一括更新セッションを**最優先推奨**。
+
+#### 新規発見ソース候補
+- **qiita.com/@saitoko**: Claude Code 週次アップデートまとめを継続発信。信頼性が高く日本語でのカバレッジが充実（評価候補: ⭐⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-07（土曜日）
+注目点: ① 6月15日料金変更まで残り8日 → プログラマティック利用消費量の最終試算（期限迫る） ② `fallbackModel` 設定の Routines への実装 ③ freee 統合ワールド 2026（6月16日）事前情報収集（残り9日） ④ references.md 一括更新セッションの着手
+
+---
 ## [2026-06-05] デイリーレポート
 
 ### 内部知見（機能A）
