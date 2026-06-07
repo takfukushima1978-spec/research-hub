@@ -1,3 +1,90 @@
+## [2026-06-07] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → decisions/ フォルダ未存在のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**:
+  1. **freee-mcp**（freee公式オープンソースMCP）が引き続き TBP-001 審査フロー適用の未完了案件として存在。約270種類の会計API操作対応。前回（06-04）からの引き継ぎ。
+  2. **Opus 4.8 ツール呼び出しバグ**（GitHub Issues #63604, #64076, #64129）: malformed tool_use blocksが未修正継続。`fallbackModel`（v2.1.166）でOpus 4.7へフォールバック設定が有効な回避策。TBP-001「段階拡張」の観点からOpus 4.8本格採用前にツール安定性の確認が必要。
+  3. **6月15日料金変更まで残り8日**: この Routine自体がプログラマティック利用に該当する可能性がある。コスト管理方針の確定が急務。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- code.claude.com/docs/en/whats-new（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+- 会計×AI: keihi.com / bakuraku.jp / corp.freee.co.jp
+
+#### 🔴 即座に適用すべき事項
+
+**① 6月15日 料金改定まで残り8日【最重要・期限迫る】**
+- 2026年6月15日から **Agent SDK / headless claude (`claude -p`) / GitHub Actions / サードパーティエージェント** がサブスクリプション枠外の別クレジットプールに移行
+- クレジット額: Pro ~$20/月、Max 5x ~$100/月、Max 20x ~$200/月（フルAPI価格、ロールオーバーなし）
+- インタラクティブなターミナルセッションは従来通り
+- **この daily-research Routine 自体も `claude -p` 相当で対象になる可能性が高い**
+- アクション: 月間消費クレジット量の試算と、クレジット上限超過時の運用方針を今週中に確定すること
+
+**② Opus 4.8 ツール呼び出しバグ（未修正継続）**
+- GitHub Issues #63604: Opus 4.8 が malformed tool_use blocks（未閉じ文字列/不完全JSON）を繰り返し生成する問題（Opus 4.7 では再現しない）
+- Issue #64076: Opus 4.8がツール出力を実行なしに捏造する問題（hallucinating tool outputs）
+- Issue #64129: ツール呼び出し後にレスポンスが表示されないままクォータが消費される問題
+- 日本語環境で特に踏みやすいことが Zenn で報告済み（zenn.dev/edhiblemeer/articles/claude-code-opus48-tool-corruption）
+- **回避策**: v2.1.166 の `fallbackModel` 設定で `["claude-opus-4-7"]` を設定する
+
+**③ Claude Opus 4.1 API廃止予告（2026年8月5日）**
+- Anthropic が Claude Opus 4.1 の API 廃止日を 2026年8月5日と発表
+- 移行先: Claude Opus 4.8 を推奨（ただし上記ツール呼び出しバグに注意）
+- 対応: `claude-opus-4-1-*` を指定している箇所があれば更新計画を立てる
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① freee 統合ワールド 2026（6月16日）のウォッチ**
+- 明日6月16日（月）に開催。AI機能・freee-mcp 連携強化の発表が見込まれる
+- freee-mcp はすでに約270種類の会計API操作に対応（オープンソース公開済み）
+- Tak の本業（経理部長・組織内会計士）への直接インパクトを評価
+
+**② fallbackModel 設定の Routines への実装（耐障害性 + Opus 4.8バグ回避）**
+- Opus 4.8 ツール呼び出しバグの回避策として、`fallbackModel: ["claude-opus-4-7", "claude-sonnet-4-6"]` を設定
+- プライマリが過負荷のときだけでなく、ツールバグ回避策としても機能する
+
+**③ references.md 一括更新セッション（6週間連続未反映）**
+- 前回更新 2026-03-29 以降、3ヶ月超未更新
+- 蓄積候補: fallbackModel / deny グロブ / hookSpecificOutput.additionalContext / requiredMinimumVersion / disallowed-tools / MessageDisplay / /plugin list / EnterWorktree / OTEL_LOG_TOOL_DETAILS / /reload-skills / Dynamic Workflows / Opus 4.8デフォルト化 など20件超
+- 来週早々に着手を強く推奨
+
+#### 🟢 参考情報
+- **Anthropic IPO S-1 機密申請（2026-06-01）**: SEC へのフォーム S-1 機密提出により IPO プロセスが正式開始。バリュエーション $965B（Series H クローズ済み、$650億調達）、ランレート $47B/年。IPO 実施・時期は SEC レビュー完了後・市場状況次第。IPO後は価格・機能方針が投資家圧力で変わる可能性（TBP-001へ「ベンダー財務健全性・事業継続リスク」軸追加は Tak 確認待ち）
+- **Claude Code What's New: Week 22 が最新（May 25-29）**: Week 23（6月2-6日分）は本日時点では未掲載。次回確認推奨
+- **Claude Code v2.1.167-168 (2026-06-06)**: バグ修正と信頼性改善のみ。ユーザー向け新機能なし（v2.1.166 の当日追加リリース）
+- **Project Glasswing 拡張（Claude Security）**: コードベーススキャン＋パッチ提案機能を150の新組織に提供。Power/Water/Healthcare/Communications/Hardware 分野を対象に拡大
+- **Anthropic Enterprise: 管理者カスタムロール**: Enterprise プランで Owner 権限なしに billing/privacy 等の個別管理権限を持つカスタムロールが設定可能に
+- **会計×AI 2026年6月動向**: freee が AI ツール検知対象を15,000以上に拡大（Shadow AI 対策強化）。マネーフォワード AI Cowork（7月リリース）変更なし。PEPPOL普及で請求書フォーマット標準化が加速継続。経費精算工数70%削減事例が業界標準化
+
+#### references.md 更新提案
+1. **fallbackModel 設定（v2.1.166）**: モデル設定・信頼性セクションに「プライマリ過負荷時のフォールバックモデル設定（最大3つ）」として追記を提案（6週間未反映継続）
+2. **deny ルールのグロブパターン対応（v2.1.166）**: アクセス制御セクションに「ツール名位置でのグロブパターン使用（`"*"` で全拒否）」を追記提案（6週間未反映継続）
+3. **継続提案（6週間連続未反映）**: references.md 最終確認 2026-03-29 以降、3ヶ月超未更新。蓄積候補20件超。**一括更新セッションを最優先で実施することを強く推奨。**
+
+#### 新規発見ソース候補
+- **buildthisnow.com**: Claude Code 料金・機能変更の解説記事あり（評価候補: ⭐⭐⭐）
+- **findskill.ai**: Claude Code 料金改定の意思決定テーブル解説（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-08（日曜日）
+注目点: ① **freee 統合ワールド 2026（6月16日）事前調査** ② **6月15日料金変更まで残り7日** → プログラマティック利用消費量の最終試算と方針確定 ③ **Opus 4.8 ツール呼び出しバグ** の修正アップデート確認 ④ **references.md 一括更新セッション**の着手
+
+---
 ## [2026-06-06] デイリーレポート
 
 ### 内部知見（機能A）
