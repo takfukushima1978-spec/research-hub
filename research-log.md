@@ -1,3 +1,86 @@
+## [2026-06-08] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → decisions/ フォルダ未存在のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**:
+  1. **freee 統合ワールド 2026（6月16日・残り8日）**: Anthropic Japan 菅野信氏が登壇予定（16:40〜17:40）。freee-mcp が freeeサインにも対応済み（2026-04-10発表）。イベント後の新機能発表を TBP-001 審査フロー対象として事前ウォッチ推奨。
+  2. **「Enabling Claude Code to work more autonomously」（Anthropic公式ブログ）**: サブエージェント委任・自動フック・チェックポイントシステム・Dynamic Workflows（数百の並列サブエージェント）などの自律性強化機能が紹介。新機能採用前に TBP-001「審査→最小権限→段階拡張」フローを適用すること。
+  3. **Opus 4.8 ツール呼び出しバグ（継続中）**: 前回（06-07）から未修正。fallbackModel 設定で回避推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/releases（⭐⭐⭐⭐⭐）
+- releasebot.io/updates/anthropic/claude-code（⭐⭐⭐）
+- claudefa.st/blog/guide/changelog（⭐⭐⭐⭐）
+- corp.freee.co.jp / prtimes.jp（freee 統合ワールド 2026）
+- zenn.dev / note.com / ai-native.jp / uravation.com（日本語ブログ・会計×AI）
+
+#### 🔴 即座に適用すべき事項
+
+**① 6月15日 料金改定まで残り7日【最重要・期限切迫】**
+- 前回（06-07）からの継続。プログラマティック利用（`claude -p` / Agent SDK / GitHub Actions）が別クレジットプールへ移行
+- Proプラン（$20/月）の場合、$20クレジットでClaude Sonnet 4.6 API料金（入力$3/1Mトークン、出力$15/1Mトークン）を消費。長時間の自律実行は追加課金なしでは困難になる
+- 日本語解説記事が急増中（Zenn sanpi34、note.com ocomoco、ai-native.jp、uravation.com等）
+- **アクション**: 本日中に月間消費クレジット試算と超過時の運用方針を確定すること
+
+**② Claude Code v2.1.169 リリース（2026-06-08）**
+- 設定ディレクトリが読み取り専用/書き込み不可の場合のサイレントハングを修正（インメモリ設定で起動 + エラーサーフェシング）
+- `stream-json`/SDK セッションのターン開始時に Esc 割り込みがサイレントに無視される問題を修正
+- 主にバグ修正と安定性改善のリリース。ユーザー向け新機能なし
+
+**③ Anthropic「Enabling Claude Code to work more autonomously」（6月初旬）**
+- **サブエージェント委任**: フロントエンド開発中にバックエンドAPIをサブエージェントに並行委任するパターンが正式紹介
+- **自動フック**: コード変更後のテストスイート自動実行・コミット前のリント自動実行パターン
+- **チェックポイントシステム**: 各変更前のコード状態を自動保存。`Esc x2` または `/rewind` で巻き戻し可能
+- **Dynamic Workflows（リサーチプレビュー）**: 最大数百の並列サブエージェントを1セッションで実行
+- TBP-001観点: 新自律機能の採用前に審査フローを適用すること
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① freee 統合ワールド 2026（6月16日）ウォッチ**
+- 前回（06-07）から継続。Anthropic Japan 菅野信氏登壇（16:40〜17:40）、茶圓将裕氏も参加
+- freee-mcp が freee サインにも対応済み（電子契約領域追加）
+- イベント後: freee-mcp TBP-001 審査フロー適用の最終判断
+
+**② fallbackModel 設定の Routines への実装（耐障害性 + Opus 4.8 バグ回避）**
+- 前回（06-07）から継続推奨。`fallbackModel: ["claude-opus-4-7"]` 設定
+- 6月15日料金変更後のコスト管理として、フォールバック先が安価なモデルの場合のコスト差も試算
+
+**③ references.md 一括更新セッション（最優先・7週間連続未反映）**
+- 前回（06-07）から継続。最終確認 2026-03-29 以降、3ヶ月超未更新
+- 蓄積候補: fallbackModel / deny グロブ / hookSpecificOutput.additionalContext / requiredMinimumVersion / disallowed-tools / MessageDisplay / /plugin list / EnterWorktree / OTEL_LOG_TOOL_DETAILS / /reload-skills / Dynamic Workflows / Opus 4.8 デフォルト化 など20件超
+
+#### 🟢 参考情報
+- **freee 統合ワールド 2026（6月16日）**: 経営×バックオフィス×AI 祭典。新宿住友ビル三角広場・新宿住友ホール。オフライン＋一部オンライン配信、参加無料（事前登録制）。MCPがバックオフィス業務にもたらす影響と実践事例が解説予定（corp.freee.co.jp）
+- **freee-mcp 電子契約対応（2026-04-10）**: freeeサインが freee-mcp に追加。会計・人事労務・請求・販売・電子契約を横断的に AI エージェントで操作可能に（corp.freee.co.jp）
+- **会計×AI 2026年6月動向**: 経費精算70〜75%工数削減・月次決算2営業日早期化が一般化（TOKIUM, keihi.com）。経理の役割が「入力→判断支援・経営支援」に移行継続。PEPPOL普及で請求書標準化加速
+- **Anthropic「When AI builds itself」**: AI の再帰的自己改善に関する研究記事（Anthropic Institute）。Claude Code の自律性向上の背景として把握推奨
+
+#### references.md 更新提案
+1. **継続提案（7週間連続未反映）**: references.md 最終確認 2026-03-29 以降3ヶ月超未更新。今回リリースの v2.1.169 はバグ修正主体で新設計パターンの追加なし。ただし既存の蓄積候補（fallbackModel / deny グロブ / hookSpecificOutput.additionalContext 等20件超）の一括反映セッションを引き続き最優先推奨。
+
+#### 新規発見ソース候補
+- **ai-native.jp**: Claude料金変更・AI活用の詳細解説記事あり（評価候補: ⭐⭐⭐）
+- **uravation.com**: 経理AI自動化・Claude Codeに関する日本語詳細解説（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-09（月曜日）
+注目点: ① **6月15日料金変更まで残り6日** → クレジット試算・方針確定の最終確認 ② **freee 統合ワールド 2026（6月16日）残り7日** → 最終事前調査 ③ **Opus 4.8 ツール呼び出しバグ** の修正アップデート確認 ④ **references.md 一括更新セッション** の着手（3ヶ月超継続未反映）
+
+---
+
 ## [2026-06-07] デイリーレポート
 
 ### 内部知見（機能A）
