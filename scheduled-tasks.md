@@ -29,6 +29,24 @@
 | 仕様の正 | 語彙・演出・ガードレールは CONSOLE 版 + `article-style-guide.md` に従う |
 | 発火確認 | クラウド側の手動トリガは Console の「Run now」。ローカル予備の動作確認は上記手順を1回流す |
 
+## auto-basics-fill（ローカル /loop・全7ジャンルの基礎面埋め）
+
+> Routine（クラウド・最新ニュース）とは**別系統**。夜間に**ローカル Claude Code の `/loop`** で
+> 学習マップ（`research.learning_topics`）の未カバー基礎トピックを**入門記事化**し、7ジャンルの「面」を埋める。
+
+| 項目 | 内容 |
+|---|---|
+| 実行方式 | ローカル `/loop auto-basics-fill`（PC起動中・無人自走）。クラウド Routine ではない |
+| プロンプト | `prompts/auto-basics-fill.md`（ローカル版・トークン埋込なし） |
+| DB I/O | **必ず `scripts/learning-cli.mjs` 経由**（生 curl 禁止／秘密をコマンド行に出さない＝bash-advisor 安全・無人で停止しない） |
+| 許可 | `.claude/settings.local.json` に `Bash(node scripts/learning-cli.mjs:*)` を narrow 登録済 |
+| SSOT | `docs/learning-maps/<genre>.md`（41トピック起案済）→ `node scripts/seed-learning-topics.mjs` で DB 同期 |
+| 依存 | migration `20260610000001_learning_topics.sql`（テーブル+RPC4本+source_type basics_fill） |
+| 識別 | 基礎記事は `learning_topics.related_article_ids` のリンクで識別（source_type は将来用） |
+| ガードレール | 1 iteration 最大3トピック / 再生成最大2回でskip / 1件失敗で止めない / 409・レート想定内 / 未カバー0で DRY 終了 |
+| 記事型 | 入門8セクション（定義→全体像→用語集→誤解→最初の一歩）。演出は `article-style-guide.md` 準拠（上品） |
+| 起動前提 | ① migration 適用 ② `seed-learning-topics.mjs` 実行 |
+
 ## auto-claude-code-watch（毎日 4:00 JST の Claude Code 学習マップ専属タスク）
 
 ### 設定情報
