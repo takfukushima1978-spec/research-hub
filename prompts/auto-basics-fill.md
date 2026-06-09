@@ -30,7 +30,9 @@ Routine（クラウド・最新ニュース）とは別系統＝**常緑（everg
 
 ## Step 1. 未カバートピック取得
 
-ジャンルをローテーション（または全体）して未カバーを取る。**重点ジャンル（accounting / keiri_dx / thinking_learning）を優先**。
+ジャンルをローテーション（または全体 `all`）して未カバーを取る。
+**充実方針**: AI領域・メタスキルを幅広く優先（`thinking_learning` / `ai_tech` / `tools`）。`accounting`（会計）はマップ無し＝対象外（専門領域）。`keiri_dx` は自動化/AI適用に限定。
+priority フィールド（5高〜1低）と coverage に従って未カバーを選ぶ。
 
 ```bash
 node scripts/learning-cli.mjs get-uncovered <genre|all> 3
