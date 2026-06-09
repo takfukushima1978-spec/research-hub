@@ -1,3 +1,95 @@
+## [2026-06-09] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → decisions/ フォルダ未存在のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**:
+  1. **Claude Fable 5 一般公開（本日 2026-06-09・最重要）**: 前回（06-08）から引き継ぎの「Mythos 一般公開後は TBP-001 審査フロー適用」が本日実現。Mythos-class モデルが初めて一般向けに提供開始。採用前に AUDIT-REPORT.md を作成することを推奨（コーディング・サイバーセキュリティ能力が大幅向上しているため、権限設定の見直しが必要）。
+  2. **`--safe-mode` フラグ（v2.1.170）**: カスタマイズ（CLAUDE.md / plugins / skills / hooks / MCP）を全無効化してトラブルシューティングできる機能が公式化。TBP-001「段階拡張」フェーズでの問題発生時のデバッグ手法として活用可能。
+  3. **`disableBundledSkills` 設定（v2.1.170）**: バンドルスキル・ワークフロー・組み込みスラッシュコマンドを非表示にする設定が追加。TBP-001「最小権限で開始」を環境変数レベルで実現する手段として活用可能。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- github.com/anthropics/claude-code/releases（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- releasebot.io/updates/anthropic/claude-code（⭐⭐⭐）
+- claudefa.st/blog/guide/changelog（⭐⭐⭐⭐）
+- thenextweb.com / venturebeat.com / aws.amazon.com（Fable 5 詳報）
+- keihi.com / uravation.com / biz.moneyforward.com（会計×AI）
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Fable 5 一般公開（本日 2026-06-09）【最重要・本日リリース】**
+- Anthropic 初の Mythos-class 一般公開モデル。ソフトウェアエンジニアリング・知識労働・ビジョン・科学研究などほぼ全ベンチマークで SOTA
+- **Model ID**: `claude-fable-5`
+- **価格**: $10/M 入力トークン、$50/M 出力トークン（Mythos Preview の $25/$125 から大幅引き下げ。既存 90% プロンプトキャッシュ割引も適用）
+- **コンテキストウィンドウ**: 1M トークン（デフォルト）、最大 128k 出力トークン/リクエスト
+- **プラットフォーム**: Claude API / Claude Platform on AWS / Amazon Bedrock / Vertex AI / Microsoft Foundry（本日より全プラットフォーム同時提供）
+- **セーフガード**: cybersecurity/biology 領域の安全性分類器付き。分類器がトリガーされた場合（全セッションの平均 5% 未満）は Claude Opus 4.8 で応答。Claude Code v2.1.170 以降が必要
+- 同時に **Claude Mythos 5** もリリース（Fable 5 と同一基盤・セーフガード一部解除版）。サイバー防衛者・重要インフラ事業者向け限定
+- **TBP-001 対応**: 新モデル採用前に AUDIT-REPORT.md を作成してから採用することを強く推奨
+
+**② Claude Code v2.1.170 リリース（本日 2026-06-09）**
+- **`--safe-mode` フラグ（`CLAUDE_CODE_SAFE_MODE` 環境変数）**: 全カスタマイズ（CLAUDE.md / plugins / skills / hooks / MCP サーバー）を無効化してトラブルシューティング用に起動
+- **`disableBundledSkills` 設定（`CLAUDE_CODE_DISABLE_BUNDLED_SKILLS` 環境変数）**: バンドルスキル・ワークフロー・組み込みスラッシュコマンドをモデルから非表示化
+- **`/cd` コマンド**: プロンプトキャッシュを破壊せずにセッション中の作業ディレクトリを変更できるコマンド
+- **Claude Fable 5 アクセス**: v2.1.170 以降でのみ Fable 5 が利用可能
+
+**③ 6月15日 料金変更まで残り6日【期限迫る・継続警戒】**
+- プログラマティック利用（`claude -p` / Agent SDK / GitHub Actions / サードパーティエージェント）が別クレジットプールへ移行
+- Pro $20/月、Max 5x $100/月、Max 20x $200/月（フル API 価格、ロールオーバーなし）
+- この daily-research Routine も対象の可能性。残り6日で消費量試算と方針確定が必要
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① TBP-001 審査フロー適用: Claude Fable 5 採用評価（最優先）**
+- 本日リリース確認。TBP-001「審査→最小権限→段階拡張」をFable 5 採用に適用
+- AUDIT-REPORT.md 作成（4軸チェック: ①公式一次情報源か ②権限範囲 ③機能シンプルさ ④リスク）
+- Claude Code v2.1.170 へのアップデートを先に確認してから Fable 5 を試用すること
+- 特に注意: Fable 5 のサイバーセキュリティ能力が大幅向上しているため、ハーネスの allowedTools / deniedTools 設計との整合性を確認すること
+
+**② freee 統合ワールド 2026（6月16日）- 残り7日**
+- 継続追跡。AI×会計の最新動向・freee-mcp 連携強化の発表が見込まれる
+- Anthropic Japan 菅野信氏登壇（16:40〜17:40）
+- イベント後: TBP-001 審査フロー適用の最終判断
+
+**③ references.md 一括更新セッション（8週間連続未反映・最優先継続）**
+- 今回追加候補: `claude-fable-5` モデル情報 / `--safe-mode` フラグ / `disableBundledSkills` 設定 / `/cd` コマンド
+- 既存蓄積候補（fallbackModel / deny グロブ / hookSpecificOutput.additionalContext 等 20 件超）と合わせて一括更新を最優先推奨
+
+#### 🟢 参考情報
+- **Anthropic「Paving the way for agents in biology」（2026-06-08）**: 生物学領域への AI エージェント応用に関する研究記事。Fable 5 の専門ドメイン適用研究の一環として把握
+- **Project Vend Phase 2（Anthropic）**: Anthropic の SF オフィスで AI 店員実験の第2フェーズ開始（第1フェーズは売上不振だった後の調整版）。AI エージェントの経済活動への応用研究として把握
+- **Claude Mythos 5**: Fable 5 と同一基盤のサイバー防衛者向け限定モデル。セーフガード一部解除版。glasswing.anthropic.com 参加組織が対象。将来的に TBP-001 審査対象となる可能性あり
+- **freee 統合ワールド 2026（6月16日・残り7日）**: 経営×バックオフィス×AI 祭典。freee-mcp の最新動向発表予定
+- **会計×AI 2026年6月動向**: 経費精算工数 70〜75% 削減・月次決算 2 営業日早期化が一般化継続。マネーフォワード AI Cowork（7月リリース予定）変更なし。PEPPOL 普及で請求書標準化加速継続。経理の役割が「入力→判断支援・経営支援」に移行継続
+- **Anthropic IPO S-1 機密申請（継続）**: SEC レビュー中。公開企業化後の価格・機能方針変動リスクを継続注視
+
+#### references.md 更新提案
+1. **Claude Fable 5 モデル情報（本日 v2.1.170）**: モデル選択セクションに `claude-fable-5`（$10/M input, $50/M output, 1M コンテキスト、128k 最大出力）を追記。「新モデル採用前は TBP-001 審査フローを適用すること」の注記と合わせて記載
+2. **`--safe-mode` フラグ / `CLAUDE_CODE_SAFE_MODE` 環境変数（v2.1.170）**: トラブルシューティング・デバッグセクションに「全カスタマイズ無効化でのセーフモード起動」として追記
+3. **`disableBundledSkills` 設定 / `CLAUDE_CODE_DISABLE_BUNDLED_SKILLS` 環境変数（v2.1.170）**: スキル管理セクションに追記。TBP-001「最小権限で開始」の実装手段として有用
+4. **`/cd` コマンド（v2.1.170）**: コマンドリファレンスセクションに「prompt cache を維持しながら作業ディレクトリ変更」として追記
+5. **継続提案（8週間連続未反映）**: references.md 最終確認 2026-03-29 以降3ヶ月超未更新。蓄積候補 20 件超。一括更新セッションを最優先で実施することを強く推奨
+
+#### 新規発見ソース候補
+- なし（Fable 5 関連情報は既存の anthropic.com / releasebot.io / claudefa.st でカバー可能）
+
+#### 次回リサーチ推奨日
+2026-06-10（火曜日）
+注目点: ① **6月15日料金変更まで残り5日** → クレジット試算・方針確定（最終期限接近） ② **freee 統合ワールド 2026（6月16日）残り6日** → 最終事前調査 ③ **Claude Fable 5 TBP-001 審査フロー着手**（AUDIT-REPORT.md 作成） ④ **references.md 一括更新セッション** ⑤ Opus 4.8 ツール呼び出しバグの修正状況確認
+
+---
+
 ## [2026-06-08] デイリーレポート
 
 ### 内部知見（機能A）
