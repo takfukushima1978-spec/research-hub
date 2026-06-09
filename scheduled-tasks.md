@@ -13,6 +13,8 @@
 - **2026-05-23 発覚**: Console 上の prompt がローカル PC 前提（`.supabase-config` 読み込み・`git push`）で書かれていたため、クラウド sandbox で全実行が空振りしていた（緑チェックが付くが DB 投入ゼロ）。リポジトリ内の v2.2 仕様とも乖離していた
 - **教訓**: Console prompt とリポジトリ `prompts/` の同期は手動運用。prompt 更新時は scheduled-tasks.md の「最終同期日」を更新すること
 - **最終同期日**: （未同期 / 復旧作業中）
+- **2026-06-10 タクソノミー再編**: 曜日軸を新7ジャンルに刷新 + Step 2.5 にタグ語彙表（controlled vocabulary）を追加。`category_name` は7ジャンルL1スラッグ、`tag_names` は確定スラッグ厳密一致に変更。⚠️ **Console 貼り直し待ち**: `prompts/CONSOLE-READY-auto-research-collect.md` を Console タスクに再貼付する必要あり（貼付後にこの行を「貼付済 2026-06-10」へ更新）
+- **2026-06-10 演出レイヤー追加**: Step 4 に「冒頭フック層」を追加（背骨=NewsPicks断定型B + A情景/C引きを少量ブレンド、デフォルト上品、テーマで強度可変）。薄さ防止ガードレール（演出は冒頭のみ・本文は具体性UP・フックを削っても本文だけで成立する検証ルール）を明記。同じ再貼付に含まれる
 
 ## auto-claude-code-watch（毎日 4:00 JST の Claude Code 学習マップ専属タスク）
 
@@ -38,6 +40,7 @@
   4. Console で trigger 新規作成 → CONSOLE-READY 版を貼り付け → 4:00 JST に登録
   5. このファイルの「Trigger ID」と「最終同期日」を埋める
 - **最終同期日**: 2026-05-26（初回登録）
+- **2026-06-10 タクソノミー再編**: `category_name` を `claude_code_official` → `tools` に変更。`tag_names` をハイフン区切り → 階層スラッグ（`tools`/`claude_code`/L3）に変更。重複検知も tags の `claude_code` で判定。Step 6 に演出フック層（上品トーン基本）＋薄さ防止ガードレールを追加。⚠️ **Console 貼り直し待ち**: `prompts/CONSOLE-READY-auto-claude-code-watch.md` を再貼付する必要あり
 - **作成日**: 2026-05-26
 - **既知の未実装**: スタンプラリー UI（index.html に「🎯 学習マップ」タブ追加）は Phase 2
 

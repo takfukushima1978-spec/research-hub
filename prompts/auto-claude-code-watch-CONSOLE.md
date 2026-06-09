@@ -36,6 +36,17 @@ anon key と apikey ヘッダの付与を自動で行う。
 4. 学習マップ（`research.claude_code_topics`）の coverage を更新し、スタンプラリー進捗を Discord に通知する
 5. 重要トピックは Deep Research を自動キューイングする
 
+## 自律運転ガードレール（無人運転・暴走/ループ防止）
+
+このタスクは **承認を一切挟まず自走** する。以下を厳守:
+
+- **再生成は最大2回**: 品質ノルマ400、または演出の薄さ検証（`prompts/article-style-guide.md` の再生成ゲート）に引っかかったら最大2回まで作り直す。**2回でも通らなければその記事を skip し、理由をログに残して次へ**
+- **1記事の失敗で全体を止めない**: API / バリデーション / タグ不一致が出ても abort せずログして次へ
+- **409重複・レート超過は「想定内」**: 停止理由にしない（409 は別トピックへ、レート超過は短い待機後に継続、無理なら正常終了）
+- **1晩の投入上限 = 合計3件**（既定どおり。新規 N + 解説 (3-N)）。利用枠に当たったら無理せずクリーン停止
+- **タグは DB slug と完全一致**: `tools` / `claude_code` / L3（hooks/skills/voice_mode/sandbox_mode）等は確定スラッグに厳密一致。一致しない候補は付与せず Step 9 ログに「新タグ候補」として溜める
+- **失敗を握りつぶさない**: skip / error / クリーン停止理由を Step 9 サマリに必ず出す
+
 ## Step 0. 当日の日付確認
 
 JST で今日の日付を `YYYY-MM-DD` 形式で確定する（Bash で `TZ=Asia/Tokyo date +%F` を実行）。
@@ -43,7 +54,7 @@ JST で今日の日付を `YYYY-MM-DD` 形式で確定する（Bash で `TZ=Asia
 
 ## Step 1. 既存記事の重複検知
 
-直近 14 日の `claude_code_official` カテゴリ記事ダイジェストを取得して、重複回避リストとする。
+直近 14 日の記事ダイジェストを取得して、重複回避リストとする。
 
 ```bash
 curl -s -X POST "$RELAY_URL/rest/v1/rpc/get_recent_article_digests" \
@@ -52,8 +63,10 @@ curl -s -X POST "$RELAY_URL/rest/v1/rpc/get_recent_article_digests" \
   -d '{"p_days": 14}'
 ```
 
-返却された配列のうち `category_name == "claude_code_official"` のものを抽出し、
+返却された配列のうち **`tags` に `claude_code` を含む**もの（= Claude Code 記事）を抽出し、
 タイトル・summary・tags を「カバー済み」とみなす。
+（旧分類では `category_name == "claude_code_official"` で判定していたが、新タクソノミーでは
+Claude Code は `tools` ジャンル配下の `claude_code` タグで識別する。）
 
 ## Step 2. 公式ソース監視（新規ネタ候補）
 
@@ -111,11 +124,30 @@ M = 3 - N
 
 合計が 3 件を下回る日は **無理に水増ししない**（解説マップが尽きた場合のみ）。
 
-## Step 6. 記事生成（8 セクション構成、HTML）
+## Step 6. 記事生成（演出フック層 + 8 セクション構成、HTML）
 
 各記事を以下の構成で書く。**body_text は 1500〜2500 字を必達**（Edge Function が 1500 字未満を拒否する）。
 
+### 6-0. 演出レイヤー（冒頭フック）— 読者を惹きつけ、記憶に残す
+
+本文の前に **`<p class="lead">` でフックを1段落**置く。「正確」なだけでは頭に入らない、感情が動いた情報が残る。
+
+**フックの型** — 背骨は **B（結論ファースト＋専門家視点＋「つまり」）** に **A（情景）/ C（引き）を少量ブレンド**:
+- ① 情景 or 問い（1〜2文）: 開発の当事者感ある一場面、または核心を突く問い
+- ② 断定テーゼ（1文）: 「この機能で開発フローの何が変わるか」を**具体に裏打ちして**言い切る
+
+**トーン**: Claude Code は技術テーマなので **基本「上品」**（問い1文＋断定に抑制）。新機能の派手なローンチは情景フックを控えめに使ってよい。
+
+**🚫 薄さ防止ガードレール（必達）**:
+- フックは「**具体に裏打ちされた断定**」。抽象的な煽り禁止 → 機能名・引数・バージョン等を含める
+- 演出予算は**冒頭フックのみ**。本文は仕様・設定例・挙動を**今より濃く**（docs の数値・制約を具体的に）
+- **検証ルール（肝）**: 冒頭フックを削っても**本文だけで情報価値が成立**すること。器依存なら再生成
+- 「つまり」は具体の**圧縮**であって省略ではない
+
+### 6-1. 本文（8セクション、HTML）
+
 ```html
+<p class="lead">(演出フック: 情景/問い 1〜2文 + 断定テーゼ 1文。基本は上品トーン)</p>
 <h2>1. TL;DR</h2><p>(3行で核心)</p>
 <h2>2. 背景・文脈</h2><p>(なぜ今か / なぜこの機能か / 既存機能との関係、最低200字)</p>
 <h2>3. 事実・仕様</h2><ul><li>(機能の挙動・引数・制約 最低3点、公式 docs を引用)</li></ul>
@@ -124,6 +156,7 @@ M = 3 - N
 <h2>6. インパクト分析</h2><p>(誰に / 何が / いつ効くか、短期・中期)</p>
 <h2>7. 自分の業務への示唆</h2><ul><li>(Tak の業務文脈での具体アクション最低3つ。経理アップデート戦略 / Claude Code 習熟 / 副業構想)</li></ul>
 <h2>8. 一次ソース・関連リンク</h2><ul><li><a href="...">公式 docs 該当ページ</a></li>...</ul>
+<div class="highlight">▶ つまり: (本文を1〜2文に圧縮した、読者の変化/行動)</div>
 ```
 
 解説記事（既存 docs ベース）の場合は、Step 4 で取得した `doc_url` を WebFetch して本文を取得し、
@@ -140,11 +173,11 @@ curl -s -X POST "$RELAY_URL/functions/v1/insert-article" \
   -d @- <<'EOF'
 {
   "title": "<記事タイトル>",
-  "category_name": "claude_code_official",
+  "category_name": "tools",
   "body_html": "<8セクション構成のHTML>",
   "summary": "<3行サマリー>",
   "source_date": "<$TODAY>",
-  "tag_names": ["claude-code", "anthropic-official", "<機能カテゴリ>", "<バージョン or 領域>"],
+  "tag_names": ["tools", "claude_code", "<L3機能スラッグ>", "anthropic-official"],
   "source_urls": [
     {"url": "https://...", "title": "...", "domain": "..."},
     {"url": "https://...", "title": "...", "domain": "..."},
@@ -154,11 +187,13 @@ curl -s -X POST "$RELAY_URL/functions/v1/insert-article" \
 EOF
 ```
 
-- `category_name` は **必ず `claude_code_official` を使う**
-- `tag_names` は最低 4 件。`claude-code` と `anthropic-official` は必須。他に機能カテゴリ（`hooks` / `mcp` / `skill` / `subagent` / `slash-command` / `agent-sdk` / `ide-integration` 等）を入れる
+- `category_name` は **必ず `tools` を使う**（新タクソノミーのL1=AIツール・開発。旧 `claude_code_official` は廃止）
+- `tag_names` は最低 4 件。先頭2つ **`tools`（L1）と `claude_code`（L2）は必須**（index.html のL1/L2フィルタを機能させる）。
+  3つ目は機能に応じた **L3スラッグ**（`hooks` / `skills` / `voice_mode` / `sandbox_mode`）または関連L2（`mcp` / `agents` / `computer_use`）。
+  4つ目以降は自由タグ可（`anthropic-official` / バージョン / 領域名 等）。**L1/L2/L3は確定スラッグに厳密一致**させる（発明禁止）
 - `source_urls` は最低 3 件（公式 docs / Anthropic blog / GitHub release / 関連 OSS 等）
 
-ノルマ未達で 400 が返ったら、`details` を読んで本文を膨らませて最大 3 回まで再生成する。
+ノルマ未達で 400 が返ったら、`details` を読んで本文を膨らませて**最大 2 回まで**再生成する（2回でも通らなければ skip してログに残し次へ＝ガードレール準拠）。
 
 ## Step 8. 学習マップ更新と Deep Research
 
@@ -229,8 +264,13 @@ DR 起動: K 件
   合計: A / B (C%)
 
 スキップ/失敗: F 件
-- skip-1: 理由
+- skip-1: <タイトル> 理由（例: 再生成ゲート2回失敗 / 400ノルマ未達 / 409重複）
+新タグ候補（要レビュー）: J 件
+- cand-1: "<slug案>" 文脈=<なぜ必要か>
+クリーン停止理由: <合計3件到達 / マップ枯渇 / レート超過 / 正常完了 のいずれか>
 ```
+
+このサマリが翌朝の HANDOFF（投入・進捗・skip理由・新タグ候補が一目で分かる）になる。
 
 ## 重要な制約
 
