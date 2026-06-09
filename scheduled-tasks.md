@@ -16,6 +16,19 @@
 - **2026-06-10 タクソノミー再編**: 曜日軸を新7ジャンルに刷新 + Step 2.5 にタグ語彙表（controlled vocabulary）を追加。`category_name` は7ジャンルL1スラッグ、`tag_names` は確定スラッグ厳密一致に変更。⚠️ **Console 貼り直し待ち**: `prompts/CONSOLE-READY-auto-research-collect.md` を Console タスクに再貼付する必要あり（貼付後にこの行を「貼付済 2026-06-10」へ更新）
 - **2026-06-10 演出レイヤー追加**: Step 4 に「冒頭フック層」を追加（背骨=NewsPicks断定型B + A情景/C引きを少量ブレンド、デフォルト上品、テーマで強度可変）。薄さ防止ガードレール（演出は冒頭のみ・本文は具体性UP・フックを削っても本文だけで成立する検証ルール）を明記。同じ再貼付に含まれる
 
+### ローカル手動予備（クラウド障害時の手動実行）
+
+本番は**クラウド Routines が主**。クラウドが落ちた/結果が空振りした朝の**予備手段**として、ローカル Claude Code で手動実行できる。
+
+| 項目 | 内容 |
+|---|---|
+| 使うプロンプト | `prompts/auto-research-collect.md`（**CONSOLE-READY 版ではない**。リポジトリ版＝トークンを `.supabase-config` から読む） |
+| 前提 | `C:\dev\tak-work\リサーチ\auto-research\.supabase-config` が存在すること（gitignore 済・token 源） |
+| 手順 | ① research-hub でローカル Claude Code 起動 → ② 上記 `.md` を渡して実行 → ③ Step 0 で token を**シェル変数**に読込（コマンド行に出ない＝bash-advisor 安全） → ④ curl は **Allow Once** で都度承認（attended） |
+| 禁止 | `Bash(curl:*)` 等の広い Always-Allow を settings.json に登録しない（dont-do 準拠）。CONSOLE-READY 版（token 埋込）をローカルで使わない |
+| 仕様の正 | 語彙・演出・ガードレールは CONSOLE 版 + `article-style-guide.md` に従う |
+| 発火確認 | クラウド側の手動トリガは Console の「Run now」。ローカル予備の動作確認は上記手順を1回流す |
+
 ## auto-claude-code-watch（毎日 4:00 JST の Claude Code 学習マップ専属タスク）
 
 ### 設定情報

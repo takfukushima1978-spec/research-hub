@@ -1,12 +1,25 @@
-# auto-research-collect スケジュールタスク用プロンプト (v2)
+# auto-research-collect スケジュールタスク用プロンプト (v2 / ローカル手動予備版)
 
-このファイルは Claude スケジュールタスク `auto-research-collect` (毎日 18:03 UTC = 翌3:03 JST)
-にコピペして使う想定のプロンプト本体。実体は `tak-work/リサーチ/auto-research/` 側で運用。
+このファイルは `auto-research-collect` の **ローカル手動予備版**。
+**本番（毎晩 3:03 JST）はクラウド Routines（CONSOLE-READY 版）が動く**。本ファイルはクラウドが障害時に
+**ローカル Claude Code で手動実行**するための版。
+
+> **🔐 セキュリティ設計**: Step 0 で `.supabase-config` からトークンを**シェル変数に読み込む**ため、
+> `INTERNAL_TOKEN` の実値は**コマンド行に出ない**（bash-advisor フックの「機密参照＋外部送信」を踏まない／
+> settings.json に平文保存しない）。クラウド版はトークン埋込なのでローカルでは使わないこと。
+> ローカル手動実行は **attended（人が見ている）** なので、curl 等の権限は **Allow Once** で都度承認する
+> （`Bash(curl:*)` 等の広い Always-Allow は登録しない＝グローバル dont-do 準拠）。
+
+> **⚠️ 本番仕様との同一性**: タグ語彙（controlled vocabulary）・曜日軸・演出レイヤー・自律運転ガードレールは
+> **canonical 版 `prompts/auto-research-collect-CONSOLE.md` と `prompts/article-style-guide.md` に従う**こと。
+> 本ファイルは骨子のみ記載。差異が出たら CONSOLE 版を正とする。
 
 目的:
 1. 同一テーマ/同一固有名詞の連日重複を排除する
-2. 1記事あたりの情報量を 2〜3 倍に拡張する (body_text 1500〜2500字)
-3. 視点の偏りを抑える (曜日別テーマ軸ローテーション)
+2. 1記事あたりの情報量を品質ノルマ水準まで拡張する (body_text 1500〜2500字 / source 3 / tag 4)
+3. 視点の偏りを抑える (新7ジャンルの曜日軸ローテーション・Claude Code偏重是正)
+4. 新タクソノミーの確定スラッグで category/tag を自動分類する
+5. 自律運転ガードレール（再生成最大2回でskip / 1記事失敗で止めない / 409・レートは想定内 / 1晩最大5件でクリーン停止）に従う
 
 ---
 
