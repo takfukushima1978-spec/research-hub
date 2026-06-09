@@ -82,8 +82,8 @@ function parseMap(markdown, genre) {
   for (const line of lines) {
     const heading = line.match(/^###\s+(.+?)\s*$/);
     if (heading) {
-      // 先頭の絵文字や記号を除いた領域名を採用
-      currentArea = heading[1].replace(/^[\p{Emoji}\s]+/u, "").trim() || heading[1].trim();
+      // 先頭の絵文字・異体字セレクタ(U+FE0F)・記号を除いた領域名を採用
+      currentArea = heading[1].replace(/^[\p{Extended_Pictographic}️\s]+/u, "").trim() || heading[1].trim();
       continue;
     }
     if (!currentArea) continue;
