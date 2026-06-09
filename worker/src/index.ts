@@ -28,6 +28,7 @@ const ALLOWED_ROUTES: Array<[string, RegExp]> = [
   ["POST", /^\/functions\/v1\/deep-research$/],
   ["POST", /^\/rest\/v1\/rpc\/[a-z0-9_]+$/],
   ["GET",  /^\/rest\/v1\/articles$/],
+  ["GET",  /^\/rest\/v1\/tags$/],          // タグ語彙の runtime 検証用（読み取り専用）
   ["POST", /^\/notify\/discord$/],
 ];
 
