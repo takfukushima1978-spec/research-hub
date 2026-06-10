@@ -43,6 +43,7 @@ anon key と apikey ヘッダの付与を自動で行う。
 4. 新タクソノミー（7ジャンル×サブ）に沿って category/tag を確定スラッグで自動分類する
 5. 公式リリースは曜日軸とは別枠で必ず記事化する
 6. 重要記事は Deep Research を自動キューイングする
+7. Tak のクリップ（好み信号）を topic 選定に反映する（好み/バランス/探索の3系統ミックス、Step 1.7）
 
 ## 自律運転ガードレール（毎晩の無人運転・暴走/ループ防止）
 
@@ -109,6 +110,53 @@ curl -s -X POST "$RELAY_URL/rest/v1/rpc/get_recent_article_digests" \
 該当判定: 新モデル / 新 API / 価格改定 / 重大な政策発表 / 規制発効 のいずれかで、一次ソースが存在すること。
 
 既存記事と重複する場合は別アングル（技術詳細 / 競合比較 / 業界インパクト / 反対意見）で再記事化する。
+
+## Step 1.7. 好みプロファイル取得と topic 配分（3系統ミックス）
+
+Tak がビューワーでクリップした記事（好み信号）の傾向を取得し、当夜の topic 計画を3系統の混合で立てる。
+
+```bash
+curl -s -X POST "$RELAY_URL/rest/v1/rpc/get_preference_profile" \
+  -H "X-Internal-Token: $INTERNAL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"p_half_life_days": 30, "p_lookback_days": 180}'
+```
+
+返却: `{total_clips, tags: [{name, level, parent, weight, clip_count}], genres: [{category, weight, clip_count}]}`。
+`weight` は直近クリップを重めにした recency weighting 済みの値（降順ソート済）。
+万一 404 / エラーで取得できない場合は**好み枠0の従来動作**（Step 2 の曜日軸のみ）で続行する（収集は止めない）。
+
+### 3系統の定義
+
+| 系統 | 内容 |
+|---|---|
+| **好み** | プロファイル上位の重みタグそのもの、**またはその隣接タグ（Step 0.5 で取得した parent_id から導出する兄弟/子タグ）**を深掘り |
+| **バランス** | Step 2 の曜日軸（重点曜日の必達1本はここに乗る）＋手薄ジャンルの補完 |
+| **探索** | 好み隣接の**外側**にある新規/越境トピック（エコーチェンバー防止） |
+
+### 配分表（コールドスタート対応・total_clips で切替）
+
+当夜の投入計画（最大5件）を以下で配分する:
+
+| total_clips | 好み | バランス | 探索 |
+|---|---|---|---|
+| 0〜4（コールドスタート） | 0 | 2〜3 | 1 |
+| 5〜14 | 1 | 2 | 1 |
+| 15以上 | 2 | 1〜2 | 1 |
+
+- Step 1.5 の公式ニュース別枠が発生した日は系統=「公式」として上限5に含め、**バランス枠から1減らす**（好み・探索枠は削らない）
+- **探索枠は必ず1以上残す**（好みは「増幅」であって「固定」ではない）
+- 重点曜日（水・木・日）のメイン軸必達1本はバランス枠で従来どおり維持する
+- 好み枠の記事も Step 1 の重複回避ブラックリストを通す（クリップ済テーマの焼き直しを防ぐ）
+
+### ジャンル占有上限（ガードレール）
+
+- Step 1 の直近14日記事＋当夜計画の合計で、**単一L1ジャンルが40%を超える配分にしない**
+- 超過しそうな場合、好み枠を次点の**別ジャンル**のタグへ切り替える（過去の「Claude Code 58%」偏重の再来防止）
+
+### 由来系統の記録（説明可能性）
+
+各 topic に由来系統（好み / バランス / 探索 / 公式）を割り当て、Step 8 のサマリに**必ず**出力する。
 
 ## Step 2. 当日の「軸」を決定（曜日別ローテーション）
 
@@ -272,9 +320,11 @@ EOF
 ```
 === auto-research-collect 完了 $TODAY ===
 投入記事数: N 件 / 上限 5
-- [1] title-1 (id=xxx, category=<L1>, tags=[...])
-- [2] title-2 (id=xxx, category=<L1>, tags=[...])
+- [1] title-1 (id=xxx, category=<L1>, tags=[...], 系統=好み)
+- [2] title-2 (id=xxx, category=<L1>, tags=[...], 系統=バランス)
 ジャンル分布: accounting X / keiri_dx X / ai_tech X / tools X / business X / security_risk X / thinking_learning X
+系統分布: 好み X / バランス X / 探索 X / 公式 X
+好みプロファイル: total_clips=N / 上位タグ: tag1, tag2, tag3（取得失敗時はその旨を明記）
 Deep Research 起動数: M 件
 - [DR-1] article_id=xxx priority=3
 スキップ/失敗: K 件

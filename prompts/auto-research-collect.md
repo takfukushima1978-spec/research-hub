@@ -20,6 +20,7 @@
 3. 視点の偏りを抑える (新7ジャンルの曜日軸ローテーション・Claude Code偏重是正)
 4. 新タクソノミーの確定スラッグで category/tag を自動分類する
 5. 自律運転ガードレール（再生成最大2回でskip / 1記事失敗で止めない / 409・レートは想定内 / 1晩最大5件でクリーン停止）に従う
+6. Tak のクリップ（好み信号）を topic 選定に反映する（好み/バランス/探索の3系統ミックス、Step 1.7）
 
 ---
 
@@ -82,6 +83,33 @@ curl -X POST "$SUPABASE_URL/rest/v1/rpc/get_recent_article_digests" \
 - 競合比較 (他社同等プロダクトとの並列分析)
 - 業界インパクト分析 (誰が得をして誰が損をするか)
 - 反対意見 / 批判的論考 / リスク評価
+
+---
+
+## Step 1.7. 好みプロファイル取得と topic 配分 (3系統ミックス)
+
+> **2026-06-10 好みフィードバック・ループ追加** (ADR-LG-009 / tak-lifelog)。
+> 詳細仕様（配分表・ジャンル占有上限40%・コールドスタート閾値）は canonical 版
+> `prompts/auto-research-collect-CONSOLE.md` Step 1.7 を正とする。
+
+クリップ済み記事の好みプロファイルを取得する:
+
+```bash
+curl -X POST "$SUPABASE_URL/rest/v1/rpc/get_preference_profile" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"p_half_life_days": 30, "p_lookback_days": 180}'
+```
+
+返却 `{total_clips, tags[], genres[]}` をもとに、当夜の topic を **好み / バランス / 探索** の3系統で配分する:
+
+- **好み**: 上位重みタグまたはその隣接（兄弟/子）タグの深掘り。total_clips が 0〜4 なら 0 件、5〜14 なら 1 件、15 以上なら 2 件
+- **バランス**: Step 2 の曜日軸（重点曜日の必達1本はここ）
+- **探索**: 隣接外の新規/越境トピック。**必ず 1 件以上**
+- 単一L1ジャンルが直近14日＋当夜で 40% を超えない（占有上限）
+- 各記事の由来系統を Step 8 サマリに記録する（説明可能性）
+- RPC が取得できない場合は好み枠 0 の従来動作で続行（収集は止めない）
 
 ---
 
