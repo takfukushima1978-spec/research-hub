@@ -1,3 +1,92 @@
+## [2026-06-10] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → decisions/ フォルダ未存在のためスキップ
+- tak-best-practices/ → .md ファイル未存在のためスキップ
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**:
+  1. **Code with Claude 2026 Tokyo（本日 2026-06-10 開催）**: Claude Code チームが「long-horizon tasks・multi-repo work・parallel agents・infrastructure at scale」を公式セッション議題として取り上げた。Dynamic Workflows を超えた parallel agents の公式スケールパターンが今後登場する可能性があり、TBP-001「段階拡張」フェーズの適用範囲が広がる見込み。新パターン採用時は TBP-001 審査フローを適用すること。
+  2. **Claude Fable 5 採用評価（前日 06-09 からの継続）**: TBP-001 に基づく AUDIT-REPORT.md 作成が未着手。コーディング・サイバーセキュリティ能力が大幅向上しているため、ハーネスの allowedTools / deniedTools 設計との整合性確認が必要。
+  3. **freee 統合ワールド 2026（6月16日・残り6日）**: Anthropic Japan 菅野信氏が「手入力が消える日」セッション（16:40〜17:40）でfreee MCPとAIエージェントの業務適用を解説予定。イベント後は freee-mcp の TBP-001 審査フロー（AUDIT-REPORT.md 作成）を実施すること。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- claude.com/code-with-claude/tokyo（⭐⭐⭐⭐⭐）
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- corp.freee.co.jp / prtimes.jp（freee 統合ワールド 2026）
+- corp.moneyforward.com（マネーフォワード AI Cowork）
+- keihi.com / renue.co.jp / biz.moneyforward.com / ai-market.jp（会計×AI）
+- zenn.dev/topics/claudecode（⭐⭐⭐）
+
+#### 🔴 即座に適用すべき事項
+
+**① Code with Claude 2026 Tokyo（本日 2026-06-10 開催）【最重要・本日開催】**
+- Anthropic 初の日本単独デベロッパーイベント。San Francisco（5月6日）・London（5月19日）に続く第3弾
+- **登壇者**: Boris Cherny（Claude Code lead）、Ami Vora（Anthropic CPO）、Angela Jiang（Claude API & SDK product lead）
+- **セッションテーマ**:
+  - Research track: 解釈可能性研究・Constitutional AI の最新動向。5月以降の変化を London との比較で解説
+  - Claude Platform: 本番グレードエージェントの構築パターン
+  - Claude Code: long-horizon タスク・マルチリポジトリ作業・並列エージェント・インフラ at scale
+- 日本語同時通訳あり（英日両方向）。ライブストリーム配信あり
+- **Code with Claude: Extended Tokyo（6月11日）**: 独立系開発者・アーリーステージ創業者向け。Applied AI チームによるラップトップオープンワークショップ開催
+- **TBP-001 対応**: Code with Claude Tokyo で公開される parallel agents / long-horizon tasks の公式スケールパターンを確認し、採用前に TBP-001 審査フローを適用すること
+
+**② 6月15日 料金変更まで残り5日【期限最終接近】**
+- プログラマティック利用（`claude -p` / Agent SDK / GitHub Actions / サードパーティエージェント）が別クレジットプールへ移行
+- クレジット額: Pro $20/月、Max 5x $100/月、Max 20x $200/月（フル API 価格・ロールオーバーなし）
+- クレジット超過で自動停止（オーバーフロー請求を有効にしない限り）
+- **この daily-research Routine 自体も対象**。残り5日で消費量試算と方針確定が必要
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Code with Claude Extended Tokyo（6月11日）のフォローアップ**
+- 明日開催。Applied AI チームによるラップトップオープンワークショップ内容を確認
+- Claude Code の long-horizon tasks・parallel agents の公式実装パターンを把握し、ハーネス設計へ反映検討
+- freee 統合ワールド 2026（6月16日）への架け橋として、MCPとAIエージェントの最新知見を整理
+
+**② freee 統合ワールド 2026（6月16日）最終事前調査・残り6日**
+- Anthropic Japan 菅野信氏のセッション（16:40〜17:40）: 「手入力が消える日」freee MCP × AIエージェント
+- イベント後に freee-mcp の TBP-001 審査フロー（AUDIT-REPORT.md 作成）を即日実施
+
+**③ references.md 一括更新セッション（9週間連続未反映・最優先継続）**
+- 最終確認 2026-03-29 以降3ヶ月超未更新。蓄積候補20件超
+- 今回追加候補: `claude-fable-5` モデル情報 / `--safe-mode` フラグ / `disableBundledSkills` 設定 / `/cd` コマンド / Code with Claude Tokyo の公式スケールパターン（parallel agents / long-horizon tasks）
+
+#### 🟢 参考情報
+- **GitHub Issues 本日新規（#67222〜#67228, 2026-06-10）**: macOS desktop/API/agent バグが複数。特に #67228（api・cost バグ・macOS）が料金変更直前のコスト管理に関連する可能性あり。デスクトップアプリ最新版（v2.1.170）への更新を推奨
+- **Claude Code v2.1.170（前日 2026-06-09 リリース）**: 最新版。VS Code 統合ターミナルから起動した際にトランスクリプトが保存されない問題（`--resume` に表示されない）が修正。アップデート済みであることを確認推奨
+- **Zenn 新着（2026-06-10前後）**:
+  - 「個人で使うClaude Codeをチームで育てるClaude Codeにする2つの仕組み」（@k_yamaki, Qiita）: チームへのClaude Code展開ノウハウ。組織導入に直結
+  - 「Claude Codeを『優秀な新卒部下』として使い倒す：個人開発爆速化の全ワークフロー」（@yoshiaki0217, Zenn）: CLAUDE.md設計の実践的ガイド
+  - 「無料範囲内でChatGPT, Claude, Geminiを使ってみよう【2026年6月版】」（Qiita）: 料金変更直前のプラン見直し参考記事
+- **マネーフォワード AI Cowork（7月リリース予定・変更なし）**: 自然言語でオーケストレーターが業務振り分け → エージェントが経理・労務・法務を自律実行。「マイエージェント」（ユーザー自作）・ガードレール・AI監査ログ搭載。2030年ARR150億円目標。Claude Agent SDK + MCP を採用（既報継続）
+- **会計×AI 2026年6月最新動向**: 国内中堅企業の仕訳入力 約70%が依然手入力・月末残業平均32時間（AI導入余地大）。経費精算工数75%削減・月次決算2営業日早期化が一般化継続。PEPPOL普及で請求書標準化加速。Deloitte・KPMGなど Big4 が Claude Code / Cowork を標準ツール採用で業界実装が本格化
+
+#### references.md 更新提案
+1. **Code with Claude Tokyo 公式スケールパターン（本日 2026-06-10）**: parallel agents・long-horizon tasks・multi-repo work の公式実装パターンが公開された場合、harness-design-guide のマルチエージェント実行パターンセクションに追記を提案（セッション詳細確認後）
+2. **継続提案（9週間連続未反映）**: references.md 最終確認 2026-03-29 以降3ヶ月超未更新。Claude Fable 5 モデル情報・`--safe-mode` フラグ・`disableBundledSkills`・`/cd` コマンド・fallbackModel・deny グロブ・hookSpecificOutput.additionalContext 等20件超。**一括更新セッションを最優先で実施することを強く推奨（前日継続）**
+
+#### 新規発見ソース候補
+- **ai-revolution.co.jp**: Code with Claude 2026 Tokyo の詳細解説・AI活用事例記事あり（評価候補: ⭐⭐⭐）
+- **chatforest.com**: Code with Claude Tokyo のビルダー向けプレビュー・詳細ガイド記事（評価候補: ⭐⭐⭐）
+- **tygartmedia.com**: Code with Claude 国際イベントのコンパクトな解説記事（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-11（水曜日）
+注目点: ① **6月15日料金変更まで残り4日** → クレジット試算・方針確定（最終期限）② **Code with Claude Extended Tokyo（6月11日）** → 独立系開発者向けワークショップの内容確認・parallel agents 公式パターン把握 ③ **freee 統合ワールド 2026（6月16日）残り5日** → 最終事前調査 ④ **Claude Fable 5 TBP-001 審査フロー着手**（AUDIT-REPORT.md 作成） ⑤ **references.md 一括更新セッション** ⑥ Opus 4.8 ツール呼び出しバグの修正状況確認（v2.1.170 以降で解消されたか）
+
+---
 ## [2026-06-09] デイリーレポート
 
 ### 内部知見（機能A）
