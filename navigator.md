@@ -4,7 +4,7 @@
 > 仕様詳細は `CLAUDE.md`、Routine 詳細は `scheduled-tasks.md`、
 > 横断的な学びは global memory (`C:\dev\.claude\projects\c--dev-research-hub\memory\`) を参照。
 
-最終更新: 2026-05-26
+最終更新: 2026-06-12
 
 ---
 
@@ -12,20 +12,21 @@
 
 | 項目 | 値 |
 |---|---|
-| パイプライン状態 | ✅ **稼働中**（2026-05-23 完全復旧、5週間沈黙から復帰）|
-| 累計記事数 | 50 件前後 |
-| 最終投入日 | 2026-05-26 (auto-research-collect 2件 + auto-claude-code-watch 3件) |
-| 稼働中の Routine | **4つ**（auto-research-collect / auto-claude-code-watch / deep-research-runner / auto-research-morning-discord）|
-| Worker | `research-hub-relay` デプロイ済（Version `3a5b642c` 系。2026-05-26 RPC ルート Accept-Profile バグ修正）|
-| Edge Function | `insert-article` 2026-05-26 強化（quality_override は X-Allow-Override ヘッダー必須）|
-| 学習マップ | 36 トピック × 7 領域、進捗 1/36 (2.8%)。📕拡張機構が 1/6 で先行 |
+| パイプライン状態 | ✅ **稼働中** |
+| 稼働中の Routine | **5つ**（auto-research-collect / auto-claude-code-watch / deep-research-runner / feedback-article-runner / auto-research-morning-discord）+ ローカル /loop（auto-basics-fill）|
+| Worker | `research-hub-relay` デプロイ済（pass-through proxy。GET /rest/v1/tags 許可済）|
+| Edge Function | `insert-article`（quality_override は X-Allow-Override ヘッダー必須）|
+| タクソノミー | 確定7ジャンル（accounting/keiri_dx/ai_tech/tools/business/security_risk/thinking_learning）。曜日軸ローテーション |
+| 好みフィードバック | ✅ クリップ→`get_preference_profile`→Step 1.7（好み/バランス/探索）稼働（ADR-LG-009）|
+| 記事フィードバック | ✅ 記事末尾💬→`article_feedbacks`→feedback-article-runner（7:30 JST）で追加記事自動生成 |
+| 学習マップ | 全7ジャンル `learning_topics`（67トピック）+ Claude Code 専属 `claude_code_topics`（36）|
 | 通知チャネル | Discord `#research-hub-notify` で稼働確認済 |
 | 直近の問題 | DR 自動 completed 現象（要 Phase 2 調査）|
 
 ## 🎯 直近の重点
 
-- **2026-05-27 04:00 JST から auto-claude-code-watch 本格運用**。X-Allow-Override 防御が効いてタグ必達されるか観察
-- 学習マップ進捗が領域バランスを取りながら 12 日程度で全領域カバーするか確認
+- **feedback-article-runner 初回稼働観察**（2026-06-13 7:30 JST〜）。記事末尾フィードバックが翌朝の追加記事生成に繋がるかエンドツーエンド確認
+- **好みフィードバック・ループ稼働観察**。Step 8 サマリの系統分布（好み/バランス/探索）とジャンル占有上限40%が機能するか
 - 不調が出なければ Phase 2 (UI スタンプラリー + Discord 進捗バー) に着手
 
 ## 📋 残タスク (Phase 2)
@@ -74,6 +75,7 @@
 - auto-research-collect: `trig_01M35mr4nxRZZVWjFrtRdZyf`
 - auto-claude-code-watch: `trig_015mNBjdX8Uyq9av2FSRTa2T`
 - deep-research-runner: `trig_01C2e5bSQA4xqznQ3oY3QgQU`
+- feedback-article-runner: `trig_01MYmCzYp5uGNEncchErp2vX`（7:30 JST）
 - auto-research-morning-discord: `trig_01849zsAtA2CXcHwXoVwyKhv`
 
 ## 📚 関連ドキュメント
@@ -92,6 +94,11 @@
 
 ## 📝 セッション履歴サマリー
 
+- **2026-06-10〜12**: **好みフィードバック・ループ**（ADR-LG-009）と**記事フィードバック→フォローアップ記事**の2機能を実装。
+  - 好み: クリップ記事を recency weighting（半減期30日）集計する `get_preference_profile` RPC + auto-research-collect Step 1.7（好み/バランス/探索の3系統ミックス・ジャンル占有上限40%・コールドスタート）。実DB検証で total_clips=80・上位タグ mcp/hooks/claude_code を確認。Console 貼り直し済（2026-06-11）
+  - 記事FB: `article_feedbacks` テーブル + RPC 3本（submit/get_pending/complete）+ index.html 記事末尾💬欄 + 新 Routine `feedback-article-runner`（7:30 JST, `trig_01MYmCzYp5uGNEncchErp2vX`）。migration 適用 + RPC ラウンドトリップ検証済（送信→pending取得→complete）。コネクターは最小権限（Gmail/Calendar 不使用）
+  - コミット: `f296db5`/`1814a93`/`1eb7a9b`/`44f940d`（好み）、`f6869f4`/`ecf17bb`/`acf2d7b`/`39bd93d`（記事FB）
+- **2026-06-10（前セッション）**: タクソノミー7ジャンル再編 + 演出レイヤー + 全7ジャンル学習マップ（67トピック）+ ローカル /loop 基礎面埋め（auto-basics-fill）。詳細は `git log` 参照（navigator 未追記分）
 - **2026-05-26**: auto-claude-code-watch Phase1 導入（学習マップ駆動の毎日記事化 + スタンプラリー方式）。新規 Routine + テーブル + 4 RPC + seed スクリプト + CONSOLE-READY 生成スクリプト追加。Worker の RPC ルート Accept-Profile バグを構造的に修正。Edge Function に X-Allow-Override 防御追加（quality_override 悪用防止）。コミット4本（`e83a60b` / `43ad174` / `ccc5fd1` / `2042d1b`）。詳細 → [learnings/2026-05-26_claude-code-watch-launch.md](learnings/2026-05-26_claude-code-watch-launch.md)
 - **2026-05-24**: navigator.md / 文書役割分担の後付け失敗を踏まえ、グローバル new-project スキルに Phase 2「文書体系の整備」を追加。詳細 → [learnings/2026-05-24_new-project-phase2.md](learnings/2026-05-24_new-project-phase2.md)
 - **2026-05-23**: 大規模復旧セッション。5週間沈黙していたパイプラインを v2.2 設計（曜日別軸・公式ニュース最優先・自動DR・Worker 中継・Discord 通知）で完全復旧。memory に学び 9件追加（新規4+前回5）。コミット3本（`f128ed4` / `beeaff8` / `de27490`）。詳細は git log と memory を参照
