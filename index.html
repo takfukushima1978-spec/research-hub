@@ -152,6 +152,16 @@
   .research-date { font-size: 11px; color: #aaa; margin-top: 6px; }
   .research-badge { font-size: 14px; margin-left: 4px; }
 
+  /* Feedback（記事末尾の自由入力） */
+  .feedback-box { max-width: 680px; margin: 8px auto 56px; padding: 20px 16px; border-top: 1px solid #eee; }
+  .feedback-box h3 { font-size: 15px; font-weight: 700; color: #14b8a6; margin-bottom: 6px; }
+  .feedback-hint { font-size: 12px; color: #999; margin-bottom: 12px; line-height: 1.6; }
+  .feedback-sent { font-size: 12px; color: #14b8a6; background: #f0fdfa; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; line-height: 1.6; }
+  .feedback-text { width: 100%; min-height: 72px; box-sizing: border-box; border: 1.5px solid #ddd; border-radius: 10px; padding: 12px; font-size: 14px; line-height: 1.7; font-family: inherit; resize: vertical; }
+  .feedback-text:focus { outline: none; border-color: #14b8a6; }
+  .feedback-submit { margin-top: 10px; background: #14b8a6; color: #fff; border: none; border-radius: 10px; padding: 11px 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .feedback-submit:active { opacity: 0.85; }
+
   /* Toast */
   .toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 200; white-space: nowrap; }
   .toast.show { display: block; }
@@ -189,6 +199,7 @@
   <a class="ext-link" id="extLink" href="#" target="_blank" style="display:none">原文を開く</a>
   <div class="article-content" id="articleContent"></div>
   <div id="researchResults"></div>
+  <div id="feedbackSection"></div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
@@ -276,6 +287,7 @@ let articleTagsMap = {};
 let currentUser = null;
 let filters = { status: 'all', category: null, tagL1: null, tagL2: null };
 let deepResearchMap = {};
+let feedbackMap = {};
 let currentArticleId = null;
 
 const TAG_COLORS = {
@@ -360,6 +372,19 @@ async function loadData() {
   deepResearchMap = {};
   if (Array.isArray(drData)) {
     drData.forEach(dr => { deepResearchMap[dr.article_id] = true; });
+  }
+
+  // フィードバック済み記事をマッピング（記事末尾の「送信済み」表示用）
+  const fbRes = await fetch(SUPABASE_URL + "/rest/v1/article_feedbacks?select=article_id,status&order=created_at.desc", {
+    headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept-Profile": "research" }
+  });
+  const fbData = await fbRes.json();
+  feedbackMap = {};
+  if (Array.isArray(fbData)) {
+    fbData.forEach(fb => {
+      if (!feedbackMap[fb.article_id]) feedbackMap[fb.article_id] = [];
+      feedbackMap[fb.article_id].push(fb.status);
+    });
   }
 
   renderFilters();
@@ -582,6 +607,54 @@ async function showArticle(slug, extUrl, articleId) {
     document.getElementById('articleContent').innerHTML = '<div class="loading">記事が見つかりません</div>';
   }
   if (articleId) loadArticleResearch(articleId);
+  renderFeedbackSection(articleId);
+}
+
+// ===== Feedback（記事末尾の自由入力 → 翌朝フォローアップ記事を自動生成）=====
+function renderFeedbackSection(articleId) {
+  const section = document.getElementById('feedbackSection');
+  if (!articleId) { section.innerHTML = ''; return; }
+
+  const statuses = feedbackMap[articleId] || [];
+  const sentBadge = statuses.length
+    ? `<div class="feedback-sent">💬 フィードバック送信済み（${statuses.length}件）。追加記事は翌朝の自動生成で届きます。</div>`
+    : '';
+
+  section.innerHTML = `
+    <div class="feedback-box">
+      <h3>💬 この記事へのフィードバック・追加で知りたいこと</h3>
+      <p class="feedback-hint">入力内容をもとに、翌朝のスケジュールタスクが詳細記事を自動生成します。</p>
+      ${sentBadge}
+      <textarea id="feedbackText" class="feedback-text" placeholder="例: この内容の実務での具体的な適用例をもっと知りたい / ○○との違いを深掘りしてほしい"></textarea>
+      <button class="feedback-submit" onclick="submitFeedback()">送信して詳細記事をリクエスト</button>
+    </div>`;
+}
+
+async function submitFeedback() {
+  const el = document.getElementById('feedbackText');
+  const text = (el?.value || '').trim();
+  if (!text) { alert('フィードバックを入力してください'); return; }
+  if (!currentArticleId) { alert('記事が特定できません'); return; }
+
+  const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/submit_article_feedback", {
+    method: 'POST',
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ p_article_id: currentArticleId, p_feedback_text: text })
+  });
+
+  if (res.ok) {
+    if (!feedbackMap[currentArticleId]) feedbackMap[currentArticleId] = [];
+    feedbackMap[currentArticleId].push('pending');
+    showToast('フィードバックを送信しました。翌朝の自動生成をお待ちください');
+    renderFeedbackSection(currentArticleId);
+  } else {
+    const err = await res.text();
+    alert('送信エラー: ' + err);
+  }
 }
 
 function showList() {
