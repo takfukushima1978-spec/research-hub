@@ -108,6 +108,23 @@
 - **1セッション最大処理数**: 3件（残りは翌日へ）
 - **作成日**: 2026-05-23（要望④の構造的欠落を埋めるため新規追加）
 
+## feedback-article-runner（記事フィードバック → フォローアップ記事ランナー）
+
+### 設定情報
+- **Trigger ID**: （未登録 / 要新規作成）
+- **推奨スケジュール**: 毎日 7:30 JST（cron: `30 22 * * *` UTC） — deep-research-runner（6:00）/ 朝Discord（6:57）の後段
+- **環境**: Anthropic クラウド sandbox + 「Cloudflare Workers_My Reserch」環境（research-hub-relay を Allowed domains に登録済み・既存タスクと共有）
+- **プロンプト本体**: `prompts/feedback-article-runner-CONSOLE.md`（Console 上の prompt は手動コピペで同期）
+- **役割**: ビューワー記事末尾の💬フィードバック（`research.article_feedbacks` の pending）を毎朝拾い、フィードバック内容を起点に追加詳細記事を生成・投入 → `complete_article_feedback` で `follow_up_article_id` をリンク
+- **1セッション最大処理数**: 3件（残りは翌日へ）
+- **依存**: migration `20260611000001_article_feedbacks.sql`（テーブル + RPC 3本）。**Supabase SQL Editor で適用してから登録すること**
+- **初期セットアップ手順**:
+  1. Supabase SQL Editor で migration `20260611000001_article_feedbacks.sql` を実行
+  2. ローカルで `node scripts/generate-console-ready.mjs feedback-article-runner` を実行（要 `.supabase-config`）→ `CONSOLE-READY-feedback-article-runner.md` 生成
+  3. Console で trigger 新規作成 → CONSOLE-READY 版を貼り付け → 7:30 JST に登録
+  4. このファイルの「Trigger ID」を埋める
+- **作成日**: 2026-06-11
+
 ## daily-research（リサーチ＆ナレッジエージェント）
 
 ### 設定情報
