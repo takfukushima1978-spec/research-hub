@@ -111,8 +111,10 @@
 ## feedback-article-runner（記事フィードバック → フォローアップ記事ランナー）
 
 ### 設定情報
-- **Trigger ID**: （未登録 / 要新規作成）
-- **推奨スケジュール**: 毎日 7:30 JST（cron: `30 22 * * *` UTC） — deep-research-runner（6:00）/ 朝Discord（6:57）の後段
+- **Trigger ID**: trig_01MYmCzYp5uGNEncchErp2vX
+- **管理画面**: https://claude.ai/code/routines/trig_01MYmCzYp5uGNEncchErp2vX
+- **スケジュール**: 毎日 7:30 JST（cron: `30 22 * * *` UTC） — deep-research-runner（6:00）/ 朝Discord（6:57）の後段
+- **コネクター**: なし（Web検索 + Worker経由HTTPSのみで完結。Gmail/Calendar 等は登録しない＝最小権限）
 - **環境**: Anthropic クラウド sandbox + 「Cloudflare Workers_My Reserch」環境（research-hub-relay を Allowed domains に登録済み・既存タスクと共有）
 - **プロンプト本体**: `prompts/feedback-article-runner-CONSOLE.md`（Console 上の prompt は手動コピペで同期）
 - **役割**: ビューワー記事末尾の💬フィードバック（`research.article_feedbacks` の pending）を毎朝拾い、フィードバック内容を起点に追加詳細記事を生成・投入 → `complete_article_feedback` で `follow_up_article_id` をリンク
@@ -124,6 +126,7 @@
   3. Console で trigger 新規作成 → CONSOLE-READY 版を貼り付け → 7:30 JST に登録
   4. このファイルの「Trigger ID」を埋める
 - **作成日**: 2026-06-11
+- **登録日**: 2026-06-12（migration 適用 + RPC ラウンドトリップ検証済 → Console 登録完了）
 
 ## daily-research（リサーチ＆ナレッジエージェント）
 
