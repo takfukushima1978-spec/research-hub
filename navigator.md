@@ -4,7 +4,7 @@
 > 仕様詳細は `CLAUDE.md`、Routine 詳細は `scheduled-tasks.md`、
 > 横断的な学びは global memory (`C:\dev\.claude\projects\c--dev-research-hub\memory\`) を参照。
 
-最終更新: 2026-06-12
+最終更新: 2026-06-13
 
 ---
 
