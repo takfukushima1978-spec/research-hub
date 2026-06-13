@@ -4,7 +4,11 @@ package-lock.json
 .env
 .env.*
 *.log
-.claude/
+# .claude 配下は除外するが、プロジェクトスキルは git 管理する
+# （security.md: 取り込んだ skill は .claude/skills/ に置き Git 管理。settings.local.json 等の秘密は除外のまま）
+# 親ディレクトリ自体を除外すると配下を再包含できないため `.claude/*` で中身を除外する
+.claude/*
+!.claude/skills/
 supabase/.temp/
 __pycache__/
 *.pyc
