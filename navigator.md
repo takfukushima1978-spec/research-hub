@@ -4,7 +4,7 @@
 > 仕様詳細は `CLAUDE.md`、Routine 詳細は `scheduled-tasks.md`、
 > 横断的な学びは global memory (`C:\dev\.claude\projects\c--dev-research-hub\memory\`) を参照。
 
-最終更新: 2026-06-13
+最終更新: 2026-06-14
 
 ---
 
@@ -20,6 +20,7 @@
 | 好みフィードバック | ✅ クリップ→`get_preference_profile`→Step 1.7（好み/バランス/探索）稼働（ADR-LG-009）|
 | 記事フィードバック | ✅ 記事末尾💬→`article_feedbacks`→feedback-article-runner（7:30 JST）で追加記事自動生成 |
 | 学習マップ | 全7ジャンル `learning_topics`（67トピック）+ Claude Code 専属 `claude_code_topics`（36）|
+| 基礎記事の充実 | 🟢 着手 ~30/67（2026-06-14時点）。**thinking_learning 17/17 完成＋コア4topに発展編(deep)**。残りは ai_tech/keiri_dx/tools/business/security を自律ループ＆/loopで継続 |
 | 通知チャネル | Discord `#research-hub-notify` で稼働確認済 |
 | 直近の問題 | DR 自動 completed 現象（要 Phase 2 調査）|
 
