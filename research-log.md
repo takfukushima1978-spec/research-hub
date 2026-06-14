@@ -1,3 +1,99 @@
+## [2026-06-14] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → decisions/ フォルダ未存在のためスキップ（GitHub MCP アクセス制限外）
+- 新規 ADR: なし
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001「外部ツール導入は審査→最小権限→段階拡張」**:
+  1. **米政府 Fable 5/Mythos 5 アクセス停止令（6/12-13）**: 米政府が国家安全保障を理由に Fable 5・Mythos 5 への「外国人」アクセス全面停止を命令。Anthropic は自社の外国籍社員も含めて全ユーザーへのアクセスを即日遮断。トリガーは「Fable 5 のサイバーセキュリティ能力をアンロックするジェイルブレイク（特定ケース限定）」の発見。TBP-001「導入前にセキュリティ審査（AUDIT-REPORT.md）を実施する」原則の重要性を再確認する事例。Fable 5 の AUDIT-REPORT.md 未着手が継続中。
+  2. **課金変更は明日 (6/15) — Routines も対象確定**: Agent SDK / claude -p / GitHub Actions に加え、Claude Code Routines（スケジュール型自動セッション）も新クレジットプール対象と確認（github.com/anthropics/claude-code/issues/59823 等）。この daily-research Routine 自体も明日から別クレジット消費に移行する。消費量試算と方針確定が本日最終期限。
+  3. **freee 統合ワールド 2026（6/16 明後日）**: TBP-001 の freee-mcp 審査フロー（AUDIT-REPORT.md 作成）は依然未着手。イベント後に即日着手できるよう準備推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- code.claude.com/docs/en/changelog（⭐⭐⭐⭐⭐）
+- anthropic.com/news（⭐⭐⭐⭐⭐）
+- github.com/anthropics/claude-code/issues（⭐⭐⭐⭐⭐）
+- cnbc.com / time.com / bloomberg.com / marktechpost.com（Fable 5/Mythos 5 停止令）
+- codersera.com / findskill.ai / vantagepoint.io（課金変更 Routines 影響）
+- qiita.com（Claude サブスク課金変更 6/15）
+- luvina.jp / keihi.com / renue.co.jp（会計×AI）
+- prtimes.jp / corp.freee.co.jp（freee 統合ワールド 2026）
+
+#### 🔴 即座に適用すべき事項
+
+**① 課金変更は明日 (6/15)【最重要・本日最終確認】**
+- Agent SDK / claude -p / GitHub Actions / サードパーティエージェントに加え、**Claude Code Routines（スケジュール型セッション）も対象**と確認
+- クレジット額: Pro $20/月、Max 5x $100/月、Max 20x $200/月（フル API 価格・ロールオーバーなし）
+- クレジット超過で自動停止。オーバーフロー請求を有効にしない限り Routines が止まる
+- **本日中に**: ① 月間消費クレジット試算 ② 上限超過時の運用方針確定 ③ 必要ならオーバーフロー請求の有効化
+- 参考: [Anthropic's June 15 Billing Change](https://codersera.com/blog/anthropic-june-2026-billing-change-claude-code/)
+
+**② 米政府 Fable 5/Mythos 5 アクセス全面停止令（6/12-13）【業界重大ニュース】**
+- Fable 5/Mythos 5 は 6/9 リリース後わずか3日で米政府の輸出管理指令を受けアクセス停止
+- 停止理由: Fable 5 のサイバーセキュリティ能力をアンロックする特定ケース限定のジェイルブレイク発見
+- Anthropic は「指摘されたジェイルブレイクは特定ケース限定で全般的なガードレール突破ではない」と主張するも、全外国人（Anthropic 外国籍社員含む）リアルタイムフィルタリング不可のため全ユーザー停止を選択
+- 現在 claude.ai では Fable 5 ではなく Opus 4.8 が提供中の可能性あり（要確認）
+- 参考: [Anthropic Statement](https://www.anthropic.com/news/fable-mythos-access) / [CNBC](https://www.cnbc.com/2026/06/12/anthropic-disables-access-to-fable-5-and-mythos-5-to-comply-with-government-directive.html)
+
+**③ Claude Code v2.1.176（6/12）: セッション言語・管理設定強化**
+- **セッションタイトル自動言語対応**: 会話言語でタイトルが自動生成される（`language` 設定で固定可）
+- **`footerLinksRegexes` 設定追加**: フッター行にリンクバッジをregex指定で追加可能（ユーザー/管理設定）
+- **Bedrock 認証情報キャッシュ改善**: `awsCredentialExport` の認証情報を `Expiration` まで（1時間固定から変更）
+- **`availableModels` 強制修正**: エイリアスモデルが `ANTHROPIC_DEFAULT_*_MODEL` 環境変数でブロック済みモデルにリダイレクトできないよう修正。`/fast` もアローリスト外モデルへの切り替え拒否
+- **Fable 5 auto mode フォールバック修正**: Opus 4.8 が有効でない組織でも最良の Opus モデルへフォールバック
+- **フック `if` 条件のパス修正**: `Edit(src/**)`, `Read(~/.ssh/**)`, `Read(.env)` などが正しくマッチするよう修正
+- **MCP ページネーション対応**: paginated `tools/list` の全ページを返すよう修正（従来は1ページ目のみ）
+- **スキルディレクトリビルド時のファイルディスクリプタ枯渇修正**: 非 .md ファイルがスキルリロードをトリガーしないよう修正
+- **JetBrains IDE ターミナルフリッカー修正**（v2026.1+ 同期出力有効化）
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① freee 統合ワールド 2026（6月16日・明後日）フォローアップ準備**
+- Anthropic Japan 菅野信氏セッション（16:40〜17:40）: 「手入力が消える日」freee MCP × AI エージェント
+- 茶圓将裕氏セッション: freee MCP がバックオフィス業務にもたらす影響
+- イベント後に **freee-mcp の TBP-001 審査フロー（AUDIT-REPORT.md 作成）を即日実施**
+
+**② references.md 一括更新セッション（11週間連続未反映・最優先継続）**
+- 最終確認 2026-03-29 以降4ヶ月近く未更新。蓄積候補25件超
+- 今回追加候補: `footerLinksRegexes` 設定 / MCP ページネーション全ページ対応 / フック `if` パス条件修正 / Bedrock 認証情報キャッシュ改善 / `availableModels` エイリアスバイパス防止
+- **一括更新セッションを最優先で実施（毎日継続）**
+
+**③ TCS × Anthropic パートナーシップ（6/12）の業務応用評価**
+- TCS が Claude を5万人の自社社員に展開・金融サービス/ヘルスケア/公共セクター向けに Claude 搭載製品を構築
+- Tak の本業（経理部長・内部統制）との間接的関連: 大手 SI × 規制産業への Claude 浸透が加速。会計系システムへの AI 統合が本格化するトレンドとして把握
+
+#### 🟢 参考情報
+- **Claude Fable 5 / Mythos 5 詳細（6/9 リリース・現在アクセス停止中）**: Mythos-class の最初の一般公開モデル。Fable 5: セーフガード付き一般向け（$10/M 入力・$50/M 出力）。Mythos 5: Fable 5 同一基盤・サイバー防衛者向けセーフガード一部解除版（Glasswing 参加組織のみ）
+- **Anthropic IPO S-1 SEC レビュー継続**: $965B バリュエーション目標（~$1.75-1.8T も報道）。SEC レビュー中・時期未確定。ランレート $47B/年
+- **Claude Code 課金変更 6/15 Qiita 警告記事**: 「Claude サブスクで自動化もしてる人へ：6/15 に課金ルールが変わります」（@sakamoto66）。Agent SDK / claude -p / GitHub Actions がサブスク枠から切り離され別建ての「月次クレジット(USD)」に移行
+- **Anthropic Project Glasswing 拡張**: 約150の新組織に拡張。サイバー防衛者向け Mythos 5 提供（政府停止令の影響範囲は確認中）
+- **Anthropic Public Record**: 2025年11-12月の米国民52,000人調査。AIに対する一般市民の意識把握
+- **会計×AI 2026年6月動向**: 国内中堅企業の仕訳入力約7割が依然手入力・月末残業平均32時間。経費精算工数75%削減・月次決算2営業日早期化が一般化。生成AIが「ルールベース仕訳 → 判断支援」フェーズへ本格移行継続
+
+#### references.md 更新提案
+1. **`footerLinksRegexes` 設定（v2.1.176）**: ユーザー/管理設定セクションに「フッターリンクバッジのregex指定設定」として追記を提案
+2. **MCP ページネーション対応（v2.1.176）**: MCP ツール設定セクションに「tools/list ページネーション: 全ページ返却に修正（v2.1.176〜）」を追記提案
+3. **フック `if` パス条件修正（v2.1.176）**: フック設計セクションに「`Edit(src/**)` / `Read(~/.ssh/**)` / `Read(.env)` 等の公式パターンが正しくマッチするよう修正（v2.1.176〜）」を追記提案
+4. **継続提案（11週間連続未反映）**: references.md 最終確認 2026-03-29 以降4ヶ月近く未更新。蓄積候補25件超。**一括更新セッションを最優先で実施することを強く推奨（連続継続）**
+
+#### 新規発見ソース候補
+- **tygartmedia.com**: Claude Agent SDK 課金変更の「Dual-Bucket Billing」解説。課金設計理解に有用（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-06-15（日曜日）
+注目点: ① **課金変更 (6/15) 施行後の Routines 動作確認** → クレジット消費状況をモニタリング ② **freee 統合ワールド 2026（6月16日）翌日** → イベント内容・AI/MCP 発表のキャッチアップ、freee-mcp TBP-001 審査フロー着手 ③ **Fable 5/Mythos 5 アクセス停止令の続報** → 解除/継続の確認 ④ **references.md 一括更新セッション**（11週間連続未反映）⑤ Fable 5 AUDIT-REPORT.md 作成（TBP-001 審査フロー、引き続き最優先）
+
+---
+
 ## [2026-06-12] デイリーレポート
 
 ### 内部知見（機能A）
