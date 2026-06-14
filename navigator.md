@@ -21,6 +21,7 @@
 | 記事フィードバック | ✅ 記事末尾💬→`article_feedbacks`→feedback-article-runner（7:30 JST）で追加記事自動生成 |
 | 学習マップ | 全7ジャンル `learning_topics`（67トピック）+ Claude Code 専属 `claude_code_topics`（36）|
 | 基礎記事の充実 | 🟢 着手 ~30/67（2026-06-14時点）。**thinking_learning 17/17 完成＋コア4topに発展編(deep)**。残りは ai_tech/keiri_dx/tools/business/security を自律ループ＆/loopで継続 |
+| 思考学習マップ | ✅ `thinking-map.html`（4領域×17トピックを**一般用語**で整理＋科学的根拠＋確証度🟢🟡🔵）。思考資産フレーム図は**血肉化レイヤー(個人)**として層分離して参考配置。index からリンク。内容SSOT: `docs/thinking-learning-worldview.md` |
 | 通知チャネル | Discord `#research-hub-notify` で稼働確認済 |
 | 直近の問題 | DR 自動 completed 現象（要 Phase 2 調査）|
 
@@ -68,6 +69,11 @@
    - Run 詳細ログ + `supabase/functions/deep-research/index.ts` ソース再読
    - 必要ならプロンプトに「complete アクションは呼ぶな」を明示
 
+6. **思考学習マップ フェーズB/C**（2026-06-14 フェーズA完成・`thinking-map.html`）
+   - **フェーズB**: 各トピックの科学的根拠を最新研究で深掘り・検証（現状は確証度付きの一般整理。Tak 認識「検証必要な部分も混在」）。研究の出典精査・効果量・再現性の確認
+   - **フェーズC**: 各トピックを DB の thinking_learning 記事へリンク（現状はプレースホルダ `📄 将来：…`）。記事の細分化・拡充
+   - 整理は**一般用語のみ**・自分語は血肉化レイヤー（個人）に限定する原則を厳守（memory 参照）
+
 ## 🔗 重要なリソース
 
 | 種別 | URL / 場所 |
@@ -105,6 +111,7 @@
 
 ## 📝 セッション履歴サマリー
 
+- **2026-06-14**: **思考学習 世界観マップ**（`thinking-map.html`）をフェーズA完成。要望は ①思考資産フレーム図をポータルから参照 ②thinking_learning を細分化＋科学的根拠で裏付け＋マインドマップ的俯瞰。tak-html-note B2（1枚図解）で生成。**重要な軌道修正**：当初「自分語フレームを中心に束ねる」設計→ Tak 指示で「リサーチ整理＝一般用語、自分語＝血肉化レイヤー（個人）」と**層を分離**。4領域×17トピックを一般用語＋確証度で整理、関係線SVG、俗説補正ボックス、図は参考枠に分離。コミット `852d037`
 - **2026-06-10〜12**: **好みフィードバック・ループ**（ADR-LG-009）と**記事フィードバック→フォローアップ記事**の2機能を実装。
   - 好み: クリップ記事を recency weighting（半減期30日）集計する `get_preference_profile` RPC + auto-research-collect Step 1.7（好み/バランス/探索の3系統ミックス・ジャンル占有上限40%・コールドスタート）。実DB検証で total_clips=80・上位タグ mcp/hooks/claude_code を確認。Console 貼り直し済（2026-06-11）
   - 記事FB: `article_feedbacks` テーブル + RPC 3本（submit/get_pending/complete）+ index.html 記事末尾💬欄 + 新 Routine `feedback-article-runner`（7:30 JST, `trig_01MYmCzYp5uGNEncchErp2vX`）。migration 適用 + RPC ラウンドトリップ検証済（送信→pending取得→complete）。コネクターは最小権限（Gmail/Calendar 不使用）
