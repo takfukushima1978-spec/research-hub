@@ -1,3 +1,93 @@
+## [2026-06-16] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）追記候補①**: Claude Fable 5 & Mythos 5 が米政府輸出規制指令により即時停止（6/12）。外部 AI サービスは「地政学的リスク・輸出規制による突然のサービス停止」リスクを持つことが具体的に示された。TBP-001 の審査基準に「地政学的リスク・外部規制リスク」評価項目を追加する提案。
+- **TBP-001 追記候補②（継続）**: 昨日（6/15）提案の「課金体系への影響（Agent SDK 課金分離）」評価項目追記も未確認のまま継続。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog
+- Anthropic Newsroom: https://www.anthropic.com/news
+- WebSearch（Fable 5 停止続報, Claude Code /goal, Code with Claude Tokyo, 会計×AI）
+- Zenn / Qiita（ClaudeCode タグ）
+
+#### 🔴 即座に適用すべき事項
+
+**① Fable 5 & Mythos 5 アクセス継続停止（6/12 指令 → 本日 6/16 未回復）**
+- 米政府（国家安全保障当局）が輸出規制指令を発令。外国人（米国内・外を問わず、Anthropic 社員含む）のアクセスを即時停止。
+- 停止理由: Fable 5 のセーフティ分類器を bypass する「ジェイルブレイク」手法の発見。
+- 現状（6/16）: Fable 5 / Mythos 5 は全ユーザー向けに停止継続。復旧時期は未定。Anthropic は政府の判断に公式異議を表明し、復旧交渉中。
+- **Research Hub / Routines への影響**: auto モードで `claude-fable-5` が選ばれる可能性があった期間（6/9〜6/12）の動作ログを確認推奨。現時点では Opus 4.8 / Sonnet 4.6 が使用されているはず。
+- 昨日レポート（6/15）の「6/9〜6/22 Fable 5 無料期間」の情報は 6/12 時点で実質無効化済み。追記・訂正として記録。
+- 参考: https://www.anthropic.com/news/fable-mythos-access
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Claude Code v2.1.179（本日 6/16 リリース）の改善確認**
+- Mid-stream 接続ドロップ時に部分的な応答を保持（deep-research-runner 等の長時間タスクで有効）。
+- WSL2 マウスホイールスクロール修正、Linux サンドボックス glob 処理の改善（Routine 実行環境に影響する可能性）。
+- リモートセッションのバックグラウンドタスク表示改善。
+
+**② Claude Code `/goal` コマンド（v2.1.139以降）**
+- 完了条件を1行宣言するだけで、Claude が条件達成まで自律的にターンをまたいで作業し続けるコマンド。
+- 使い方: `/goal <達成条件を1文で>` → 例: `/goal 全テストが pass する状態にする`
+- `/goal`（引数なし）で現在の進捗（ターン数・消費トークン）を確認可能。
+- deep-research-runner 等の長時間タスクや、Tak の手動調査タスクへの活用を検討。
+- 参考: https://code.claude.com/docs/en/goal
+
+**③ Code with Claude Tokyo で発表された Claude Finance（6/11）**
+- 10のプリビルトエージェントを含む財務・経理向け AI パッケージ。会計×AI の実装加速につながる可能性。
+- Dreaming・Outcomes・multi-agent orchestration・Add-ins も同イベントで発表。
+- NEC（30,000名）・日立が Anthropic と戦略提携を発表。国内 AI 需要拡大のシグナル。
+- 参考: https://claude.com/code-with-claude/tokyo-extended
+
+#### 🟢 参考情報
+
+**Anthropic の主要動向（6月上中旬まとめ）**
+- **IPO 準備継続**: 6/1 に SEC へ S-1 機密提出。評価額 ~$965B、年収換算 $47B（上場時期は市場環境次第）。
+- **Project Glasswing 拡大（6/2）**: 15カ国以上・150団体追加。電力・水道・医療・通信・ハードウェア分野対象。
+- **Claude Partner Network 発足（6/3）**: Services Track と Partner Hub 開始、TCS（50,000名）が参画。
+- **インド進出（6月中旬）**: バンガロールにオフィス開設予定。
+
+**会計×AI トレンド**
+- 経費精算・請求書処理・仕訳自動化での工数削減事例（最大 75% 削減）が標準化フェーズに移行。
+- 財務 AI は「効率化ツール」から「財務戦略変革」ツールへ位置付けが変化。
+- 国内中堅企業の仕訳入力は約 7 割が依然手入力（月末残業平均 32時間）で、生成 AI 導入余地が大きい。
+- freee 統合ワールド 2026（本日 6/16 開催）: AI 新発表があれば次回レポートでフォローアップ推奨。
+
+#### references.md 更新提案
+
+昨日（6/15）提案のものが継続未確認：
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 権限設計セクションへの追記確認（URL: https://code.claude.com/docs/en/best-practices）
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜、復旧未定）」の注記とともに追記を提案。
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-16` への更新。
+
+#### 新規発見ソース候補
+
+- **isfableback.org**: Fable 5 / Mythos 5 の復旧状況リアルタイム確認サイト（評価候補: ⭐⭐⭐）
+- **mindstudio.ai/blog**: Claude Code /goal・Code with Claude 新機能解説が有用（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-06-17（Fable 5 動向急変の可能性）または 2026-06-22（通常スケジュール）
+注目点:
+① Fable 5 / Mythos 5 復旧状況（isfableback.org で追跡可能）
+② freee 統合ワールド 2026（本日 6/16）の AI 新発表フォローアップ
+③ Agent SDK クレジット消費量の初回観測（6/15 施行後 2 日目）
+④ Claude Finance の詳細発表・API 公開スケジュール
+
+---
+
 ## [2026-06-15] デイリーレポート
 
 ### 内部知見（機能A）
@@ -41,7 +131,7 @@
 
 **① v2.1.178 `Tool(param:value)` 権限構文（6/15 本日）**
 - 権限ルールにツール入力パラメータを指定してマッチングできる新構文。
-- 例: `Agent(model:opus)` で Opus サブエージェントのスポーンをブロック、`Bash(command:rm*)` で特定コマンドを弾く。
+- 例: `Agent(model:opus)` で Opus サブエージェントをブロック、`Bash(command:rm*)` で特定コマンドを弾く。
 - ハーネス設計の permissions 設定でより精密な制御が可能に。settings.json の allowlists 見直し機会。
 - 同バージョンでネスト `.claude/` ディレクトリのスキル対応も追加（プロジェクトスキルの構成自由度向上）。
 
@@ -98,4 +188,3 @@
 ④ v2.1.178 `Tool(param:value)` 構文のハーネス適用実験
 
 ---
-
