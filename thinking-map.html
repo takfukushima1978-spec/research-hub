@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- tak-html-note: type=B2 generated=2026-06-14 -->
+<!-- tak-html-note: type=B1 generated=2026-06-18 -->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* 紙風パレット（B2デフォルト） */
+  /* 紙風パレット */
   --ink:#1a1614; --ink-soft:#4a4239; --ink-faint:#7a6f63;
   --paper:#faf6ef; --paper-soft:#f3ecdf; --rule:#d9cfbe;
   --accent:#b1411e; --accent-soft:#e07a4e;
@@ -27,74 +27,114 @@
 body{margin:0;background:var(--paper);color:var(--ink);
   font-family:'Inter','Noto Sans JP',sans-serif;line-height:1.7;
   font-feature-settings:"palt";}
-.wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px;}
+.wrap{max-width:1080px;margin:0 auto;padding:18px 20px 80px;}
 a{color:var(--accent);}
 
-/* ヘッダ */
-.top{border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:8px;}
-.top .home{font-size:13px;color:var(--ink-faint);text-decoration:none;}
-.top .home:hover{color:var(--accent);}
-h1{font-size:30px;margin:10px 0 6px;letter-spacing:-0.01em;}
-.subtitle{color:var(--ink-soft);font-size:15px;margin:0;}
-.meta-line{font-size:12px;color:var(--ink-faint);margin-top:8px;
-  font-family:'JetBrains Mono',monospace;}
+/* ===== パンくず ===== */
+#breadcrumb{font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--ink-faint);
+  padding:8px 0 14px;border-bottom:1px solid var(--rule);margin-bottom:8px;position:sticky;top:0;
+  background:var(--paper);z-index:50;}
+#breadcrumb a{color:var(--ink-soft);text-decoration:none;}
+#breadcrumb a:hover{color:var(--accent);}
+.bc-sep{color:var(--rule);margin:0 2px;}
+.bc-cur{color:var(--ink);font-weight:700;}
+.home-link{font-size:12px;color:var(--ink-faint);text-decoration:none;float:right;}
+.home-link:hover{color:var(--accent);}
 
-/* レイヤー注記 */
+/* ===== ページ切替 ===== */
+.page{display:none;}
+.page.active{display:block;animation:fade .25s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+.page-header{margin:8px 0 6px;}
+.page-header h1{font-size:28px;margin:6px 0 4px;letter-spacing:-0.01em;}
+.page-header h2{font-size:22px;margin:4px 0;letter-spacing:-0.01em;}
+.page-header .desc{color:var(--ink-soft);font-size:14px;margin:0;}
+.meta-line{font-size:11.5px;color:var(--ink-faint);margin-top:6px;font-family:'JetBrains Mono',monospace;}
+
+/* ===== レイヤー注記 ===== */
 .layer-note{background:var(--paper-soft);border:1px solid var(--rule);
-  border-radius:10px;padding:14px 18px;margin:24px 0;font-size:13.5px;}
+  border-radius:10px;padding:13px 16px;margin:18px 0;font-size:13px;}
 .layer-note b{color:var(--accent);}
 .layer-note .pill{display:inline-block;font-family:'JetBrains Mono',monospace;
   font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;margin-right:6px;}
 .pill.l1{background:var(--strong-bg);color:var(--strong);border:1px solid var(--strong-bd);}
 .pill.l2{background:var(--A-bg);color:var(--A);border:1px solid var(--A-bd);}
 
-/* セクション帯（白抜き） */
+/* ===== セクション帯（白抜き） ===== */
 .band{background:var(--ink);color:#fff;padding:8px 16px;border-radius:8px;
-  font-weight:700;font-size:16px;margin:40px 0 18px;display:flex;align-items:center;gap:10px;}
+  font-weight:700;font-size:15px;margin:34px 0 16px;display:flex;align-items:center;gap:10px;}
 .band .n{font-family:'JetBrains Mono',monospace;font-size:13px;opacity:.7;}
 
-/* 凡例 */
-.legend{display:flex;flex-wrap:wrap;gap:10px 18px;background:#fff;
-  border:1px solid var(--rule);border-radius:10px;padding:14px 18px;margin:18px 0 8px;font-size:13px;}
-.legend .item{display:flex;align-items:center;gap:7px;}
-.conf{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;
+/* ===== 凡例 ===== */
+.legend{display:flex;flex-wrap:wrap;gap:9px 16px;background:#fff;
+  border:1px solid var(--rule);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:12.5px;align-items:center;}
+.legend .item{display:flex;align-items:center;gap:6px;}
+.conf{display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;
   font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap;}
 .conf.s{background:var(--strong-bg);color:var(--strong);border:1px solid var(--strong-bd);}
 .conf.m{background:var(--mid-bg);color:var(--mid);border:1px solid var(--mid-bd);}
 .conf.w{background:var(--weak-bg);color:var(--weak);border:1px solid var(--weak-bd);}
-.legend .dash{display:inline-block;width:26px;height:0;border-top:2px solid var(--ink-soft);}
+.legend .dash{display:inline-block;width:24px;height:0;border-top:2px solid var(--ink-soft);}
 
-/* 俯瞰：中心→4領域 */
-.center-node{text-align:center;margin:8px auto 6px;max-width:560px;
+/* ===== Level1 中心ノード ===== */
+.center-node{text-align:center;margin:10px auto 4px;max-width:560px;
   background:var(--ink);color:#fff;border-radius:12px;padding:16px 20px;}
-.center-node .t{font-size:18px;font-weight:700;}
-.center-node .d{font-size:12.5px;opacity:.8;margin-top:2px;}
+.center-node .t{font-size:19px;font-weight:700;}
+.center-node .d{font-size:12.5px;opacity:.82;margin-top:2px;}
 .fork{display:flex;justify-content:center;color:var(--rule);font-size:22px;margin:2px 0;}
-.domains{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px;}
-.dom{border-radius:11px;padding:14px;border:1.5px solid;cursor:pointer;
-  transition:transform .15s,box-shadow .15s;background:#fff;}
+
+/* 領域カード（クリックでドリルダウン＝ページ遷移） */
+.domains{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:6px;}
+.dom{border-radius:11px;padding:14px;border:1.5px solid;cursor:pointer;background:#fff;
+  transition:transform .15s,box-shadow .15s;position:relative;}
 .dom:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.1);}
+.dom:hover .go{opacity:1;transform:translateX(0);}
 .dom.A{border-color:var(--A-bd);} .dom.B{border-color:var(--B-bd);}
 .dom.C{border-color:var(--C-bd);} .dom.D{border-color:var(--D-bd);}
 .dom .key{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;}
 .dom.A .key{color:var(--A);} .dom.B .key{color:var(--B);}
 .dom.C .key{color:var(--C);} .dom.D .key{color:var(--D);}
-.dom .title{font-weight:700;font-size:15px;margin:3px 0 6px;}
+.dom .title{font-weight:700;font-size:15px;margin:3px 0 5px;}
 .dom .q{font-size:12px;color:var(--ink-faint);margin-bottom:8px;}
 .dom .tlist{font-size:11.5px;color:var(--ink-soft);line-height:1.6;}
 .dom .cnt{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;
-  background:var(--paper-soft);border-radius:5px;padding:1px 7px;margin-top:8px;color:var(--ink-faint);}
+  background:var(--paper-soft);border-radius:5px;padding:1px 7px;margin-top:9px;color:var(--ink-faint);}
+.dom .go{position:absolute;top:13px;right:13px;font-size:13px;color:var(--accent);
+  opacity:.5;transition:opacity .15s,transform .15s;transform:translateX(-3px);}
 
-/* 領域詳細セクション */
-.domain-head{display:flex;align-items:center;gap:10px;margin:34px 0 12px;}
-.domain-head .badge{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;
-  color:#fff;padding:5px 12px;border-radius:7px;}
-.domain-head.A .badge{background:var(--A);} .domain-head.B .badge{background:var(--B);}
-.domain-head.C .badge{background:var(--C);} .domain-head.D .badge{background:var(--D);}
-.domain-head h3{margin:0;font-size:17px;}
-.domain-head .qt{font-size:12.5px;color:var(--ink-faint);margin-left:2px;}
+/* ===== 関係マップ（俯瞰の世界観） ===== */
+.rel-intro{font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+.rel-zone{position:relative;background:#fff;border:1px solid var(--rule);
+  border-radius:12px;padding:26px 20px;overflow-x:auto;}
+.rel-grid{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));
+  gap:38px 28px;position:relative;z-index:2;min-width:520px;}
+.rnode{border-radius:10px;padding:10px 12px;border:1.5px solid;background:#fff;text-align:center;}
+.rnode .rn-t{font-weight:700;font-size:12.5px;}
+.rnode .rn-d{font-size:10.5px;color:var(--ink-faint);margin-top:2px;}
+.rnode.hub{border-color:var(--ink);background:var(--ink);color:#fff;}
+.rnode.hub .rn-d{color:#d9cfbe;}
+.rnode.b{border-color:var(--B-bd);} .rnode.c{border-color:var(--C-bd);}
+.rnode.d{border-color:var(--D-bd);} .rnode.warn{border-color:var(--accent-soft);}
+#rel-svg{position:absolute;top:0;left:0;pointer-events:none;overflow:visible;z-index:1;}
 
-/* トピックカード（details） */
+/* ===== Level1 入口カード（俗説・血肉化へ） ===== */
+.entries{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:8px;}
+.entry{border:1.5px dashed var(--rule);border-radius:11px;padding:14px 16px;cursor:pointer;
+  background:#fff;transition:transform .15s,box-shadow .15s,border-color .15s;}
+.entry:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.08);border-color:var(--accent-soft);}
+.entry .et{font-weight:700;font-size:14px;}
+.entry .ed{font-size:12px;color:var(--ink-faint);margin-top:3px;}
+
+/* ===== 領域ページ：トピックカード ===== */
+.dom-fig{background:#fff;border:1px solid var(--rule);border-radius:12px;padding:16px;margin:14px 0 8px;}
+.dom-fig .fig-lbl{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--ink-faint);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+.fig-row{display:flex;flex-wrap:wrap;gap:8px;}
+.fig-chip{font-size:12px;padding:5px 11px;border-radius:18px;border:1px solid var(--rule);
+  background:var(--paper-soft);color:var(--ink-soft);}
+.fig-chip b{color:var(--ink);}
+
 .t-card{background:#fff;border:1px solid var(--rule);border-radius:10px;
   margin-bottom:10px;overflow:hidden;}
 .t-card[open]{box-shadow:0 3px 12px rgba(0,0,0,.07);}
@@ -104,44 +144,39 @@ h1{font-size:30px;margin:10px 0 6px;letter-spacing:-0.01em;}
 .t-sum:hover{background:var(--paper-soft);}
 .t-name{font-weight:700;font-size:14.5px;flex:1;}
 .t-one{font-size:12.5px;color:var(--ink-soft);flex:1.4;display:none;}
-@media(min-width:680px){.t-one{display:block;}}
+@media(min-width:720px){.t-one{display:block;}}
+.t-confs{display:flex;gap:4px;flex-shrink:0;}
 .ei{flex-shrink:0;width:22px;height:22px;border:1px solid var(--rule);border-radius:50%;
   display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink-faint);
   transition:transform .2s,background .2s,color .2s;}
-.t-body{padding:2px 16px 16px 16px;border-top:1px dashed var(--rule);margin-top:0;}
-.t-body .row{margin-top:11px;font-size:13.5px;}
+.t-body{padding:4px 16px 16px;border-top:1px dashed var(--rule);}
+.t-body .one-m{font-size:12.5px;color:var(--ink-soft);margin-top:10px;}
+@media(min-width:720px){.t-body .one-m{display:none;}}
+.t-body .row{margin-top:12px;font-size:13.5px;}
 .t-body .lbl{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;
   color:var(--ink-faint);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:2px;}
-.t-body .one-m{font-size:12.5px;color:var(--ink-soft);}
-@media(min-width:680px){.t-body .one-m{display:none;}}
-.future{font-size:11.5px;color:var(--ink-faint);font-style:italic;margin-top:10px;
-  background:var(--paper-soft);border-radius:6px;padding:6px 10px;}
+.t-body .caution{background:var(--paper-soft);border-left:3px solid var(--accent-soft);
+  border-radius:0 6px 6px 0;padding:8px 12px;}
+.t-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px;}
+.t-link{font-size:12px;font-weight:600;text-decoration:none;padding:6px 13px;border-radius:7px;
+  background:var(--accent);color:#fff;display:inline-flex;align-items:center;gap:5px;}
+.t-link:hover{background:#922f12;}
+.t-link.dev{background:#fff;color:var(--accent);border:1.5px solid var(--accent-soft);}
+.t-link.dev:hover{background:var(--paper-soft);}
 
-/* 関係マップ */
-.rel-intro{font-size:13.5px;color:var(--ink-soft);margin-bottom:16px;}
-.rel-zone{position:relative;background:#fff;border:1px solid var(--rule);
-  border-radius:12px;padding:26px 20px;overflow-x:auto;}
-.rel-grid{display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));
-  gap:38px 28px;position:relative;z-index:2;min-width:520px;}
-.rnode{border-radius:10px;padding:11px 13px;border:1.5px solid;background:#fff;text-align:center;}
-.rnode .rn-t{font-weight:700;font-size:13px;}
-.rnode .rn-d{font-size:11px;color:var(--ink-faint);margin-top:2px;}
-.rnode.hub{border-color:var(--ink);background:var(--ink);color:#fff;}
-.rnode.hub .rn-d{color:#d9cfbe;}
-.rnode.b{border-color:var(--B-bd);} .rnode.c{border-color:var(--C-bd);}
-.rnode.d{border-color:var(--D-bd);} .rnode.warn{border-color:var(--accent-soft);}
-#rel-svg{position:absolute;top:0;left:0;pointer-events:none;overflow:visible;z-index:1;}
-
-/* 俗説補正 */
+/* ===== 俗説補正 ===== */
 .myth{background:#fff;border:1.5px solid var(--accent-soft);border-radius:11px;
-  padding:6px 18px 14px;margin-top:8px;}
-.myth h4{color:var(--accent);font-size:14px;margin:14px 0 4px;}
+  padding:4px 18px 16px;margin-top:6px;}
+.myth .m-item{padding:12px 0;border-bottom:1px dashed var(--rule);}
+.myth .m-item:last-child{border-bottom:none;}
+.myth h4{color:var(--accent);font-size:14.5px;margin:6px 0 4px;}
 .myth p{font-size:13px;margin:0;color:var(--ink-soft);}
 .myth .real{color:var(--strong);font-weight:600;}
+.myth .src{font-size:11px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;}
 
-/* 参考：血肉化フレーム */
-.personal{margin-top:14px;background:linear-gradient(180deg,#fff,var(--paper-soft));
-  border:1.5px dashed var(--accent-soft);border-radius:12px;padding:20px;}
+/* ===== 血肉化フレーム ===== */
+.personal{background:linear-gradient(180deg,#fff,var(--paper-soft));
+  border:1.5px dashed var(--accent-soft);border-radius:12px;padding:20px;margin-top:6px;}
 .personal .ribbon{display:inline-block;font-size:11px;font-weight:700;
   font-family:'JetBrains Mono',monospace;background:var(--accent);color:#fff;
   padding:3px 11px;border-radius:6px;margin-bottom:10px;}
@@ -155,311 +190,417 @@ h1{font-size:30px;margin:10px 0 6px;letter-spacing:-0.01em;}
   border:1px solid var(--rule);border-radius:8px;background:#fff;}
 .personal .cap{text-align:center;font-size:11.5px;color:var(--ink-faint);}
 
+.back-row{margin-top:24px;}
+.back-btn{font-size:13px;color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer;}
+
 .foot{margin-top:50px;padding-top:16px;border-top:1px solid var(--rule);
   font-size:12px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;}
 
 @media(max-width:760px){
   .domains{grid-template-columns:repeat(2,1fr);}
-  h1{font-size:24px;}
+  .entries{grid-template-columns:1fr;}
+  .page-header h1{font-size:23px;}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav id="breadcrumb"></nav>
 
-  <!-- ===== ヘッダ ===== -->
-  <header class="top">
-    <a href="index.html" class="home">← Research Hub に戻る</a>
-    <h1>🧭 思考学習 世界観マップ</h1>
-    <p class="subtitle">「思考学習」を学習科学・認知科学の一般的な枠組みで俯瞰し、各テーマを科学的根拠（研究）で裏付ける。</p>
-    <p class="meta-line">genre=thinking_learning ／ 4領域 × 17トピック ／ generated 2026-06-14</p>
-  </header>
-
-  <!-- ===== レイヤー注記 ===== -->
-  <div class="layer-note">
-    この地図は<b>2つのレイヤーを分けて</b>扱う。
-    <div style="margin-top:8px;">
-      <span class="pill l1">① リサーチ整理</span> 一般用語のみ。学習科学の標準語彙で世界観を整理する（＝この地図の本体）。<br>
-      <span class="pill l2">② 血肉化</span> リサーチ結果を自分のものにするときの個人ツール（末尾の「参考」枠）。整理ロジックには持ち込まない。
+  <!-- ============================================================ -->
+  <!-- LEVEL 1 : 大局図（マインドマップ） -->
+  <!-- ============================================================ -->
+  <div class="page active" id="page-level1">
+    <a href="index.html" class="home-link">← Research Hub に戻る</a>
+    <div class="page-header">
+      <h1>🧭 思考学習 世界観マップ</h1>
+      <p class="desc">「思考学習」を学習科学・認知科学の一般的な枠組みで俯瞰し、各テーマを科学的根拠（研究）で裏付ける。領域カードをクリックして深掘りする。</p>
+      <p class="meta-line">genre=thinking_learning ／ 4領域 × 17トピック ／ B1 階層ナビ ／ updated 2026-06-18（フェーズB/C 反映）</p>
     </div>
-  </div>
 
-  <!-- ===== 凡例 ===== -->
-  <div class="legend">
-    <div class="item"><b style="font-size:12px;">確証度：</b></div>
-    <div class="item"><span class="conf s">🟢 強</span> 多数の追試・メタ分析で確立</div>
-    <div class="item"><span class="conf m">🟡 中</span> 有力だが文脈依存・効果量に幅</div>
-    <div class="item"><span class="conf w">🔵 弱/理論</span> 枠組み・逸話寄り、過信しない</div>
-    <div class="item"><span class="dash"></span> 線 = トピック間の関係（後半の関係マップ）</div>
-  </div>
-
-  <!-- ===== 俯瞰：中心→4領域 ===== -->
-  <div class="center-node">
-    <div class="t">思考学習</div>
-    <div class="d">知をどう獲得し、どう「使える形」にするかの体系</div>
-  </div>
-  <div class="fork">▾</div>
-  <div class="domains">
-    <div class="dom A" onclick="document.getElementById('domA').scrollIntoView({behavior:'smooth'})">
-      <div class="key">A</div><div class="title">思考法</div>
-      <div class="q">どう考えるか</div>
-      <div class="tlist">メタ認知／因数分解・第一原理／メンタルモデル／システム思考／認知バイアス</div>
-      <div class="cnt">5 topics</div>
+    <div class="layer-note">
+      この地図は<b>2つのレイヤーを分けて</b>扱う。
+      <div style="margin-top:8px;">
+        <span class="pill l1">① リサーチ整理</span> 一般用語のみ。学習科学の標準語彙で世界観を整理する（＝この地図の本体）。<br>
+        <span class="pill l2">② 血肉化</span> リサーチ結果を自分のものにするときの個人ツール（末尾の「参考」ページ）。整理ロジックには持ち込まない。
+      </div>
     </div>
-    <div class="dom B" onclick="document.getElementById('domB').scrollIntoView({behavior:'smooth'})">
-      <div class="key">B</div><div class="title">学習科学</div>
-      <div class="q">どう学ぶか（中核）</div>
-      <div class="tlist">想起練習・分散効果／インターリービング／メタ学習／意図的練習</div>
-      <div class="cnt">4 topics</div>
+
+    <div class="legend">
+      <div class="item"><b style="font-size:12px;">確証度：</b></div>
+      <div class="item"><span class="conf s">🟢 強</span> 多数の追試・メタ分析で確立</div>
+      <div class="item"><span class="conf m">🟡 中</span> 有力だが文脈依存・効果量に幅</div>
+      <div class="item"><span class="conf w">🔵 弱/理論</span> 枠組み・逸話寄り、過信しない</div>
     </div>
-    <div class="dom C" onclick="document.getElementById('domC').scrollIntoView({behavior:'smooth'})">
-      <div class="key">C</div><div class="title">脳・動機・習慣</div>
-      <div class="q">続ける土台</div>
-      <div class="tlist">ドーパミン・動機／習慣形成／集中と注意／時間管理・余白</div>
-      <div class="cnt">4 topics</div>
+
+    <!-- 中心 → 4領域（ドリルダウン＝ページ遷移） -->
+    <div class="center-node">
+      <div class="t">思考学習</div>
+      <div class="d">知をどう獲得し、どう「使える形」にするかの体系</div>
     </div>
-    <div class="dom D" onclick="document.getElementById('domD').scrollIntoView({behavior:'smooth'})">
-      <div class="key">D</div><div class="title">ナレッジ設計</div>
-      <div class="q">知をどう外化するか</div>
-      <div class="tlist">思考資産化／ノート術・第二の脳／書いて考える／音声・外化</div>
-      <div class="cnt">4 topics</div>
+    <div class="fork">▾</div>
+    <div class="domains" id="domain-cards"><!-- JS --></div>
+
+    <!-- 関係マップ（俯瞰の世界観） -->
+    <div class="band"><span class="n">🔗</span> トピック間の繋がり（世界観）</div>
+    <p class="rel-intro">バラバラの17トピックでなく、互いに支え合う一つの系として見る。<b>メタ認知</b>がハブで、想起練習×分散効果が記憶の核、<b>流暢性の錯覚</b>（スラスラ＝わかった の誤認）をどう破るかが学習の質を決める。</p>
+    <div class="rel-zone">
+      <div class="rel-grid" id="rel-grid">
+        <div class="rnode" id="r-fluency"><div class="rn-t">流暢性の錯覚</div><div class="rn-d">スラスラ＝わかった の誤認</div></div>
+        <div class="rnode hub" id="r-meta"><div class="rn-t">メタ認知</div><div class="rn-d">自己評価の正確さ（ハブ）</div></div>
+        <div class="rnode warn" id="r-desirable"><div class="rn-t">望ましい困難</div><div class="rn-d">あえて負荷をかける</div></div>
+        <div class="rnode b" id="r-retrieval"><div class="rn-t">想起練習</div><div class="rn-d">思い出す＝強化</div></div>
+        <div class="rnode b" id="r-spacing"><div class="rn-t">分散効果</div><div class="rn-d">間隔を空ける</div></div>
+        <div class="rnode d" id="r-selfexp"><div class="rn-t">書いて考える/自己説明</div><div class="rn-d">理解の穴を露見</div></div>
+        <div class="rnode c" id="r-dopamine"><div class="rn-t">ドーパミン</div><div class="rn-d">報酬予測誤差</div></div>
+        <div class="rnode c" id="r-habit"><div class="rn-t">習慣形成</div><div class="rn-d">意志より仕組み</div></div>
+        <div class="rnode d" id="r-external"><div class="rn-t">外化・ナレッジ設計</div><div class="rn-d">作業記憶を空ける</div></div>
+      </div>
+      <svg id="rel-svg"></svg>
     </div>
+    <div class="legend" style="margin-top:12px;">
+      <div class="item"><span class="dash" style="border-top-style:solid;"></span> 実線 = 強め合う（相乗）</div>
+      <div class="item"><span class="dash" style="border-top-style:dashed;"></span> 破線 = 破る/打ち消す（流暢性の錯覚に対抗）</div>
+      <div class="item"><span style="color:var(--ink);font-weight:700;">■</span> ハブ＝メタ認知</div>
+    </div>
+
+    <!-- 入口カード -->
+    <div class="band"><span class="n">＋</span> 横断ページ</div>
+    <div class="entries">
+      <div class="entry" onclick="navigate('myths')">
+        <div class="et">⚠️ よくある誤解（外で語る前に）</div>
+        <div class="ed">10,000時間・学習スタイル・手書き優位・21日習慣化 などの俗説を最新研究で補正</div>
+      </div>
+      <div class="entry" onclick="navigate('personal')">
+        <div class="et">💎 参考：個人の血肉化フレーム</div>
+        <div class="ed">レイヤー②。リサーチ整理（一般用語）とは層を分けた個人ツール</div>
+      </div>
+    </div>
+
+    <div class="foot">Research Hub ／ thinking-map.html ／ B1 階層ナビ ／ 内容SSOT: docs/thinking-learning-worldview.md</div>
   </div>
 
-  <!-- ===== A 思考法 ===== -->
-  <div class="band" id="domA"><span class="n">A</span> 思考法 — どう考えるか</div>
-  <div class="domain-head A"><span class="badge">A</span><span class="qt">情報をどう構造化し、判断するか（認知の"使い方"）</span></div>
+  <!-- ============================================================ -->
+  <!-- LEVEL 2 : 領域ページ（JSで本体を描画） -->
+  <!-- ============================================================ -->
+  <div class="page" id="page-domain-A"></div>
+  <div class="page" id="page-domain-B"></div>
+  <div class="page" id="page-domain-C"></div>
+  <div class="page" id="page-domain-D"></div>
 
-  <details class="t-card"><summary class="t-sum"><span class="t-name">メタ認知の基礎</span><span class="t-one">自分の理解度を正しく測る力が学びの土台</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">自分の理解度を正しく測る力が学びの土台。</div>
-      <div class="row"><span class="lbl">科学的根拠</span>思考を監視・制御する力。自己評価の正確さ（calibration）が学習成果を大きく左右する。<b>Flavell (1979)</b> のメタ認知研究が起点。<span class="conf s">🟢 強</span></div>
-      <div class="row"><span class="lbl">なぜ重要か</span>他のすべて（想起練習・意図的練習・習慣化）の効果は「自分の現在地を正しく測れているか」に依存する。この地図のハブ。</div>
-      <div class="future">📄 将来：DB の thinking_learning.metacognition 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">因数分解・第一原理思考</span><span class="t-one">大きな問題を分けて、前提から組み立て直す</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">大きな問題を分けて、前提から組み立て直す。</div>
-      <div class="row"><span class="lbl">科学的根拠</span>問題を要素に分解する構造的問題解決。チャンク化、<b>Polya の問題解決法</b>。専門家ほど深い構造で問題を表現する（Chi et al.）。<span class="conf m">🟡 中</span></div>
-      <div class="row"><span class="lbl">ポイント</span>表面的特徴でなく「構造」で問題を捉えると、未知の問題にも既知の解法が適用できる。</div>
-      <div class="future">📄 将来：DB の thinking_learning.first-principles 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">メンタルモデルの基礎</span><span class="t-one">思考の道具箱を複数持つほど応用が利く</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">思考の道具箱を複数持つほど応用が利く。</div>
-      <div class="row"><span class="lbl">科学的根拠</span>知識の<b>転移(transfer)</b>と<b>類推推論</b>。複数モデルの併用で盲点を減らす。Gentner の構造写像理論。<span class="conf m">🟡 中</span></div>
-      <div class="row"><span class="lbl">注意</span>「遠い転移（far transfer）」は実は起こりにくいことが知られる。モデルは万能でなく、文脈とセットで使う。</div>
-      <div class="future">📄 将来：DB の thinking_learning.mental-models 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">システム思考の基礎</span><span class="t-one">部分でなく系（全体の相互作用）で捉える</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">部分でなく系（全体の相互作用）で捉える。</div>
-      <div class="row"><span class="lbl">科学的根拠</span>フィードバックループ・レバレッジポイント・全体最適。<b>Senge『学習する組織』</b>。理論枠組みとしては有力だが厳密な実証は限定的。<span class="conf w">🔵 弱/理論</span></div>
-      <div class="row"><span class="lbl">ポイント</span>原因→結果の直線でなく、循環する相互作用を見る。介入点（レバレッジ）を見極める。</div>
-      <div class="future">📄 将来：DB の thinking_learning.systems-thinking 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">認知バイアスの基礎</span><span class="t-one">判断の歪みを知ることが意思決定の質を上げる</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">判断の歪みを知ることが意思決定の質を上げる。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>二重過程理論</b>（速い直感 System1／遅い熟慮 System2）、確証バイアス。<b>Kahneman & Tversky</b>。<span class="conf s">🟢 強</span></div>
-      <div class="row"><span class="lbl">注意</span>「バイアスを知れば避けられる」わけではない（debiasing は難しい）。仕組み・チェックリストで補うのが現実的。</div>
-      <div class="future">📄 将来：DB の thinking_learning.cognitive-biases 記事へリンク</div>
-    </div></details>
-
-  <!-- ===== B 学習科学 ===== -->
-  <div class="band" id="domB"><span class="n">B</span> 学習科学 — どう学ぶか（中核）</div>
-  <div class="domain-head B"><span class="badge">B</span><span class="qt">知識をどう定着・転移させるか（記憶と習得の"科学"）</span></div>
-
-  <details class="t-card" open><summary class="t-sum"><span class="t-name">想起練習と分散効果</span><span class="t-one">「読む」より「思い出す」が定着する</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">「読む」より「思い出す」が定着する。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>テスト効果(retrieval practice)</b>：思い出す行為そのものが記憶を強化する。<b>Roediger & Karpicke (2006)</b>、<b>Karpicke & Blunt (2011, Science)</b>。再読より自己テストが圧倒的に有効。<span class="conf s">🟢 強</span></div>
-      <div class="row"><span class="lbl">実践</span>教科書を読み返すのでなく、閉じて思い出す／問題を解く／白紙に書き出す。</div>
-      <div class="future">📄 将来：DB の thinking_learning.retrieval-practice 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">分散学習とインターリービング</span><span class="t-one">一夜漬けの逆。間隔と混在が効く</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">一夜漬けの逆。間隔と混在が効く。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>分散効果(spacing)</b>：間隔を空けると長期記憶が強まる。<b>Cepeda et al. (2006) メタ分析</b>。<b>インターリービング</b>（複数テーマを混ぜる）で転移が上がる（Rohrer）。<span class="conf s">🟢 強</span></div>
-      <div class="row"><span class="lbl">実践</span>想起練習と組み合わせる＝「間隔を空けて思い出す」が最強。SRS（間隔反復ソフト）の原理。</div>
-      <div class="future">📄 将来：DB の thinking_learning.spacing-interleaving 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">学び方を学ぶ（メタ学習）</span><span class="t-one">人に教えられる形にすると理解が深まる</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">人に教えられる形にすると理解が深まる。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>自己説明効果(self-explanation, Chi)</b>：自分の言葉で「なぜ」を説明すると理解が深まる。教えるつもりで再構成する（ファインマン技法）。<span class="conf m">🟡 中</span></div>
-      <div class="row"><span class="lbl">ポイント</span>「教える前提」で学ぶと、説明できない箇所＝理解の穴が露見する（流暢性の錯覚を破る）。</div>
-      <div class="future">📄 将来：DB の thinking_learning.learning-how-to-learn 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">意図的練習の基礎</span><span class="t-one">限界の少し外で、フィードバック付きで反復する</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">限界の少し外で、フィードバック付きで反復する。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>deliberate practice</b>：快適ゾーンの少し外で、即時フィードバックを得ながら反復。<b>Ericsson et al. (1993)</b>。<span class="conf m">🟡 中</span></div>
-      <div class="row"><span class="lbl">⚠️ 俗説注意</span><span style="color:var(--accent);">「10,000時間で誰でも一流」は誇張・誤った一般化。</span>練習の<b>質</b>・領域依存性・才能の寄与を無視している（後述の「よくある誤解」参照）。</div>
-      <div class="future">📄 将来：DB の thinking_learning.deliberate-practice 記事へリンク</div>
-    </div></details>
-
-  <!-- ===== C 脳・動機・習慣 ===== -->
-  <div class="band" id="domC"><span class="n">C</span> 脳・動機・習慣 — 続ける土台</div>
-  <div class="domain-head C"><span class="badge">C</span><span class="qt">学習を支える生理・行動の土台（続ける仕組み）</span></div>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">ドーパミンと動機づけ・依存</span><span class="t-one">動機は"予測との差分"で駆動される</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">動機は"予測との差分"で駆動される。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>報酬予測誤差(Schultz)</b>：ドーパミンは「快」そのものでなく「予測と実際のズレ」に反応する。依存の神経メカニズムもこれで説明される。<span class="conf s">🟢 強</span></div>
-      <div class="row"><span class="lbl">応用</span>予測できる報酬は飽きる。適度な不確実性・進捗の可視化が動機を保つ。</div>
-      <div class="future">📄 将来：DB の thinking_learning.dopamine-basics 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">習慣形成の科学</span><span class="t-one">意志より仕組み。きっかけと反復が鍵</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">意志より仕組み。きっかけと反復が鍵。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>cue→routine→reward</b> の習慣ループ。<b>実装意図(Gollwitzer 1999)</b>＝「いつ・どこで・何を」を先に決めると実行率が上がる。<b>Lally et al. (2010)</b>：自動化まで平均66日（18〜254日と幅大）。<span class="conf s">🟢 強</span></div>
-      <div class="row"><span class="lbl">注意</span>「21日で習慣化」は俗説。期間は行動の難易度で大きく変わる。</div>
-      <div class="future">📄 将来：DB の thinking_learning.habit-formation 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">集中と注意の科学</span><span class="t-one">切替コストは大きい。単一集中が効率的</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">切替コストは大きい。単一集中が効率的。</div>
-      <div class="row"><span class="lbl">科学的根拠</span>注意の容量限界・<b>マルチタスクの切替コスト</b>（Gloria Mark らの研究：中断後の復帰に時間がかかる）。深い集中（ディープワーク）の価値。<span class="conf m">🟡 中</span></div>
-      <div class="row"><span class="lbl">実践</span>通知を切る・タスクをまとめる・単一集中のブロックを設計する。</div>
-      <div class="future">📄 将来：DB の thinking_learning.focus-attention 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">時間管理・脳の余白</span><span class="t-one">余白は怠けでなく無意識処理の時間</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">余白は怠けでなく無意識処理の時間。</div>
-      <div class="row"><span class="lbl">科学的根拠</span>シングルタスク優位・休息＝処理時間の確保。<b>インキュベーション効果(Sio & Ormerod 2009 メタ分析)</b>：離れている間に無意識処理が進む。<span class="conf w">🔵 弱/理論</span>（効果量は条件依存）</div>
-      <div class="row"><span class="lbl">ポイント</span>詰め込みすぎは逆効果。意図的に「余白」を設計する（ただし万能ではない）。</div>
-      <div class="future">📄 将来：DB の thinking_learning.time-management 記事へリンク</div>
-    </div></details>
-
-  <!-- ===== D ナレッジ設計 ===== -->
-  <div class="band" id="domD"><span class="n">D</span> ナレッジ設計・外化 — 知をどう設計するか</div>
-  <div class="domain-head D"><span class="badge">D</span><span class="qt">知識を外に出して再利用可能な形にする（思考の外化）</span></div>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">ナレッジ設計・思考資産化</span><span class="t-one">外に書き出すと脳の作業領域が空く</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">外に書き出すと脳の作業領域が空く。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>外化(externalization)</b>・<b>認知負荷理論(Sweller)</b>：作業記憶には限界があり、外に出すと余地が生まれる。分散認知（道具・環境に思考を分散）。<span class="conf m">🟡 中</span></div>
-      <div class="row"><span class="lbl">ポイント</span>覚えておくのでなく「いつでも引ける形」にする。再利用可能な構造（SoT）に整える。</div>
-      <div class="future">📄 将来：DB の thinking_learning.knowledge-design 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">ノート術・セカンドブレイン</span><span class="t-one">リンクで繋ぐと知識が再利用可能になる</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">リンクで繋ぐと知識が再利用可能になる。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>Zettelkasten(Luhmann)</b>・リンク型ノート・PARA。<b>産出効果(generation effect)</b>：自分で生成した情報は記憶に残りやすい。<span class="conf m">🟡 中</span></div>
-      <div class="row"><span class="lbl">ポイント</span>溜めるだけでは資産にならない。リンク・再訪・再構成で初めて使える知になる。</div>
-      <div class="future">📄 将来：DB の thinking_learning.note-taking-methods 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">書いて考える技術</span><span class="t-one">書くことは考えること（曖昧さが露見する）</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">書くことは考えること（曖昧さが露見する）。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>writing-to-learn</b>・自己説明：書く行為が思考を精緻化し、理解の穴を可視化する。<span class="conf m">🟡 中</span></div>
-      <div class="row"><span class="lbl">注意</span>手書き vs タイプの優劣（Mueller & Oppenheimer 2014）は近年の大規模追試で効果が小さく、再現性に議論がある（後述）。</div>
-      <div class="future">📄 将来：DB の thinking_learning.writing-to-think 記事へリンク</div>
-    </div></details>
-
-  <details class="t-card"><summary class="t-sum"><span class="t-name">音声入力・思考の外化</span><span class="t-one">話して出すと思考速度のまま外化できる</span><span class="ei">+</span></summary>
-    <div class="t-body"><div class="one-m">話して出すと思考速度のまま外化できる。</div>
-      <div class="row"><span class="lbl">科学的根拠</span><b>産出効果</b>・<b>thinking aloud（発話思考）</b>：話して考えると思考スピードのまま外化でき、後から構造化できる。<span class="conf w">🔵 弱/理論</span></div>
-      <div class="row"><span class="lbl">ポイント</span>書くより速い。粗く出して後で整える「外化→構造化」の二段が相性良い。</div>
-      <div class="future">📄 将来：DB の thinking_learning.voice-externalization 記事へリンク</div>
-    </div></details>
-
-  <!-- ===== 関係マップ ===== -->
-  <div class="band"><span class="n">🔗</span> トピック間の繋がり（世界観）</div>
-  <p class="rel-intro">バラバラの17トピックでなく、互いに支え合う一つの系として見る。<b>メタ認知</b>がハブで、想起練習×分散効果が記憶の核、流暢性の錯覚をどう破るかが学習の質を決める。</p>
-  <div class="rel-zone">
-    <div class="rel-grid" id="rel-grid">
-      <div class="rnode" id="r-fluency"><div class="rn-t">流暢性の錯覚</div><div class="rn-d">スラスラ＝わかった の誤認</div></div>
-      <div class="rnode hub" id="r-meta"><div class="rn-t">メタ認知</div><div class="rn-d">自己評価の正確さ（ハブ）</div></div>
-      <div class="rnode warn" id="r-desirable"><div class="rn-t">望ましい困難</div><div class="rn-d">あえて負荷をかける</div></div>
-      <div class="rnode b" id="r-retrieval"><div class="rn-t">想起練習</div><div class="rn-d">思い出す＝強化</div></div>
-      <div class="rnode b" id="r-spacing"><div class="rn-t">分散効果</div><div class="rn-d">間隔を空ける</div></div>
-      <div class="rnode d" id="r-selfexp"><div class="rn-t">書いて考える/自己説明</div><div class="rn-d">理解の穴を露見</div></div>
-      <div class="rnode c" id="r-dopamine"><div class="rn-t">ドーパミン</div><div class="rn-d">報酬予測誤差</div></div>
-      <div class="rnode c" id="r-habit"><div class="rn-t">習慣形成</div><div class="rn-d">意志より仕組み</div></div>
-      <div class="rnode d" id="r-external"><div class="rn-t">外化・ナレッジ設計</div><div class="rn-d">作業記憶を空ける</div></div>
+  <!-- ============================================================ -->
+  <!-- 俗説補正ページ -->
+  <!-- ============================================================ -->
+  <div class="page" id="page-myths">
+    <div class="page-header">
+      <h2>⚠️ よくある誤解（外で語る前に）</h2>
+      <p class="desc">広く流布しているが、最新研究・メタ分析・追試では支持されない（または大きく弱まった）主張。フェーズB（2026-06-18）で裏取りした。</p>
     </div>
-    <svg id="rel-svg"></svg>
-  </div>
-  <div class="legend" style="margin-top:12px;">
-    <div class="item"><span class="dash" style="border-top-style:solid;"></span> 実線 = 強め合う（相乗）</div>
-    <div class="item"><span class="dash" style="border-top-style:dashed;"></span> 破線 = 破る/打ち消す（流暢性の錯覚に対抗）</div>
-    <div class="item"><span style="color:var(--ink);font-weight:700;">■</span> ハブ＝メタ認知</div>
-  </div>
-
-  <!-- ===== 俗説補正 ===== -->
-  <div class="band"><span class="n">⚠️</span> よくある誤解（外で語る前に）</div>
-  <div class="myth">
-    <h4>「10,000時間の法則」</h4>
-    <p>Ericsson の意図的練習研究の<b>誤った一般化</b>。<span class="real">実際は</span>：練習の"質"・領域依存性・個人差が大きく、時間だけで一流になるわけではない。Ericsson 本人も俗説化を否定している。</p>
-    <h4>「学習スタイル（視覚型/聴覚型）に合わせると効果的」</h4>
-    <p>教育界で根強いが<b>実証されていない神話</b>（Pashler et al. 2008 ほか）。<span class="real">実際は</span>：スタイルを合わせても成績は上がらない。内容に適した提示方法のほうが重要。</p>
-    <h4>「手書きノートはタイプより優れる」</h4>
-    <p>Mueller & Oppenheimer (2014) が有名だが、<b>近年の大規模追試で効果は小さく再現性に議論</b>。<span class="real">実際は</span>：手段より「自分の言葉で再構成しているか（＝産出・自己説明）」が効く。</p>
-    <h4>「21日で習慣化する」</h4>
-    <p>出典の曖昧な俗説。<span class="real">実際は</span>：Lally et al. (2010) で平均66日、行動の難易度により18〜254日と大きく幅がある。</p>
-  </div>
-
-  <!-- ===== 参考：個人の血肉化フレーム ===== -->
-  <div class="band"><span class="n">💎</span> 参考：個人の血肉化フレーム</div>
-  <div class="personal">
-    <span class="ribbon">レイヤー② 血肉化（個人ツール）</span>
-    <p>ここから先は<b>整理（一般用語）とは別レイヤー</b>。上の学習科学を<b>自分のものにする（血肉化する）</b>ときに Tak が使う個人フレーム。整理のロジックには持ち込まず、参考として置く。</p>
-    <div class="layers">
-      <div class="lcard gen"><b>① リサーチ整理（上の地図）</b>一般用語。誰にでも通じる学習科学の枠組みで世界観を整理する。</div>
-      <div class="lcard per"><b>② 血肉化（この図）</b>自分語可。リサーチ結果を自分の体感・実践に落とし込む個人プロセス。</div>
+    <div class="myth">
+      <div class="m-item">
+        <h4>「10,000時間の法則」</h4>
+        <p>意図的練習研究の<b>誤った一般化</b>。<span class="real">実際は</span>：Macnamara 2014 メタ分析（11,135人）で練習の説明力は領域依存（ゲーム26%・音楽21%・教育4%・職業&lt;1%）。Ericsson 1993 の効果量も追試で半減（η²0.48→0.26）。<b>Ericsson 本人が俗説化を否定</b>している。</p>
+      </div>
+      <div class="m-item">
+        <h4>「学習スタイル（視覚型/聴覚型）に合わせると効果的」</h4>
+        <p>教育界で根強いが<b>実証されていない神話</b>。<span class="real">実際は</span>：スタイルを合わせても成績は上がらない（効果量 d≈0.04）。提示方法は学習者でなく<b>内容</b>に適合させるべき。<span class="src">Pashler et al. 2008</span></p>
+      </div>
+      <div class="m-item">
+        <h4>「手書きノートはタイプより優れる」</h4>
+        <p>Mueller &amp; Oppenheimer (2014) が有名だが、<b>近年の大規模追試で効果は小さく再現性に議論</b>（Morehead et al. 2019、d≈0.14）。<span class="real">実際は</span>：手段より「自分の言葉で再構成しているか（＝産出・自己説明）」が効く。</p>
+      </div>
+      <div class="m-item">
+        <h4>「21日で習慣化する」</h4>
+        <p>出典は整形外科医 Maxwell Maltz（1950年代）の臨床観察で<b>科学的根拠なし</b>。<span class="real">実際は</span>：Lally et al. (2010) で自動化まで中央値66日、行動の難易度により18〜254日と大きく幅がある。</p>
+      </div>
+      <div class="m-item">
+        <h4>「ドーパミンデトックスで脳がリセットされる」</h4>
+        <p>ドーパミンは「快楽物質」ではなく<b>報酬予測誤差の信号</b>。<span class="real">実際は</span>：ドーパミンは枯渇しない。休息・習慣変更が効くのは、報酬予測の振幅（基準値の上昇＝相対的退屈化）を再調整するため。「毒抜き」ではなく学習の再調整。</p>
+      </div>
+      <div class="m-item">
+        <h4>「バイアスは知れば避けられる」</h4>
+        <p>debiasing は<b>困難</b>。<span class="real">実際は</span>：警告・知識・訓練だけではバイアスは消えず、訓練文脈の外では自動的に再発現する（転移しない）。個人努力より、意思決定プロセスの構造化・複数評価者・チェックリストといった<b>仕組み</b>で補うのが現実的。</p>
+      </div>
     </div>
-    <img src="assets/thinking-assets-framework-v7.png" alt="思考資産フレームワーク v7 — 素材→thinking-garden→血肉化→骨肉化の個人フレーム">
-    <p class="cap">思考資産フレームワーク v7（個人レイヤー・整理軸には使わない）</p>
+    <div class="back-row"><a class="back-btn" onclick="navigate('level1')">‹ 大局図に戻る</a></div>
   </div>
 
-  <div class="foot">Research Hub ／ thinking-map.html ／ B2 1枚図解 ／ 内容SSOT: docs/thinking-learning-worldview.md</div>
+  <!-- ============================================================ -->
+  <!-- 血肉化フレームページ -->
+  <!-- ============================================================ -->
+  <div class="page" id="page-personal">
+    <div class="page-header">
+      <h2>💎 参考：個人の血肉化フレーム</h2>
+      <p class="desc">ここから先は整理（一般用語）とは別レイヤー。上の学習科学を自分のものにする（血肉化する）ときに Tak が使う個人フレーム。整理のロジックには持ち込まず、参考として置く。</p>
+    </div>
+    <div class="personal">
+      <span class="ribbon">レイヤー② 血肉化（個人ツール）</span>
+      <div class="layers">
+        <div class="lcard gen"><b>① リサーチ整理（この地図の本体）</b>一般用語。誰にでも通じる学習科学の枠組みで世界観を整理する。</div>
+        <div class="lcard per"><b>② 血肉化（この図）</b>自分語可。リサーチ結果を自分の体感・実践に落とし込む個人プロセス。</div>
+      </div>
+      <img src="assets/thinking-assets-framework-v7.png" alt="思考資産フレームワーク v7 — 素材→thinking-garden→血肉化→骨肉化の個人フレーム">
+      <p class="cap">思考資産フレームワーク v7（個人レイヤー・整理軸には使わない）</p>
+    </div>
+    <div class="back-row"><a class="back-btn" onclick="navigate('level1')">‹ 大局図に戻る</a></div>
+  </div>
 
 </div>
 
 <script>
-// ===== 関係線 動的描画（type-single-diagram の drawArrows パターン） =====
-const REL = [
+// ===================================================================
+// データ（内容SSOT: docs/thinking-learning-worldview.md §3/§7/§8）
+// ===================================================================
+var VIEWER = "https://swgdzytwyvkwvncaqjks.supabase.co/functions/v1/articles?slug=";
+
+var DOMAINS = {
+  A:{title:'思考法', q:'どう考えるか', sub:'情報をどう構造化し、判断するか（認知の「使い方」）'},
+  B:{title:'学習科学', q:'どう学ぶか（中核）', sub:'知識をどう定着・転移させるか（記憶と習得の「科学」）。体感の科学的裏付けの中核'},
+  C:{title:'脳・動機・習慣', q:'続ける土台', sub:'学習を支える生理・行動の土台（続ける仕組み）'},
+  D:{title:'ナレッジ設計・外化', q:'知をどう外化するか', sub:'知識を外に出して再利用可能な形にする（思考の外化）'}
+};
+
+// conf: 's'=強 / 'm'=中 / 'w'=弱。配列で複合（例 ['s','m']）
+var TOPICS = [
+  // ===== A 思考法 =====
+  {dom:'A', name:'メタ認知の基礎', one:'自分の理解度を正しく測る力が学びの土台', conf:['m'],
+   basis:'思考を監視・制御する力。自己評価の正確さ（calibration）が学習成果を左右する。<b>Flavell (1979)</b> が起点。',
+   caution:'効果量は文脈依存。Dunning-Kruger は統計的アーティファクト説で論争中（2024）。低スキル者ほど自己評価が機能しにくく、「監視」だけでなく「制御策（方略変更）」がないと改善しない。',
+   slug:'20260610_メタ認知の基礎-考えている自分を上から見るもう一人の自分_io4v0g',
+   dev:'20260610_メタ認知の実践プレイブック発展編-監督を仕組みで常駐させる_q5536v'},
+  {dom:'A', name:'因数分解・第一原理思考', one:'大きな問題を分けて、前提から組み立て直す', conf:['s'],
+   basis:'問題を要素に分解する構造的問題解決。チャンク化、<b>Polya (1945)</b>。専門家ほど深い「構造」で問題を表現する（Chi）。',
+   caution:'同一領域では確立。ただし<b>遠い転移(far transfer)はほぼ起こらない</b>。枠組みだけでは領域固有の知識がないと実行できない。',
+   slug:'20260610_第一原理思考の基礎-因数分解して底の公理から組み立て直す_32p7wa',
+   dev:'20260610_第一原理思考の実践フレーム発展編-複雑な意思決定で使う3ステップ_8k0zh4'},
+  {dom:'A', name:'メンタルモデルの基礎', one:'思考の道具箱を複数持つほど応用が利く', conf:['m'],
+   basis:'知識の<b>転移(transfer)</b>と類推推論。<b>Gentner の構造写像理論(1983)</b>。複数モデル併用で盲点を減らす。',
+   caution:'理論は堅牢だが、認知訓練の<b>遠い転移はメタ分析で null</b>。「意識化すれば別領域で使える」は誤り。モデルは文脈とセットで使う。',
+   slug:'20260610_メンタルモデルの基礎-世界を理解する思考の道具箱を増やす_knc5ry', dev:null},
+  {dom:'A', name:'システム思考の基礎', one:'部分でなく系（全体の相互作用）で捉える', conf:['m'],
+   basis:'フィードバックループ・レバレッジポイント・全体最適。<b>Senge『学習する組織』(1990)</b>。',
+   caution:'枠組みは整合的・部分的に妥当性確認。だが<b>組織的成果への因果は未実証</b>。レバレッジポイントの発見自体が困難（可視化の訓練が前提）。',
+   slug:'20260610_システム思考の基礎-点ではなくつながりループで見る_l8b4d2', dev:null},
+  {dom:'A', name:'認知バイアスの基礎', one:'判断の歪みを知ることが意思決定の質を上げる', conf:['m'],
+   basis:'<b>二重過程理論</b>（速い直感 System1／遅い熟慮 System2）、確証バイアス。<b>Kahneman &amp; Tversky</b>。',
+   caution:'<b>再現危機</b>でプライミング系の効果量が元の32〜50%に縮小。<b>debiasing は困難</b>（警告・訓練は効きにくく転移しない）。個人努力より仕組み・チェックリストが確実。',
+   slug:'20260610_認知バイアスの基礎-脳の近道が生む決まった方向の思考の歪み_skr64q', dev:null},
+
+  // ===== B 学習科学 =====
+  {dom:'B', name:'想起練習と分散効果', one:'「読む」より「思い出す」が定着する', conf:['s'],
+   basis:'<b>テスト効果(retrieval practice)</b>：思い出す行為そのものが記憶を強化する。<b>Roediger &amp; Karpicke 2006</b>（1週間後 61% vs 再読40%）、<b>Karpicke &amp; Blunt 2011 (Science)</b>。メタ分析 g=0.50（Rowland 2014）。',
+   caution:'数百件の追試で安定・頑健。当初 g=0.61→0.50 と若干縮小する程度。再読より自己テストが一貫して有効。',
+   slug:'20260610_想起練習と分散効果の基礎-読むより思い出すが記憶を作る_m68otx', dev:null},
+  {dom:'B', name:'分散学習とインターリービング', one:'一夜漬けの逆。間隔と混在が効く', conf:['s','m'],
+   basis:'<b>spacing</b>：間隔を空けると長期記憶が強まる。<b>Cepeda et al. 2006 メタ分析</b>（317実験、最適間隔=保持間隔の10〜20%）→🟢。<b>interleaving</b>：混ぜると転移が上がる。Rohrer 2015 g≈0.8〜1.2。',
+   caution:'interleaving は<b>領域依存</b>（数学・運動で強く、語彙で弱い）。<b>初心者・基礎習得前はむしろ逆効果</b>の報告あり→🟡。学習中は遅く見えるため実装しにくい。',
+   slug:'20260610_分散学習とインターリービングの基礎-わざと難しくすると定着が伸びる_crrycr', dev:null},
+  {dom:'B', name:'学び方を学ぶ（メタ学習）', one:'人に教えられる形にすると理解が深まる', conf:['s','w'],
+   basis:'<b>自己説明効果(self-explanation, Chi &amp; VanLehn 1994)</b>。Bisra メタ分析 g=0.66 →🟢。自分の言葉で「なぜ」を説明すると理解が深まる。',
+   caution:'ファインマン技法・「教えて学ぶ(protégé effect)」は<b>系統的メタ分析なし</b>→🔵。「教えれば上手くなる」は因果逆転の可能性。自己説明も「なぜ」の<b>深い説明</b>でないと効かない（表面的説明では効果5倍差）。',
+   slug:'20260610_学び方を学ぶメタ学習の基礎-脳の使い方を整えると成果が変わる_pcu4t0', dev:null},
+  {dom:'B', name:'意図的練習の基礎', one:'⚠️「10,000時間で誰でも一流」は俗説・誇張', conf:['m'],
+   basis:'<b>deliberate practice</b>：快適ゾーンの少し外で、即時フィードバックを得ながら反復。<b>Ericsson et al. (1993)</b>。',
+   caution:'<b>Macnamara 2014 メタ分析</b>で練習の説明力は領域依存（ゲーム26%・音楽21%・教育4%・職業&lt;1%）。Ericsson 1993 の効果量も追試で半減（η²0.48→0.26）、<b>本人も10,000時間説を否定</b>。練習は必要条件だが充分条件ではない。',
+   slug:'20260610_意図的練習の基礎-ただ繰り返すのは練習ではない_uch1c0', dev:null},
+
+  // ===== C 脳・動機・習慣 =====
+  {dom:'C', name:'ドーパミンと動機づけ・依存', one:'動機は「予測との差分」で駆動される', conf:['s'],
+   basis:'<b>報酬予測誤差(reward prediction error)</b>。Schultz / <b>Hollerman &amp; Schultz 1998</b>。ドーパミンは「快」そのものでなく「予測と実際のズレ」に反応する。',
+   caution:'霊長類・齧歯類で神経単位レベルの反復検証＝極めて堅牢。ただし<b>「ドーパミン=快楽物質」「デトックスでリセット」は誤り</b>（枯渇しない）。ヒトの社会的文脈への外挿は要注意。',
+   slug:'20260610_ドーパミンと動機づけ・依存の基礎-快楽物質ではなく予測のズレの信号_yg4ovf',
+   dev:'20260610_ドーパミン応用編発展編-可変報酬の設計と依存から身を守る_agaehh'},
+  {dom:'C', name:'習慣形成の科学', one:'意志より仕組み。きっかけと反復が鍵', conf:['s','m'],
+   basis:'<b>cue→routine→reward</b> の習慣ループ。<b>Lally et al. 2010</b>：自動化まで中央値66日（18〜254日）→🟢。<b>実装意図(Gollwitzer 1999)</b>＝「いつ・どこで・何を」を先に決めると実行率↑、メタ分析 d=0.65 →🟡。',
+   caution:'<b>「21日で習慣化」は Maxwell Maltz（1950s）由来の俗説</b>で科学的根拠なし。期間は行動の複雑度・環境一貫性で大きく変わる。毎日実行が前提。',
+   slug:'20260610_習慣形成の科学-意志ではなく設計で続ける_r5pvzy', dev:null},
+  {dom:'C', name:'集中と注意の科学', one:'切替コストは大きい。単一集中が効率的', conf:['s','m'],
+   basis:'<b>選択的注意の容量限界</b>（Cherry 1953、背側注意ネットワーク DAN の裏付け）→🟢。中断後の復帰時間 <b>Gloria Mark</b> 中央値23分→🟡。',
+   caution:'23分は<b>参考値</b>で個人差・タスク種による分散が大きく個別予測性は低い。マルチタスク「適応進化」は幻想（エラー率・遅延が増える）。',
+   slug:'20260610_集中と注意の科学-マルチタスクは神話集中は鍛えられる筋肉_c3g1kk', dev:null},
+  {dom:'C', name:'時間管理・脳の余白', one:'余白は怠けでなく無意識処理の時間', conf:['m','w'],
+   basis:'<b>インキュベーション効果</b>（Sio &amp; Ormerod 2009 メタ分析、40+RCT）→🟡。<b>DMN（デフォルトモードネットワーク）</b>の無意識処理→🔵。',
+   caution:'効果量は条件で大幅変動（発散思考 d≈0.5／論理・洞察課題 d≈0.1〜0.3）。<b>「休息＝必ず創造性向上」は誤り</b>。DMN の因果は仮説段階で反すうとも関連。準備フェーズで苦戦した後ほど余白が効く。',
+   slug:'20260610_時間管理・脳の余白の基礎-やることよりやらないことを決める_58igce', dev:null},
+
+  // ===== D ナレッジ設計・外化 =====
+  {dom:'D', name:'ナレッジ設計・思考資産化', one:'外に書き出すと脳の作業領域が空く', conf:['m'],
+   basis:'<b>外化(externalization)</b>・<b>認知負荷理論(Sweller)</b>：作業記憶には限界があり、外に出すと余地が生まれる。<b>分散認知(Hutchins)</b>。',
+   caution:'CLT は設計ガイドラインとして有用だが「作業記憶の容量制限」前提に<b>2020年代の批判</b>。分散認知は学習転移への実証ギャップ。',
+   slug:'20260610_ナレッジ設計・思考資産化の基礎-知識をあとで使える形に整える_mzkxft',
+   dev:'20260610_ナレッジ設計の実践プレイブック発展編-第二の脳を運用に乗せる_f10ubz'},
+  {dom:'D', name:'ノート術・セカンドブレイン', one:'リンクで繋ぐと知識が再利用可能になる', conf:['s','m'],
+   basis:'<b>産出効果(generation effect, Slamecka &amp; Graf 1978)</b>。Bertsch 2004 メタ分析 d=0.40 →🟢。<b>Zettelkasten(Luhmann)</b>・PARA →🟡。',
+   caution:'産出効果は再現危機を生き残った頑健な知見。<b>Zettelkasten は事例研究のみ・RCT/対照群なし</b>。成功は「記録習慣・自己決定感」の効果の可能性。溜めるだけでは資産にならない。',
+   slug:'20260610_ノート術・セカンドブレインの基礎-知識を生きたまま育てる型_h78jql', dev:null},
+  {dom:'D', name:'書いて考える技術', one:'書くことは考えること（曖昧さが露見する）', conf:['m'],
+   basis:'<b>writing-to-learn</b>・自己説明：書く行為が思考を精緻化し、理解の穴を可視化する。Graham &amp; Perin 2007（戦略指導 d=.55〜.82）。',
+   caution:'効くのは書く<b>行為</b>でなく<b>内容・構造・フィードバック</b>。無構造な感想文は効果なし。手書き優位(Mueller &amp; Oppenheimer 2014)は追試で効果小(d≈.14)・再現性に議論。',
+   slug:'20260610_書いて考える技術の基礎-書くことは清書ではなく考えること_9flisf', dev:null},
+  {dom:'D', name:'音声入力・思考の外化', one:'話して出すと思考速度のまま外化できる', conf:['w'],
+   basis:'<b>産出効果</b>・<b>発話思考(think-aloud, Ericsson &amp; Simon 1993)</b>：話して考えると思考スピードのまま外化でき、後から構造化できる。',
+   caution:'think-aloud は「<b>測定法</b>」として確立。「音声化＝学習促進」は産出効果からの理論的推測の域で<b>RCT 未確認</b>。文化・言語差も未知。粗く出して後で整える二段が相性良い。',
+   slug:'20260610_音声入力・思考の外化の基礎-話すは考えを外に出す道具_qhnb8b', dev:null}
+];
+
+var CONF_LABEL = {s:'🟢 強', m:'🟡 中', w:'🔵 弱/理論'};
+
+function escAttr(s){ return encodeURIComponent(s); }
+function confBadges(conf){
+  return '<span class="t-confs">' + conf.map(function(c){
+    return '<span class="conf '+c+'">'+CONF_LABEL[c]+'</span>';
+  }).join('') + '</span>';
+}
+
+function topicCard(t){
+  var links = '<a class="t-link" target="_blank" rel="noopener" href="'+VIEWER+escAttr(t.slug)+'">📄 基礎記事を読む ↗</a>';
+  if(t.dev){ links += '<a class="t-link dev" target="_blank" rel="noopener" href="'+VIEWER+escAttr(t.dev)+'">📄 発展編 ↗</a>'; }
+  return ''+
+  '<details class="t-card">'+
+    '<summary class="t-sum">'+
+      '<span class="t-name">'+t.name+'</span>'+
+      '<span class="t-one">'+t.one+'</span>'+
+      confBadges(t.conf)+
+      '<span class="ei">+</span>'+
+    '</summary>'+
+    '<div class="t-body">'+
+      '<div class="one-m">'+t.one+'</div>'+
+      '<div class="row"><span class="lbl">科学的根拠</span>'+t.basis+'</div>'+
+      '<div class="row"><span class="lbl">再現性・注意（過信を戒める）</span><div class="caution">'+t.caution+'</div></div>'+
+      '<div class="t-links">'+links+'</div>'+
+    '</div>'+
+  '</details>';
+}
+
+function renderDomain(key){
+  var d = DOMAINS[key];
+  var topics = TOPICS.filter(function(t){return t.dom===key;});
+  var chips = topics.map(function(t){
+    return '<span class="fig-chip"><b>'+t.name+'</b></span>';
+  }).join('');
+  var cards = topics.map(topicCard).join('');
+  var html = ''+
+    '<div class="page-header">'+
+      '<h2><span style="font-family:\'JetBrains Mono\',monospace;color:var(--'+key+');">'+key+'</span> '+d.title+'</h2>'+
+      '<p class="desc">'+d.sub+'</p>'+
+    '</div>'+
+    '<div class="dom-fig">'+
+      '<div class="fig-lbl">この領域のトピック（'+topics.length+'）</div>'+
+      '<div class="fig-row">'+chips+'</div>'+
+    '</div>'+
+    cards+
+    '<div class="back-row"><a class="back-btn" onclick="navigate(\'level1\')">‹ 大局図に戻る</a></div>';
+  document.getElementById('page-domain-'+key).innerHTML = html;
+}
+
+function renderDomainCards(){
+  var html = ['A','B','C','D'].map(function(key){
+    var d = DOMAINS[key];
+    var topics = TOPICS.filter(function(t){return t.dom===key;});
+    var names = topics.map(function(t){return t.name.replace('の基礎','').replace('の科学','');}).join('／');
+    return ''+
+    '<div class="dom '+key+'" onclick="navigate(\'domain-'+key+'\')">'+
+      '<span class="go">›</span>'+
+      '<div class="key">'+key+'</div><div class="title">'+d.title+'</div>'+
+      '<div class="q">'+d.q+'</div>'+
+      '<div class="tlist">'+names+'</div>'+
+      '<div class="cnt">'+topics.length+' topics</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('domain-cards').innerHTML = html;
+}
+
+// ===================================================================
+// ページ遷移（B1 スケルトン）
+// ===================================================================
+var pageConfig = {
+  'level1':   { title: '大局図', parent: null },
+  'domain-A': { title: 'A 思考法', parent: 'level1' },
+  'domain-B': { title: 'B 学習科学', parent: 'level1' },
+  'domain-C': { title: 'C 脳・動機・習慣', parent: 'level1' },
+  'domain-D': { title: 'D ナレッジ設計', parent: 'level1' },
+  'myths':    { title: '⚠️ よくある誤解', parent: 'level1' },
+  'personal': { title: '💎 血肉化フレーム', parent: 'level1' }
+};
+var currentPage = 'level1';
+
+function navigate(pageId){
+  var cur = document.getElementById('page-'+currentPage);
+  var nxt = document.getElementById('page-'+pageId);
+  if(!nxt) return;
+  cur.classList.remove('active');
+  nxt.classList.add('active');
+  currentPage = pageId;
+  updateBreadcrumb();
+  window.scrollTo(0,0);
+  if(pageId==='level1'){ requestAnimationFrame(drawRel); }
+}
+
+function updateBreadcrumb(){
+  var parts=[], p=currentPage;
+  while(p){ parts.unshift({id:p, title:pageConfig[p].title}); p=pageConfig[p].parent; }
+  var html = parts.map(function(x,i){
+    return i===parts.length-1
+      ? '<span class="bc-cur">'+x.title+'</span>'
+      : '<a href="javascript:void(0)" onclick="navigate(\''+x.id+'\')">'+x.title+'</a>';
+  }).join(' <span class="bc-sep">›</span> ');
+  document.getElementById('breadcrumb').innerHTML = html;
+}
+
+// ===================================================================
+// 関係線 動的描画（Level1 のみ。非表示ページガード必須）
+// ===================================================================
+var REL = [
   // 実線（強め合う）
   {s:'r-meta', t:'r-retrieval', k:'solid'},
   {s:'r-meta', t:'r-habit',     k:'solid'},
-  {s:'r-meta', t:'r-fluency',   k:'solid'},   // メタ認知が錯覚を検知
+  {s:'r-meta', t:'r-fluency',   k:'solid'},
   {s:'r-retrieval', t:'r-spacing', k:'solid'},
   {s:'r-dopamine', t:'r-habit', k:'solid'},
   {s:'r-external', t:'r-selfexp', k:'solid'},
   {s:'r-selfexp', t:'r-retrieval', k:'solid'},
   // 破線（流暢性の錯覚を破る／打ち消す）
   {s:'r-desirable', t:'r-fluency', k:'dash'},
-  {s:'r-selfexp',   t:'r-fluency', k:'dash'},
+  {s:'r-selfexp',   t:'r-fluency', k:'dash'}
 ];
 function drawRel(){
-  const svg=document.getElementById('rel-svg');
-  const zone=document.querySelector('.rel-zone');
+  var svg=document.getElementById('rel-svg');
+  var zone=document.querySelector('.rel-zone');
   if(!svg||!zone) return;
+  if(!zone.offsetParent) return; // 非表示ページでは座標0になるためスキップ
   svg.setAttribute('width', zone.scrollWidth);
   svg.setAttribute('height', zone.scrollHeight);
   while(svg.firstChild) svg.removeChild(svg.firstChild);
-  const zr=zone.getBoundingClientRect();
-  const sl=zone.scrollLeft, st=zone.scrollTop;
-  REL.forEach(({s,t,k})=>{
-    const a=document.getElementById(s), b=document.getElementById(t);
+  var zr=zone.getBoundingClientRect();
+  var sl=zone.scrollLeft, st=zone.scrollTop;
+  REL.forEach(function(o){
+    var a=document.getElementById(o.s), b=document.getElementById(o.t);
     if(!a||!b) return;
-    const ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
-    const x1=ar.left+ar.width/2 - zr.left + sl, y1=ar.top+ar.height/2 - zr.top + st;
-    const x2=br.left+br.width/2 - zr.left + sl, y2=br.top+br.height/2 - zr.top + st;
-    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    const mx=(x1+x2)/2, my=(y1+y2)/2;
-    path.setAttribute('d',`M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`);
+    var ar=a.getBoundingClientRect(), br=b.getBoundingClientRect();
+    var x1=ar.left+ar.width/2 - zr.left + sl, y1=ar.top+ar.height/2 - zr.top + st;
+    var x2=br.left+br.width/2 - zr.left + sl, y2=br.top+br.height/2 - zr.top + st;
+    var path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    var mx=(x1+x2)/2, my=(y1+y2)/2;
+    path.setAttribute('d','M '+x1+' '+y1+' Q '+mx+' '+my+' '+x2+' '+y2);
     path.setAttribute('fill','none');
-    path.setAttribute('stroke', k==='dash' ? '#b1411e' : '#7a6f63');
-    path.setAttribute('stroke-width', k==='dash' ? 1.6 : 1.4);
-    if(k==='dash') path.setAttribute('stroke-dasharray','5 4');
+    path.setAttribute('stroke', o.k==='dash' ? '#b1411e' : '#7a6f63');
+    path.setAttribute('stroke-width', o.k==='dash' ? 1.6 : 1.4);
+    if(o.k==='dash') path.setAttribute('stroke-dasharray','5 4');
     path.setAttribute('opacity','0.65');
     svg.appendChild(path);
   });
 }
-document.addEventListener('DOMContentLoaded', drawRel);
-window.addEventListener('resize', ()=>requestAnimationFrame(drawRel));
-window.addEventListener('load', ()=>requestAnimationFrame(drawRel));
-document.querySelector('.rel-zone')?.addEventListener('scroll', ()=>requestAnimationFrame(drawRel));
-document.querySelectorAll('details').forEach(d=>d.addEventListener('toggle',()=>requestAnimationFrame(drawRel)));
+
+// ===================================================================
+// 初期化
+// ===================================================================
+renderDomainCards();
+['A','B','C','D'].forEach(renderDomain);
+updateBreadcrumb();
+document.addEventListener('DOMContentLoaded', function(){ requestAnimationFrame(drawRel); });
+window.addEventListener('load', function(){ requestAnimationFrame(drawRel); });
+window.addEventListener('resize', function(){ requestAnimationFrame(drawRel); });
+document.querySelector('.rel-zone').addEventListener('scroll', function(){ requestAnimationFrame(drawRel); });
 </script>
 </body>
 </html>
