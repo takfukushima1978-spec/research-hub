@@ -1,3 +1,109 @@
+## [2026-06-17] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- tak-best-practices/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+
+#### TBP 昇格候補
+なし（TBP・ADR ファイル未存在）
+
+#### 再検討トリガー該当
+なし（TBP・ADR ファイル未存在のため照合不可）
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog
+- Anthropic Newsroom: https://www.anthropic.com/news
+- WebSearch（Claude Code セキュリティ, GitHub Actions 脆弱性, Microsoft 課金, 会計×AI）
+- Zenn / Qiita（claude-code タグ）
+- cybersecuritynews.com / thehackernews.com / flatt.tech（GMO Flatt Security）
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code GitHub Actions 重大脆弱性（CVSS v4.0: 7.8）— 修正済み v1.0.94**
+- 発見者: RyotaK（GMO Flatt Security）。Anthropic のバグバウンティ $4,800 授与済み。
+- 脆弱性概要: `checkWritePermissions` 関数が `[bot]` で終わる actor を**無条件で信頼**する欠陥。
+  外部の無認証攻撃者が GitHub Issue に prompt injection を仕込むだけで、
+  ① CI/CD secrets の窃取、② OIDC トークン取得、③ 悪意あるコードの push が可能。
+- **サプライチェーン攻撃リスク**: `anthropics/claude-code-action` リポジトリ自体が脆弱だったため、
+  そのアクションを依存している**すべての downstream リポジトリ**への伝播リスクが存在した。
+- 修正: Claude Code GitHub Actions **v1.0.94 で patch 済み**。
+- **Research Hub への影響**: research-hub リポジトリが Claude Code GitHub Actions を使用していれば
+  v1.0.94 以上に更新要。使用していない場合は直接影響なし。要確認。
+- Microsoft Security Blog（6/5）でも "CI/CD in an agentic world" として注意喚起済み。
+- 参考: https://flatt.tech/research/posts/poisoning-claude-code-one-github-issue-to-break-the-supply-chain/
+- 参考: https://thehackernews.com/2026/06/claude-code-github-action-flaw-let-one.html
+
+**② Fable 5 / Mythos 5 停止継続（6/12〜、本日 6/17 も未回復）**
+- 昨日（6/16）レポートの継続情報。復旧状況は isfableback.org で追跡可。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Microsoft が社内 Claude Code ライセンスを取り消し（6/30 期限）**
+- 対象: Microsoft Experiences + Devices 部門（Windows / Microsoft 365 / Teams / Surface 担当）の数千人エンジニア。
+- 移行先: GitHub Copilot CLI（6/30 FY末期限で移行完了指示）。
+- 背景: 「自社製品（Copilot）を推しながら社内で競合（Claude Code）を使い続けるのは戦略的矛盾」。
+  過去 6ヶ月で社内利用が爆発的に増加 → 財務的・ブランド的理由で整理。
+- 注記: Claude モデルは Copilot CLI 経由で引き続き利用可能。Azure AI Foundry 上の Claude API は継続。
+  MicrosoftはAnthropicに最大 $5B 投資しており、顧客向け Azure 経由の Claude 提供は継続。
+- 参考: https://www.windowscentral.com/microsoft/microsoft-cancels-claude-code-licenses-shifting-developers-to-github-copilot-cli-a-move-likely-driven-by-financial-motives
+
+**② Uber の AI ツール予算超過問題**
+- Uber が 2026 年の AI ツール予算を Claude Code + Cursor に 4ヶ月で使い切る事態が発生。
+- Opus 4.8 リリースと同タイミングで予算危機が顕在化。
+- 教訓: 組織規模での Claude Code 展開は予算上限設計が必須。
+  Research Hub の Routines も月次クレジット消費量モニタリングを継続推奨。
+
+**③ Claude Code v2.1.179 修正確認（6/16 リリース、昨日報告から継続）**
+- mid-stream 接続ドロップ時の部分応答保持（long-running Routines への効果を観測推奨）。
+- WSL2 マウスホイールスクロール修正・Linux sandbox glob 処理修正。
+
+#### 🟢 参考情報
+
+**Zenn / Qiita 日本語コミュニティ動向**
+- 「2026年6月現在の Claude Code 開発フロー」記事（Zenn）が話題。Official Plugins・skills 優先使用と plan-code drift 防止の自動化が強調される。
+- Claude Code 課金変更（6/15）解説記事が Zenn・Qiita で多数投稿。日本語コミュニティの反応が活発。
+- 非エンジニアによる「AI チーム（9エージェント編集部）」構築体験記が公開（Claude Code × Zenn 執筆）。
+
+**会計×AI トレンド（6/17 時点）**
+- PEPPOL 普及により請求書フォーマット標準化が急速進行。PDF・XML・EDI のいずれでも AI-OCR 取込み可能に。
+- 経費精算自動化の 75% 削減事例が標準化フェーズへ（特定企業の事例でなく業界標準になりつつある）。
+- baクラク経費精算: freee / マネーフォワード / 奉行クラウドとの仕訳 API 連携を強化（6月）。
+- 財務 AI は「効率化」から「財務戦略変革」へのポジション転換が加速中。
+
+**市場動向メモ**
+- Anthropic IPO（S-1 機密提出 6/1）・Project Glasswing 拡大（6/2）・Claude Partner Network（6/3）は 6/15・6/16 レポートから継続。新情報なし。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/16 提案から継続）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 公式 best-practices への追記確認（URL: https://code.claude.com/docs/en/best-practices）
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜）」注記とともに追記提案。
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-17` への更新。
+
+**新規追加提案**:
+4. **Claude Code GitHub Actions セキュリティ脆弱性**: references.md のセキュリティ注意事項セクションに v1.0.94 へのアップデート必須を追記提案（CI/CD 利用者向け）。
+
+#### 新規発見ソース候補
+
+- **flatt.tech/research**: GMO Flatt Security のセキュリティリサーチブログ。Claude Code の重大脆弱性を発見・開示。AIエージェント×セキュリティの一次情報源として有用（評価候補: ⭐⭐⭐⭐）
+- **esecurityplanet.com**: AI セキュリティ専門メディア。今回の GitHub Actions 脆弱性レポートが詳細（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-06-22（通常スケジュール）
+注目点:
+① Fable 5 / Mythos 5 復旧状況（6/22 無料期間終了日でもある）
+② Microsoft 社内 Claude Code ライセンス取り消し完了（6/30期限直前）の続報
+③ Agent SDK クレジット消費量の初回観測（6/15 施行後 1 週間）
+④ Claude Code GitHub Actions 脆弱性の research-hub への影響確認
+
+---
+
 ## [2026-06-16] デイリーレポート
 
 ### 内部知見（機能A）
