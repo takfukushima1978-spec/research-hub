@@ -1,3 +1,110 @@
+## [2026-06-18] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001, TBP-002, index.md を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 6/15〜17 提案の「課金体系変更」「地政学的リスク」評価項目追記が未確認のまま継続。
+- **TBP-001 新規照合**: Anthropic がソウルオフィス開設（6/17）し、NAVER・Samsung SDS・LG CNS・Nexon 等が Claude Code を全社採用と発表。外部 AI ツールの「主要エコシステムとの統合状況・ベンダー継続性」を TBP-001 の審査基準に加える価値があるか検討を提案。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog
+- Anthropic Newsroom: https://www.anthropic.com/news
+- releasebot.io/updates/anthropic/claude-code
+- isfableback.org / digitaltoday.co.kr / koreajoongangdaily.com（Fable 5 復旧状況）
+- WebSearch（Claude Code v2.1.181, Anthropic Seoul, 会計×AI, Zenn/Qiita, GitHub Issues）
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.181（6/17 リリース — 前回レポート後に公開）**
+- **`/config key=value` 構文追加**: プロンプトから任意の設定を変更可能（例: `/config thinking=false`）。インタラクティブモード・`-p`・Remote Control で動作。
+- **API 接続中断時の自動リトライ改善**: "Connection closed while thinking" の代わりに自動リトライ。long-running Routine（deep-research-runner 等）での接続安定性向上が期待できる。
+- **ネットワークドライブへのファイル書き込み修正**: クラウド同期フォルダでの 0 バイト・切り詰めファイル生成問題を解消。
+- **プロンプトキャッシング修正**: カスタム `ANTHROPIC_BASE_URL` および Foundry 環境でキャッシュが読み込まれなかった問題を修正（Research Hub の Routine に直接影響しないが、他プロジェクト展開時に重要）。
+- その他: `sandbox.allowAppleEvents` オプトイン設定（macOS）・Bun ランタイム 1.4 アップグレード・長段落ストリーミング改善（行ごとに逐次表示）・サブエージェントパネル改善（アイドル 30 秒後に自動非表示、最大 5 行表示）。
+
+**② Anthropic ソウルオフィス開設（6/17）と韓国 AI エコシステムパートナーシップ**
+- ソウルオフィス開設（アジア太平洋 3 拠点目: Tokyo・Bengaluru に続く）。代表取締役: KiYoung Choi（元 Snowflake Korea GM）。
+- Claude Code 採用企業: NAVER（全エンジニア組織）・Samsung SDS（Samsung Electronics 全社）・LG CNS（LG グループ全体）・Nexon（ライブサービスゲーム開発）・Channel Corp（230,000+ ビジネスへのプラットフォーム）。
+- 韓国科学技術情報通信部（MSIT）と AI セーフティ・サイバーセキュリティの MOU 締結。Korean AI Safety Institute と韓国語モデル安全評価を共同実施。
+- **Research Hub への直接影響**: なし。ただし Claude Code エコシステムの拡大により、アジア圏サポート・日本語品質の改善が将来的に加速する可能性あり。
+- 参考: https://www.anthropic.com/news/seoul-office-partnerships-korean-ai-ecosystem
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `/config key=value` 構文の Routine 活用検討（v2.1.181）**
+- スケジュールタスク内でセッション中に設定を動的に変更可能。例: deep-research-runner で `/config thinking=false` を特定フェーズで使い、コスト最適化を試す。
+- `CLAUDE_CLIENT_PRESENCE_FILE` 環境変数も同バージョンで追加。PC 作業中にモバイルプッシュ通知を抑制できる（Routine 環境変数設計に有用かどうか要確認）。
+- ハーネス設計（CLAUDE.md・settings.json）との役割分担を整理する機会。
+
+**② Fable 5 / Mythos 5 復旧見通し（「近日中」発言）**
+- Anthropic エグゼクティブが「近日中（coming days）に復旧自信」と発言（Korea JoongAng Daily 6/18 報道）。
+- ソウルオフィス開設と同タイミングでの発言で、韓国側で輸出規制緩和の兆しありとの見方も。
+- 復旧後は auto モードで Fable 5 が選択される可能性がある。Agent SDK クレジット消費量への影響を監視推奨。
+- 参考: https://isfableback.org/ で即時確認可能。
+
+**③ Claude Code GitHub Stars 131K 突破**
+- anthropics/claude-code リポジトリが 131,000 スターに到達（Augment Code 分析）。
+- 「IDE をスキップして直接ターミナルエージェントを使う開発者」が増加している指標。
+- Tak 自身の Claude Code 活用状況との照合で、チーム展開の参考情報として記録。
+
+#### 🟢 参考情報
+
+**Zenn / Qiita 日本語コミュニティ（6/18 時点）**
+- 「コードを書けない私が、AI に『チーム』を持たせるまで」（26 年 SE が 9 AI エージェント編成チームを Claude Code で構築）が引き続き話題。
+- Zenn は Anthropic との戦略提携により Claude Code をインフラ開発に統合済み（4 月以降）。
+- Qiita に「Claude Code で Zenn 執筆環境を育てた記録」記事が掲載。
+
+**会計×AI トレンド（6/18 時点）**
+- 新規重大発表なし。継続トレンド:
+  - 経費精算工数 75% 削減が「業界標準化フェーズ」に
+  - 2026 年版 freee vs マネーフォワード AI 仕訳精度比較記事が複数メディアで掲載
+  - 個人事業主向け確定申告自動化解説記事が増加傾向
+  - 財務 AI のポジション: 「効率化ツール」→「財務戦略変革」フェーズ移行継続
+
+**GitHub Issues 新着（6/18）**
+- Issue #69459: macOS バグ（再現手順待ち）
+- Issue #69457/#69458: macOS デスクトップ UI の Enhancement リクエスト
+- いずれも Research Hub の Routine 動作への直接影響なし。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜17 提案から継続）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 公式 best-practices ページへの追記確認（URL: https://code.claude.com/docs/en/best-practices）
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜）、近日復旧見込み」注記とともに追記提案
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-18` への更新
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**: CI/CD 利用者向けセキュリティ注意事項（6/17 提案から継続）
+
+**新規追加提案（6/18）**:
+5. **`/config key=value` 構文**: v2.1.181 新機能。プロンプトからセッション設定を動的変更できるコマンドとして追記。
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**: PC 作業中のモバイル通知抑制（Routine 環境変数設計の参考として追記を検討）。
+
+#### 新規発見ソース候補
+
+- **digitaltoday.co.kr/en**: 英語版 Digital Today Korea。Anthropic 韓国展開・輸出規制の一次速報が詳細（評価候補: ⭐⭐⭐）
+- **koreajoongangdaily.com**: Anthropic エグゼクティブの「復旧近日中」発言の一次ソース（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-06-22（通常スケジュール）
+注目点:
+① Fable 5 / Mythos 5 復旧状況（エグゼクティブが「近日中」と発言 → 週内復旧も視野）
+② Claude Code v2.1.181 の Routine 実行環境への実効果確認（API 自動リトライ、long-running タスク安定性）
+③ Microsoft 社内 Claude Code ライセンス取り消し完了（6/30 期限直前）の続報
+④ Agent SDK クレジット消費量の週次観測（6/15 施行後 1 週間）
+
+---
+
 ## [2026-06-17] デイリーレポート
 
 ### 内部知見（機能A）
