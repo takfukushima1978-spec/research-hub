@@ -1,3 +1,117 @@
+## [2026-06-19] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスクの評価項目追記提案が未確認のまま継続（6/15〜6/18 提案）。
+- **TBP-001 新規照合（v2.1.183 安全性強化）**: デストラクティブ git コマンド（reset --hard / checkout -- . / clean -fd / stash drop）が Claude Code 側で自動ブロックに。外部ツール導入審査基準に「エージェントによるデストラクティブ操作の自動防御設計」評価軸を加える価値があるか検討を提案。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog
+- Anthropic Newsroom: https://www.anthropic.com/news
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues
+- WebSearch（Claude Code v2.1.183, Fable 5 復旧状況, 会計×AI, Zenn/Qiita 動向）
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.183（2026-06-19 リリース）— git コマンド安全性強化**
+- **デストラクティブ git コマンドの自動ブロック（重要）**: ユーザーがローカル変更の破棄を明示的に要求していない場合、以下が自動ブロックされる:
+  - `git reset --hard`
+  - `git checkout -- .`
+  - `git clean -fd`
+  - `git stash drop`
+- **git commit --amend の制限**: そのセッション内でエージェントが作成していないコミットへの `--amend` もブロック。意図しない既存コミット改ざんを防止。
+- **非推奨モデル使用時の警告追加**: 使用モデルが deprecated または自動更新された場合に警告表示。Fable 5 復旧後の auto モード切り替わりを把握しやすくなる。
+- **`attribution.sessionUrl` 設定追加**: Web・Remote Control セッション（Routine 含む）のコミット/PRへの claude.ai セッションリンク付与をオフにするオプション（プライバシー配慮）。
+- **`/config --help` 追加**: `/config key=value`（v2.1.181 新機能）で使用可能なショートハンドキーの一覧を表示。
+- **バックグラウンド自動バージョン更新**: バックグラウンドエージェントセッションがアップデート後もコールドリスタートなしで新バージョンに移行（Routine 可用性向上の可能性）。
+- その他: Grep/Glob ツールの明示的リスト登録サポート（ネイティブビルド）・`/effort` コマンドの確認フロー改善・スラッシュコマンド補完が即実行でなくプロンプトへの補完に変更。
+- **Research Hub への影響**: Routines の auto-research-collect 等でエージェントが意図せず git reset --hard 等を実行するリスクが構造的に低減。ただし Routine プロンプト内に破棄系 git コマンドを明示記述している場合は動作変更の可能性を要確認。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `attribution.sessionUrl` 設定の Routine 向け活用検討（v2.1.183）**
+- Remote Control セッション（Routine 含む）で生成されるコミット/PRへのセッション URL 自動付与をオフにできる。
+- 設定場所: `.claude/settings.json` の `attribution.sessionUrl: false`。
+- Routine コミットへのセッションリンク付与が不要な場合やプライバシー上の要件がある場合に有用。
+
+**② Fable 5 / Mythos 5 復旧後の auto モードへの影響確認**
+- 6/18 の「近日中（coming days）復旧見込み」発言（Anthropic エグゼクティブ）から 1 日経過するも、2026-06-19 現在でも未復旧。
+- 復旧時は auto モードで Fable 5 が選ばれ、Agent SDK クレジット消費量に影響する可能性。isfableback.org で追跡継続推奨。
+
+**③ バックグラウンドエージェントの自動バージョン更新（v2.1.183）の Routine 挙動確認**
+- 長時間 Routine（deep-research-runner 等）での接続安定性向上が期待できるが、実際の効果は次回実行時に観測推奨。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-19）**
+- Issue #69643: MCP バグ（macOS）
+- Issue #69642: packaging バグ（WSL）
+- Issue #69641: TUI（duplicate）
+- Issue #69647: IDE 機能要望（Linux / VS Code）
+- Issue #69645: UI バグ（Linux / VS Code）
+- Issue #69644: agents バグ（再現手順待ち）
+- いずれも Research Hub の Routine 動作への直接影響なし。
+
+**Fable 5 停止継続（2026-06-19 現在）**
+- 6/12 の米政府輸出規制指令による停止が 7 日目に突入。Anthropic は「できるだけ早期の復旧に取り組む」と表明するも、復旧タイムラインは未定。
+- Zenn・Qiita に「Fable 5 が使えなくなった経緯」解説記事が多数投稿（情報把握には十分）。
+
+**Anthropic インフラ強化（参考）**
+- Google/Broadcom との 3.5GW TPU 計画（4月発表）: 2027 年以降稼働予定の次世代コンピュート確保。run-rate 売上高が 2025 年末 $9B → 2026 年 $30B 超に急成長（$1M+ 支出企業が 2 ヶ月で倍増）。
+- Claude の運用安定性・モデル性能向上の長期的な基盤として記録。
+
+**Zenn / Qiita 日本語コミュニティ（2026-06-19 時点）**
+- 新着重大記事なし。継続トレンド:
+  - 「コードを書けない私が、AI に『チーム』を持たせるまで」（9 AI エージェント編成）が引き続き参照多数
+  - Zenn × Anthropic 戦略提携（4月）後の Claude Code 活用記事が継続増加
+  - v2.1.183 安全性強化に関する日本語解説記事は本日夜以降に出てくる見込み
+
+**会計×AI トレンド（2026-06-19 時点）**
+- 新規重大発表なし。継続トレンド:
+  - 経費精算工数 75% 削減事例が「業界標準化フェーズ」に（国内中堅企業の 7 割が依然手入力、月末残業平均 32 時間）
+  - 財務 AI の「効率化ツール → 財務戦略変革」フェーズ移行が継続
+  - KPMG 調査: 経理・財務業務に AI 導入している企業は 71%、半数以上が生成 AI を本格運用中
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/18 提案から継続）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 公式 best-practices ページへの追記確認（URL: https://code.claude.com/docs/en/best-practices）
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜）、近日復旧見込み」注記とともに追記提案
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-19` への更新
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**: CI/CD 利用者向けセキュリティ注意事項（6/17 提案から継続）
+5. **`/config key=value` 構文**: v2.1.181 新機能（6/18 提案から継続）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**: PC 作業中のモバイル通知抑制（6/18 提案から継続）
+
+**新規追加提案（2026-06-19）**:
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**: 「安全性・権限設計」セクションに、Claude Code が意図しない git reset --hard 等を自動ブロックする仕様を追記提案。自動化 Routine 設計の安全性原則として重要。
+8. **`attribution.sessionUrl` 設定**: Web/Remote Control セッションのコミット帰属設定（v2.1.183 新機能）。プライバシー設定として追記を検討。
+
+#### 新規発見ソース候補
+なし（本日は新規ソース未発見）
+
+#### 次回リサーチ推奨日
+
+2026-06-22（通常スケジュール）
+注目点:
+① Fable 5 / Mythos 5 復旧状況（「近日中」発言から 4 日目。週内復旧も視野）
+② v2.1.183 のデストラクティブ git コマンドブロック機能が Routine（auto-research-collect 等）に与える影響の実観測
+③ `attribution.sessionUrl` 設定の Routine コミット帰属への実効果確認
+④ Agent SDK クレジット消費量の週次観測（6/15 施行後 7 日目）
+
+---
+
 ## [2026-06-18] デイリーレポート
 
 ### 内部知見（機能A）
