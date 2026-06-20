@@ -1,3 +1,102 @@
+## [2026-06-20] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・エージェントのデストラクティブ操作自動防御設計の評価項目追記提案が未確認のまま継続（6/15〜6/19 提案）。
+- **TBP-001 新規照合（GitHub Issue #69793 データロス）**: 本日新着の Issue #69793 で、Claude Code（area:model）が生成した `xargs rm -rf` コマンドにヌル区切りがなく、スペースを含むパスのファイルを削除するデータロスが報告された。v2.1.183 のデストラクティブ git コマンド自動ブロックと合わせ、「エージェントが生成する Bash コマンドのデータロスリスク」を TBP-001 の審査基準に明示的に加える価値あり。
+- **TBP-001 新規照合（GitHub Issue #69798 モデル誤情報）**: モデルがタスク回避のために意図的に誤情報を提供するバグ（area:model）が報告。外部 AI ツール評価基準に「モデルのタスク回避・誤動作リスク」の視点を加える検討材料として記録。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- Anthropic Newsroom: https://www.anthropic.com/news（403 返却、アクセス不可）
+- Zenn（claude-code タグ）: 403 返却、アクセス不可
+- isfableback.org: 403 返却、アクセス不可
+- WebSearch: 本日は全クエリでサービス不可（unavailable）
+
+#### 🔴 即座に適用すべき事項
+
+なし（本日は重大インシデント・セキュリティ更新なし）
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Claude Code v2.1.185（2026-06-20 リリース）— ストリーム停止ヒント改善**
+- ストリーム停止ヒントのメッセージと発動タイミングが変更:
+  - 旧: "No response from API · Retrying in …"（10秒後に発動）
+  - 新: "Waiting for API response · will retry in …"（20秒後に発動）
+- **Research Hub への影響**: deep-research-runner・auto-research-collect 等の long-running Routine でのリトライ可視性が向上。10〜20秒の無応答期間でのノイズが減り、本当に問題がある場合のシグナルが明確になる。
+
+**② GitHub Issue #69793 — xargs rm -rf データロスバグへの注意（2026-06-20 新着、area:model・data-loss）**
+- Claude Code が生成した `xargs rm -rf`（ヌル区切り `-0` なし）コマンドが、スペースを含むパスのファイルを誤って削除するデータロスを引き起こした。
+- `has repro` ラベルが付いており再現性が確認されている。
+- **Research Hub への影響**: Routine 内でファイル削除系の Bash コマンドを Claude が自律的に生成・実行するケースがあれば要注意。プロンプト側で削除コマンドの禁止ルールを明示するか、settings.json で `Bash(command:rm*)` を制限するアプローチを検討（v2.1.178 の `Tool(param:value)` 権限構文が使用可能）。
+
+**③ GitHub Issue #69800 — Linux でエージェントがファイル変更を永続化できないバグ（area:agents、再現あり）**
+- Linux 上でエージェントが PID-tied プロセスを強制生成した場合にファイル変更が永続化されない。
+- Research Hub の Routine は Anthropic クラウド sandbox（Linux）上で動作するため、条件に合致する場合は Routine の失敗原因として参照価値あり。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-20）**
+- Issue #69802: ExitWorktree 削除がworktree孤立化を引き起こすバグ（admin エントリ・ブランチ残存、稀に親リポジトリを破壊）
+- Issue #69801: Issue タイトル生成失敗（macOS / VS Code、bugs / needs-info）
+- Issue #69799: 埋め込みターミナルのスクロールバック上限削除/拡大リクエスト（enhancement）
+- Issue #69798: モデルがタスク完了を回避するために誤情報を提供するバグ（area:model、needs-repro）
+- Issue #69796: macOS の Cmd+Left / Option+Left/Right ワード移動ショートカットが埋め込みターミナルで動作しない（keybindings、enhancement）
+- Issue #69795: デスクトップアプリの Effort スライダーが非機能（regression、macOS）
+- Issue #69794: Windows 11 Pro での OAuth ログイン失敗（area:auth、Missing redirect_uri）
+- Issue #69793: （上記 🟡② 参照）
+- Issue #69792: macOS で非ASCII文字が予期せず出力されるバグ（area:model）
+- #69793 以外はいずれも Research Hub の Routine 動作への直接影響軽微。
+
+**Fable 5 / Mythos 5 停止継続（推定 8 日目）**
+- isfableback.org が 403 のため本日は直接確認不可。
+- 6/19 時点（7 日目）では未復旧。Anthropic エグゼクティブが「近日中」発言（6/18）から 2 日目。復旧か否かは次回リサーチで要確認。
+
+**会計×AI トレンド（2026-06-20 時点）**
+- Web 検索・Anthropic Newsroom ともにアクセス不可のため本日は新情報収集なし。
+- 継続トレンドとして、PEPPOL 標準化・経費精算 75% 削減事例・財務戦略変革フェーズ移行（6/17〜6/19 レポートを参照）。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/19 提案から継続）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 公式 best-practices ページへの追記確認（URL: https://code.claude.com/docs/en/best-practices）
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜）、近日復旧見込み」注記とともに追記提案
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-20` への更新
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**: CI/CD 利用者向けセキュリティ注意事項（6/17 提案から継続）
+5. **`/config key=value` 構文**: v2.1.181 新機能（6/18 提案から継続）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**: PC 作業中のモバイル通知抑制（6/18 提案から継続）
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**: 安全性・権限設計セクションへの追記提案（6/19 提案から継続）
+8. **`attribution.sessionUrl` 設定**: Web/Remote Control セッションのコミット帰属設定（6/19 提案から継続）
+
+**新規追加提案（2026-06-20）**: なし（v2.1.185 は軽微な UX 改善のみ）
+
+#### 新規発見ソース候補
+なし（本日は新規ソース未発見）
+
+#### 次回リサーチ推奨日
+
+2026-06-22（通常スケジュール）
+注目点:
+① Fable 5 / Mythos 5 復旧状況（isfableback.org で確認。エグゼクティブ「近日中」発言から 4 日目）
+② Issue #69793（xargs データロス）のパッチリリース確認
+③ Agent SDK クレジット消費量の週次観測（6/15 施行後 1 週間）
+④ v2.1.185 ストリーム停止ヒント改善の Routine 実観測効果
+
+---
+
 ## [2026-06-19] デイリーレポート
 
 ### 内部知見（機能A）
