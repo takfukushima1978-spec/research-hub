@@ -4,7 +4,7 @@
 > 仕様詳細は `CLAUDE.md`、Routine 詳細は `scheduled-tasks.md`、
 > 横断的な学びは global memory (`C:\dev\.claude\projects\c--dev-research-hub\memory\`) を参照。
 
-最終更新: 2026-06-18
+最終更新: 2026-06-20
 
 ---
 
@@ -69,11 +69,7 @@
    - Run 詳細ログ + `supabase/functions/deep-research/index.ts` ソース再読
    - 必要ならプロンプトに「complete アクションは呼ぶな」を明示
 
-6. ~~**思考学習マップ フェーズB/C**~~ → ✅ **完了（2026-06-18）**
-   - **フェーズB完了**: research サブエージェント4並列で各トピックの出典・効果量・再現性をWeb検証→確証度を再判定（SSOT §7）。主な変更: メタ認知/認知バイアス🟢→🟡（再現危機・debiasing困難）、システム思考🔵→🟡、自己説明🟡→🟢（g=0.66）、Zettelkasten手法は🟡に分離。俗説補正を6件に強化
-   - **フェーズC完了**: 全17トピックを `articles` Edge Function ビューワー（`?slug=`）へリンク（基礎17＋発展編4＝21リンク、全200確認）
-   - 同時に **B1階層ナビ型へ作り替え**（最新 tak-html-note 準拠）。整理は一般用語のみ・自分語は血肉化レイヤー限定の原則を厳守
-   - 残: フェーズB で確証度を🟡🔵に下げたトピック（特にメンタルモデル/システム思考/音声外化）は、必要なら個別に追加調査して根拠を厚くする余地あり
+> ✅ 完了済み（履歴は [docs/session-history.md](docs/session-history.md)）: 思考学習マップ フェーズB/C ＋ B1作り替え（2026-06-18）／ glossary ジャンル新設・60トピック網羅（2026-06-20）。
 
 ## 🔗 重要なリソース
 
@@ -105,27 +101,19 @@
 | `prompts/*-CONSOLE.md` | Routines プロンプトテンプレ（Console 貼り付け用、プレースホルダ含む）|
 | `prompts/CONSOLE-READY-*.md` | 実値埋め込み済みローカル専用版（.gitignore 済、絶対 commit 禁止）|
 | `worker/` | Cloudflare Workers (`research-hub-relay`) のソース |
+| `docs/session-history.md` | セッション履歴アーカイブ（navigator から退避した過去経緯）|
 | `research-log.md` | daily-research Routine のデイリーレポート出力先（このプロジェクトとは別系統）|
 | `trusted-sources.md` | 信頼ソース一覧（外部リサーチの参照基準）|
 | `supabase-policy.md` | Supabase 利用ポリシー |
-| グローバル memory | `C:\dev\.claude\projects\c--dev-research-hub\memory\` に学び 13 件 |
+| グローバル memory | `C:\dev\.claude\projects\c--dev-research-hub\memory\` に学び 17 件 |
 
 ## 📝 セッション履歴サマリー
 
-- **2026-06-20（増補）**: glossary を **17→60トピックに一括増補**し網羅~100%へ（初版17→増補23→仕上げ20）。追加: 用語（HTTPステータス/Webhook/OAuth・トークン/マイグレーション/embedding/HTTPS・TLS/レート制限・冪等性/CORS/CI・CD 等）・ツール環境（Docker/PowerShell/Supabase/Cloudflare Worker/Claude API・モデル/Task Scheduler・cron/Python venv 等）・コマンド（検索調査系/プロセス管理/環境PATH系/アーカイブ/git応用/権限パターン）。3バッチとも headless 自律・skip0・DB独立検証。教訓: 学習マップ説明文に `|`（パイプ）を使うと表行がドロップする
-- **2026-06-20**: **新ジャンル `glossary`（基礎用語・コマンド解説）を追加**（8ジャンル目）。非エンジニア向けに ①IT/AI用語（Python/JSON/Git/API 等11）②Claude Code頻出コマンド（cd/rm/curl 等を危険度・機能別に6記事、**承認時の注意点を Tak の R77 4層設計に紐づけ**）。実装: migration SQL（genre CHECK制約＋tags L1/L2＋category、Supabase SQL Editor で Tak が適用）→ seed-learning-topics に glossary 追加 → `docs/learning-maps/glossary.md`（17トピック）→ auto-basics-fill.md にタグ表・記事方針追記 → index.html に色追加 → headless で17記事生成（skip0・DB独立検証、権限記事に R77/Allow Once/4層が反映済を確認）
-- **2026-06-18〜20**: **基礎記事の充実を 67/67 完走**（covered 63 + deep 4・uncovered 0）。headless 夜間自律レーン（`claude -p --allowedTools` + `learning-cli.mjs`、git非接触・品質ノルマでガード）で3バッチ実行: 18日=9件（ai_tech中心）、19日=19件（tools→ai_tech周辺→security_risk）、20日=9件（business/keiri_dx/ai_tech残）。各バッチ skip0・全件品質ノルマ通過、DB側でカバレッジ増分と記事実在を独立検証。inline では権限プロンプトで止まるため headless 化（autonomous-task-template 準拠）
-- **2026-06-18**: **思考学習マップを B1階層ナビ型に作り替え＋フェーズB/C完了**。①最新 tak-html-note 準拠で B2(1枚図解)→B1(Level1マインドマップ大局図→領域ページ×4＋俗説/血肉化の単独ページ、パンくず・navigate)。②フェーズB: research 4並列でWeb検証し確証度を誠実に再判定（メタ認知/認知バイアス🟢→🟡、自己説明🟡→🟢 等、俗説補正6件）。③フェーズC: 全17トピックを articles Edge Function ビューワーへリンク（21リンク全200確認）。SSOT に §7検証・§8記事マップを追記。JS構文・リンク疎通を検証済
-- **2026-06-14**: **思考学習 世界観マップ**（`thinking-map.html`）をフェーズA完成。要望は ①思考資産フレーム図をポータルから参照 ②thinking_learning を細分化＋科学的根拠で裏付け＋マインドマップ的俯瞰。tak-html-note B2（1枚図解）で生成。**重要な軌道修正**：当初「自分語フレームを中心に束ねる」設計→ Tak 指示で「リサーチ整理＝一般用語、自分語＝血肉化レイヤー（個人）」と**層を分離**。4領域×17トピックを一般用語＋確証度で整理、関係線SVG、俗説補正ボックス、図は参考枠に分離。コミット `852d037`
-- **2026-06-10〜12**: **好みフィードバック・ループ**（ADR-LG-009）と**記事フィードバック→フォローアップ記事**の2機能を実装。
-  - 好み: クリップ記事を recency weighting（半減期30日）集計する `get_preference_profile` RPC + auto-research-collect Step 1.7（好み/バランス/探索の3系統ミックス・ジャンル占有上限40%・コールドスタート）。実DB検証で total_clips=80・上位タグ mcp/hooks/claude_code を確認。Console 貼り直し済（2026-06-11）
-  - 記事FB: `article_feedbacks` テーブル + RPC 3本（submit/get_pending/complete）+ index.html 記事末尾💬欄 + 新 Routine `feedback-article-runner`（7:30 JST, `trig_01MYmCzYp5uGNEncchErp2vX`）。migration 適用 + RPC ラウンドトリップ検証済（送信→pending取得→complete）。コネクターは最小権限（Gmail/Calendar 不使用）
-  - コミット: `f296db5`/`1814a93`/`1eb7a9b`/`44f940d`（好み）、`f6869f4`/`ecf17bb`/`acf2d7b`/`39bd93d`（記事FB）
-- **2026-06-10（前セッション）**: タクソノミー7ジャンル再編 + 演出レイヤー + 全7ジャンル学習マップ（67トピック）+ ローカル /loop 基礎面埋め（auto-basics-fill）。詳細は `git log` 参照（navigator 未追記分）
-- **2026-05-26**: auto-claude-code-watch Phase1 導入（学習マップ駆動の毎日記事化 + スタンプラリー方式）。新規 Routine + テーブル + 4 RPC + seed スクリプト + CONSOLE-READY 生成スクリプト追加。Worker の RPC ルート Accept-Profile バグを構造的に修正。Edge Function に X-Allow-Override 防御追加（quality_override 悪用防止）。コミット4本（`e83a60b` / `43ad174` / `ccc5fd1` / `2042d1b`）。詳細 → [learnings/2026-05-26_claude-code-watch-launch.md](learnings/2026-05-26_claude-code-watch-launch.md)
-- **2026-05-24**: navigator.md / 文書役割分担の後付け失敗を踏まえ、グローバル new-project スキルに Phase 2「文書体系の整備」を追加。詳細 → [learnings/2026-05-24_new-project-phase2.md](learnings/2026-05-24_new-project-phase2.md)
-- **2026-05-23**: 大規模復旧セッション。5週間沈黙していたパイプラインを v2.2 設計（曜日別軸・公式ニュース最優先・自動DR・Worker 中継・Discord 通知）で完全復旧。memory に学び 9件追加（新規4+前回5）。コミット3本（`f128ed4` / `beeaff8` / `de27490`）。詳細は git log と memory を参照
-- それ以前: `git log --oneline` で確認
+直近のみ。**それ以前の全履歴は [docs/session-history.md](docs/session-history.md) に退避**（さらに古い経緯は `git log --oneline`）。
+
+- **2026-06-20**: glossary ジャンル新設（8ジャンル目）→ **17→60トピックに一括増補（網羅~100%）**。非エンジニア向け基礎用語・Claude Codeコマンド（承認注意点を R77 4層に紐づけ）。派生で tak-orchestrator R84（permission 挙動の版差ドリフト検証）起票
+- **2026-06-18〜20**: 基礎記事の充実を **7ジャンル 67/67 完走**（headless 自律3バッチ）
+- **2026-06-18**: 思考学習マップを **B1階層ナビ型に作り替え＋フェーズB/C完了**（Web検証で確証度再判定・記事リンク21）
 
 ## 📚 グローバルへの貢献（learnings）
 
