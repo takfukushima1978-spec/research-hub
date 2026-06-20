@@ -20,7 +20,7 @@
 | 好みフィードバック | ✅ クリップ→`get_preference_profile`→Step 1.7（好み/バランス/探索）稼働（ADR-LG-009）|
 | 記事フィードバック | ✅ 記事末尾💬→`article_feedbacks`→feedback-article-runner（7:30 JST）で追加記事自動生成 |
 | 学習マップ | 全7ジャンル `learning_topics`（67トピック）+ Claude Code 専属 `claude_code_topics`（36）|
-| 基礎記事の充実 | 🟢 着手 ~30/67（2026-06-14時点）。**thinking_learning 17/17 完成＋コア4topに発展編(deep)**。残りは ai_tech/keiri_dx/tools/business/security を自律ループ＆/loopで継続 |
+| 基礎記事の充実 | ✅ **完走 67/67（covered 63 + deep 4・uncovered 0、2026-06-20）**。headless 夜間自律バッチ（`claude -p` + `learning-cli.mjs`）で 2026-06-18〜20 に thinking_learning以外（ai_tech/keiri_dx/tools/business/security_risk）を埋め切り。各バッチDB独立検証済（run log: `tmp/basics-fill-run-*.log`） |
 | 思考学習マップ | ✅ `thinking-map.html`（**B1階層ナビ型**に作り替え 2026-06-18）。Level1マインドマップ大局図→領域ページ×4＋俗説補正/血肉化の単独ページ。**フェーズB完了**（Web調査で出典・効果量・再現性を検証→確証度再判定: メタ認知/認知バイアス🟢→🟡、自己説明🟡→🟢 等）。**フェーズC完了**（全17トピックを articles Edge Function の記事ビューワーへリンク、21リンク全200確認）。内容SSOT: `docs/thinking-learning-worldview.md` §7検証/§8記事マップ |
 | 通知チャネル | Discord `#research-hub-notify` で稼働確認済 |
 | 直近の問題 | DR 自動 completed 現象（要 Phase 2 調査）|
@@ -112,6 +112,7 @@
 
 ## 📝 セッション履歴サマリー
 
+- **2026-06-18〜20**: **基礎記事の充実を 67/67 完走**（covered 63 + deep 4・uncovered 0）。headless 夜間自律レーン（`claude -p --allowedTools` + `learning-cli.mjs`、git非接触・品質ノルマでガード）で3バッチ実行: 18日=9件（ai_tech中心）、19日=19件（tools→ai_tech周辺→security_risk）、20日=9件（business/keiri_dx/ai_tech残）。各バッチ skip0・全件品質ノルマ通過、DB側でカバレッジ増分と記事実在を独立検証。inline では権限プロンプトで止まるため headless 化（autonomous-task-template 準拠）
 - **2026-06-18**: **思考学習マップを B1階層ナビ型に作り替え＋フェーズB/C完了**。①最新 tak-html-note 準拠で B2(1枚図解)→B1(Level1マインドマップ大局図→領域ページ×4＋俗説/血肉化の単独ページ、パンくず・navigate)。②フェーズB: research 4並列でWeb検証し確証度を誠実に再判定（メタ認知/認知バイアス🟢→🟡、自己説明🟡→🟢 等、俗説補正6件）。③フェーズC: 全17トピックを articles Edge Function ビューワーへリンク（21リンク全200確認）。SSOT に §7検証・§8記事マップを追記。JS構文・リンク疎通を検証済
 - **2026-06-14**: **思考学習 世界観マップ**（`thinking-map.html`）をフェーズA完成。要望は ①思考資産フレーム図をポータルから参照 ②thinking_learning を細分化＋科学的根拠で裏付け＋マインドマップ的俯瞰。tak-html-note B2（1枚図解）で生成。**重要な軌道修正**：当初「自分語フレームを中心に束ねる」設計→ Tak 指示で「リサーチ整理＝一般用語、自分語＝血肉化レイヤー（個人）」と**層を分離**。4領域×17トピックを一般用語＋確証度で整理、関係線SVG、俗説補正ボックス、図は参考枠に分離。コミット `852d037`
 - **2026-06-10〜12**: **好みフィードバック・ループ**（ADR-LG-009）と**記事フィードバック→フォローアップ記事**の2機能を実装。
