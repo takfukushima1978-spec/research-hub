@@ -126,38 +126,16 @@
 
 > 集約フロー: project `learnings/` で `promote_to_global: true` のものを、夜間タスク (aggregate-learnings) でグローバル `My-Profile-and-Memory/learnings/` に集約する。
 
-## 🛠 運用ルール
+## 🛠 運用ルール（更新先の早見）
 
-### 学び・気づきを得たとき
+変更の種別 → 更新する正本（詳細はグローバル `doc-sync-map.md` / session-end スキル）:
 
-→ **グローバル memory** に書く（`C:\dev\.claude\projects\c--dev-research-hub\memory\`）
+| 変更 | 更新先 |
+|---|---|
+| 学び・気づき | グローバル memory（`...\projects\c--dev-research-hub\memory\` + MEMORY.md index）。型 = reference/project/feedback |
+| プロジェクト現状（機能/Routine/残タスク/問題） | この `navigator.md`（履歴は `docs/session-history.md` へ退避） |
+| 仕様（アーキ/Edge Function/RPC/設定） | `CLAUDE.md` |
+| Routine の trigger/プロンプト | `scheduled-tasks.md` |
+| 大きな設計判断 | `decisions/ADR-XXX.md`（現状未整備） |
 
-書く基準:
-- 他プロジェクトでも応用できる技術的知見 → reference type
-- このプロジェクト固有の運用判断・既知の罠 → project type
-- ユーザー（Tak）から受けた指示・修正 → feedback type
-- 外部システムへの参照（URL・場所） → reference type
-
-### プロジェクト現状が変わったとき
-
-→ この `navigator.md` を更新（新機能追加 / Routine 追加削除 / 残タスク変動 / 大きな問題発覚時）
-
-### 仕様が変わったとき
-
-→ `CLAUDE.md` を更新（アーキテクチャ図・Edge Functions・RPC・設定一覧）
-
-### Routine の trigger / プロンプトを変更したとき
-
-→ `scheduled-tasks.md` を更新（trigger ID・最終同期日・更新履歴・既知の問題）
-
-### 大きな設計判断を行ったとき
-
-→ `decisions/ADR-XXX.md` を新規作成（現状未整備。必要になれば形式を決めて作る）
-
-### セッション末尾のチェックリスト
-
-1. 学びがあれば memory 追加（MEMORY.md index も更新）
-2. プロジェクト現状が変わったら navigator.md 更新
-3. 仕様変更があれば CLAUDE.md 更新
-4. git status クリーンになるよう commit
-5. CONSOLE-READY-*.md など secrets を含むファイルは絶対 commit しない（.gitignore 確認）
+> commit 前: secrets を含む `CONSOLE-READY-*.md` 等は絶対 commit しない（.gitignore 確認）。
