@@ -19,8 +19,8 @@
 | タクソノミー | **8ジャンル**（accounting/keiri_dx/ai_tech/tools/business/security_risk/thinking_learning ＋ **glossary**=基礎用語・コマンド解説、2026-06-20追加）。曜日軸ローテーション |
 | 好みフィードバック | ✅ クリップ→`get_preference_profile`→Step 1.7（好み/バランス/探索）稼働（ADR-LG-009）|
 | 記事フィードバック | ✅ 記事末尾💬→`article_feedbacks`→feedback-article-runner（7:30 JST）で追加記事自動生成 |
-| 学習マップ | 全8ジャンル `learning_topics`（**84トピック**=67＋glossary17）+ Claude Code 専属 `claude_code_topics`（36）|
-| 基礎記事の充実 | ✅ **完走**。7ジャンル67/67（covered 63 + deep 4、2026-06-20）＋ **glossary 17/17（2026-06-20）**。headless 自律バッチ（`claude -p` + `learning-cli.mjs`）で埋め切り。各バッチDB独立検証済（run log: `tmp/*-fill-run-*.log`） |
+| 学習マップ | 全8ジャンル `learning_topics`（**127トピック**=67＋glossary60）+ Claude Code 専属 `claude_code_topics`（36）|
+| 基礎記事の充実 | ✅ **完走**。7ジャンル67/67（covered 63 + deep 4）＋ **glossary 60/60**（2026-06-20、初版17→増補23→仕上げ20で網羅~100%）。headless 自律バッチ（`claude -p` + `learning-cli.mjs`）で埋め切り。各バッチDB独立検証済（run log: `tmp/*-run-*.log`） |
 | 思考学習マップ | ✅ `thinking-map.html`（**B1階層ナビ型**に作り替え 2026-06-18）。Level1マインドマップ大局図→領域ページ×4＋俗説補正/血肉化の単独ページ。**フェーズB完了**（Web調査で出典・効果量・再現性を検証→確証度再判定: メタ認知/認知バイアス🟢→🟡、自己説明🟡→🟢 等）。**フェーズC完了**（全17トピックを articles Edge Function の記事ビューワーへリンク、21リンク全200確認）。内容SSOT: `docs/thinking-learning-worldview.md` §7検証/§8記事マップ |
 | 通知チャネル | Discord `#research-hub-notify` で稼働確認済 |
 | 直近の問題 | DR 自動 completed 現象（要 Phase 2 調査）|
@@ -112,6 +112,7 @@
 
 ## 📝 セッション履歴サマリー
 
+- **2026-06-20（増補）**: glossary を **17→60トピックに一括増補**し網羅~100%へ（初版17→増補23→仕上げ20）。追加: 用語（HTTPステータス/Webhook/OAuth・トークン/マイグレーション/embedding/HTTPS・TLS/レート制限・冪等性/CORS/CI・CD 等）・ツール環境（Docker/PowerShell/Supabase/Cloudflare Worker/Claude API・モデル/Task Scheduler・cron/Python venv 等）・コマンド（検索調査系/プロセス管理/環境PATH系/アーカイブ/git応用/権限パターン）。3バッチとも headless 自律・skip0・DB独立検証。教訓: 学習マップ説明文に `|`（パイプ）を使うと表行がドロップする
 - **2026-06-20**: **新ジャンル `glossary`（基礎用語・コマンド解説）を追加**（8ジャンル目）。非エンジニア向けに ①IT/AI用語（Python/JSON/Git/API 等11）②Claude Code頻出コマンド（cd/rm/curl 等を危険度・機能別に6記事、**承認時の注意点を Tak の R77 4層設計に紐づけ**）。実装: migration SQL（genre CHECK制約＋tags L1/L2＋category、Supabase SQL Editor で Tak が適用）→ seed-learning-topics に glossary 追加 → `docs/learning-maps/glossary.md`（17トピック）→ auto-basics-fill.md にタグ表・記事方針追記 → index.html に色追加 → headless で17記事生成（skip0・DB独立検証、権限記事に R77/Allow Once/4層が反映済を確認）
 - **2026-06-18〜20**: **基礎記事の充実を 67/67 完走**（covered 63 + deep 4・uncovered 0）。headless 夜間自律レーン（`claude -p --allowedTools` + `learning-cli.mjs`、git非接触・品質ノルマでガード）で3バッチ実行: 18日=9件（ai_tech中心）、19日=19件（tools→ai_tech周辺→security_risk）、20日=9件（business/keiri_dx/ai_tech残）。各バッチ skip0・全件品質ノルマ通過、DB側でカバレッジ増分と記事実在を独立検証。inline では権限プロンプトで止まるため headless 化（autonomous-task-template 準拠）
 - **2026-06-18**: **思考学習マップを B1階層ナビ型に作り替え＋フェーズB/C完了**。①最新 tak-html-note 準拠で B2(1枚図解)→B1(Level1マインドマップ大局図→領域ページ×4＋俗説/血肉化の単独ページ、パンくず・navigate)。②フェーズB: research 4並列でWeb検証し確証度を誠実に再判定（メタ認知/認知バイアス🟢→🟡、自己説明🟡→🟢 等、俗説補正6件）。③フェーズC: 全17トピックを articles Edge Function ビューワーへリンク（21リンク全200確認）。SSOT に §7検証・§8記事マップを追記。JS構文・リンク疎通を検証済
