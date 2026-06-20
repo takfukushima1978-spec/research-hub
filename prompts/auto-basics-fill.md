@@ -31,7 +31,7 @@ Routine（クラウド・最新ニュース）とは別系統＝**常緑（everg
 ## Step 1. 未カバートピック取得
 
 ジャンルをローテーション（または全体 `all`）して未カバーを取る。
-**充実方針**: AI領域・メタスキルを幅広く優先（`thinking_learning` / `ai_tech` / `tools`）。`accounting`（会計）はマップ無し＝対象外（専門領域）。`keiri_dx` は自動化/AI適用に限定。
+**充実方針**: AI領域・メタスキルを幅広く優先（`thinking_learning` / `ai_tech` / `tools`）。`accounting`（会計）はマップ無し＝対象外（専門領域）。`keiri_dx` は自動化/AI適用に限定。`glossary`（基礎用語・コマンド）は非エンジニア向けの足場として優先度高（下記「glossary ジャンルの記事方針」参照）。
 priority フィールド（5高〜1低）と coverage に従って未カバーを選ぶ。
 
 ```bash
@@ -100,6 +100,12 @@ node scripts/learning-cli.mjs get-uncovered <genre|all> 3
 | business | ai_strategy / industry / ai_policy / ai_criticism / ai_human / talent |
 | security_risk | vulnerability / prompt_injection / data_protection / policy |
 | thinking_learning | metacognition / learning_science / brain_dopamine / self_management / voice_externalize / knowledge_design / career_sidebiz |
+| glossary | terms_lang / terms_dev / cc_commands / cc_permission |
+
+> **glossary ジャンルの記事方針（追加・2026-06-20）**: 非エンジニア（Tak）向けの基礎用語・コマンド解説。
+> - 用語（terms_lang / terms_dev）: 1用語=1記事で「特徴・なぜ重要か・身近な具体例」をかみ砕く。
+> - コマンド（cc_commands / cc_permission）: グループ記事。各コマンドの「意味／Claudeが何のために使うか／**承認時の注意点**」を、Tak の **R77 4層設計**（公開できない/読めない/送れない/入れない）・settings.json の allow/deny・bash-advisor と結びつけて解説する。「実際に Allow Bash(...)? が出たときどう判断するか」を具体化する。
+> - tag は4件必達のため、glossary L1 + 配下L2を2〜3個 + 必要なら関連する既存クロスジャンルL2（tools / ai_tech / security_risk / keiri_dx）を1個足して4件にする。
 
 ## Step 5. 投入（CLI経由）
 

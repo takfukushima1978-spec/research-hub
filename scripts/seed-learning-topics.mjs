@@ -34,6 +34,7 @@ const DEFAULT_RELAY_URL =
 const VALID_GENRES = new Set([
   "accounting", "keiri_dx", "ai_tech", "tools",
   "business", "security_risk", "thinking_learning",
+  "glossary",
 ]);
 
 // ============================================
