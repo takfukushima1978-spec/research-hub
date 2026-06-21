@@ -1,3 +1,114 @@
+## [2026-06-21] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+なし（新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・エージェントのデストラクティブ操作自動防御設計の評価項目追記提案が未確認のまま継続（6/15〜6/20 提案）。
+- **TBP-001 新規照合（Issue #69931 サブエージェント+MCP クレジット急消費）**: Claude Max 週次使用量がサブエージェント・Gmail MCP セッションの組み合わせで予想外に早く枯渇するバグ（area:agents, area:cost, area:mcp）が報告された。外部ツール（MCP）導入時の「課金コスト予測困難性」を TBP-001 審査基準に加える根拠として新たに記録。
+- **TBP-001 新規照合（Fable 5「deemed export」法的仕組み明確化）**: 「みなし輸出」条項（15 CFR 734.13）が半導体設計情報等向けの法律をリアルタイム AI 推論に初適用されたことが今日報道で明確化。地政学的リスクの具体的なメカニズムとして TBP-001 評価基準に追記する材料。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- Anthropic Newsroom: https://www.anthropic.com/news（WebSearch）
+- WebSearch: Claude Code GitHub Issues 6/21, Fable 5 復旧状況, 会計×AI 2026年6月, freee/バクラク AI アップデート
+
+#### 🔴 即座に適用すべき事項
+
+なし（本日は重大インシデント・セキュリティ更新なし）
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Issue #69934 — Routines リストがタスクIDを表示するバグ（6/21 新着、area:routines, area:ui）**
+- Routines の一覧画面で、Routine のラベル/説明文ではなく正規化されたタスク ID（例: `trig_01M35mr4nxRZZVWjFrtRdZyf`）が表示されるバグ。
+- **Research Hub への直接影響**: daily-research や auto-research-collect 等のスケジュールタスクが Anthropic Console の Routines 一覧でタスクIDで表示され、視認性が低下している可能性。パッチリリース次第で運用改善が期待できる。
+
+**② Fable 5 / Mythos 5 状況の錯綜（9 日目、6/21）— 情報の精査が必要**
+- explainx.ai（6/21 付）: 「9 日経過、依然として全ユーザー向けオフライン継続」
+- techjacksolutions.com: 「身元確認（mandatory identity verification）とジオフェンシング（geo-fencing）付きで一部復旧」（日付不明確）
+- techtimes.com（6/20）: 「Trump は Anthropic を安全保障上の脅威と見なさないと発言したが、輸出規制指令は継続中」
+- **Research Hub への影響**: 情報が錯綜しているため isfableback.org でのリアルタイム確認が必要。復旧した場合は auto モードで Fable 5 が選ばれ Agent SDK クレジット消費量に影響する可能性。
+
+**③ Issue #69931 — Claude Max クレジット急消費バグへの注意（6/21 新着、area:agents, area:cost, area:mcp）**
+- サブエージェントと Gmail MCP を組み合わせたセッションで、Claude Max の週次使用量が予想外に早く枯渇するバグ。
+- **Research Hub への影響**: Research Hub の Routines は複数 MCP を使用するケースがあるため、クレジット消費量の急増が発生した場合の原因候補として記録。月次クレジット消費量モニタリングを継続推奨。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-21）**
+- Issue #69936: 音声入力の複数言語サポート要望（area:ide, enhancement, VS Code）
+- Issue #69935: 複数シェルスナップショットプロセスが 100% CPU 消費・バッテリー消耗バグ（area:bash, perf:cpu, macOS）
+- Issue #69933: 重複ワークフロー貼り付けで不要なトークンを消費するバグ（area:cost, needs-repro）
+- Issue #69930: macOS 認証バグ（area:auth）
+- Issue #69929: /plugin Disable/Enable toggle がプラグインマニフェスト名と marketplace ディレクトリ名が異なる場合に誤ったキーを対象にするバグ（area:plugins, Linux）
+- Issue #69928: macOS 13.x での dyld シンボルエラー（area:installation）
+- Issue #69927: UTF-16 サロゲート文字がセッションをブリックするバグ（area:core, 400エラー繰り返し）
+- Issue #69926: Deferred-tool call が ToolSearch ロードと同一ターンに発行された場合にセッションを永続的にブリックするバグ（area:core, has repro, duplicate）
+- Issue #69925: Anthropic API レート制限バグ（area:api, duplicate）
+- Issue #69924: モデル選択・Effort ティア・トークン経済のオンボーディングツアー要望（area:cost, area:tui, enhancement）
+- Research Hub の Routine 動作への直接影響: #69934 と #69931 のみ（上記🟡参照）
+
+**Fable 5 の「みなし輸出（deemed export）」法的背景の明確化**
+- 米国商務省の輸出規制（15 CFR 734.13 の「deemed export」条項）が、半導体設計図や技術データ向けに書かれた法律をリアルタイム AI 推論のクラウドエンドポイントに初めて適用した事例として記録。
+- 法的ギャップ（AIクラウド推論を輸出規制対象と捉えたことがなかった）が全世界停止の原因。
+- 参考: fifthrow.com による解説
+- Polymarket で「Claude Fable 5 が 2026-06-13 までに米国ユーザー向けに復旧するか」という予測市場イベントが存在（既に期限切れ）。
+
+**Claude Code v2.1.185 が最新（6/20 リリース）— 6/21 新リリースなし**
+- 本日（6/21）時点で新バージョンリリースなし。最新は v2.1.185（6/20）。
+- チェンジログ: https://code.claude.com/docs/en/changelog で確認済み。
+
+**会計×AI トレンド（2026-06-21 時点）**
+- freee 統合ワールド 2026（6/16）のAI 新発表詳細: 具体的な新機能発表内容は今回取得できず。次回確認推奨。
+- freee OCR 精度: 2026 年大幅アップデートで手書き領収書 75% 前後、印刷レシート 90% 超の精度を実現（自動仕訳推測は銀行明細 85〜90%、クレカ明細 80%）。
+- バクラク×freee API 連携問題: 2024/7 の freee プラン改定による API 制限後、バクラクは CSV 連携機能を開発中。マネーフォワード クラウド会計との API 連携も協議中。
+- 経理 AI エージェント事例: ENEOS トレーディングが AI-OCR+入力代行で月 200 時間の手作業をゼロに（3,000 行/月の請求書明細処理）。
+- 継続トレンド: 経費精算 75% 削減・PEPPOL 標準化・財務戦略変革フェーズ移行（過去レポート参照）。
+
+**Anthropic 6/21 新着ニュース**
+- 特に重大な新発表なし。
+- Trump が Anthropic を「米国安全保障上の脅威と見なさない」と発言（techtimes 6/20 報道）したが、輸出規制指令は継続中。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/20 提案から継続、全 8 項目）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 公式 best-practices ページへの追記確認（URL: https://code.claude.com/docs/en/best-practices）
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜）、復旧状況錯綜」注記とともに追記提案（注: techjacksolutions が「ジオフェンシング付きで部分復旧」を報告しているが未確認）
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-21` への更新
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**: CI/CD 利用者向けセキュリティ注意事項（6/17 提案から継続）
+5. **`/config key=value` 構文**: v2.1.181 新機能（6/18 提案から継続）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**: PC 作業中のモバイル通知抑制（6/18 提案から継続）
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**: 安全性・権限設計セクションへの追記提案（6/19 提案から継続）
+8. **`attribution.sessionUrl` 設定**: Web/Remote Control セッションのコミット帰属設定（6/19 提案から継続）
+
+**新規追加提案（2026-06-21）**: なし（本日は新機能リリースなし）
+
+#### 新規発見ソース候補
+- **techjacksolutions.com/ai-brief**: AI 規制ニュースの速報。Fable 5 ジオフェンシング付き部分復旧を報告した一次ソース候補（評価候補: ⭐⭐⭐）
+- **explainx.ai/blog**: Fable 5 復旧状況のリアルタイム追跡記事を継続更新（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-06-22（通常スケジュール）
+注目点:
+① Fable 5 / Mythos 5 復旧状況の確認（情報錯綜を整理。isfableback.org + techjacksolutions.com で照合）
+② Issue #69934（Routines タスクID表示バグ）のパッチリリース確認
+③ Agent SDK クレジット消費量の週次観測（6/15 施行後 1 週間 = 節目）
+④ freee 統合ワールド 2026（6/16）の AI 新発表詳細フォローアップ
+
+---
+
 ## [2026-06-20] デイリーレポート
 
 ### 内部知見（機能A）
