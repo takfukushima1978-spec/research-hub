@@ -33,12 +33,6 @@
 
 ## 📋 残タスク (Phase 2)
 
-0. **【保守・次回優先】秘密設定ファイルを git 射程外へ退避**（2026-06-13 中断）
-   - 真因確定: `.supabase-config` 消失は OneDrive ではなく **tak-work（git リポ）内の gitignore 秘密ファイルが backup 無し**だったため（git clean 等で消えうる）。memory [[secret-config-file-disappeared]] 参照
-   - 対応: `.supabase-config` / `.discord-config` を `C:\dev\.secrets\` 等（どの git リポにも属さないパス）へ移動
-   - **要・全参照更新**: `scripts/generate-console-ready.mjs`（ハードコードパス）/ `CLAUDE.md` 設定ファイル表 / `scheduled-tasks.md` ローカル予備節 / navigator 本ファイル / **tak-work 側 `05_gmail_to_supabase.py`（別リポ・要編集）**
-   - 移動後に `node scripts/generate-console-ready.mjs auto-research-collect` で疎通確認
-
 0b. **テスト記事 `DIAGNOSTIC_TEST_REJECTED` のクリーンアップ**（2026-06-13 中断・未着手）
    - id=`baab732f-81b3-4e9f-a814-8d2b4eb86287`、summary="test"。ビューワーに表示され続ける残骸
    - 削除前に中身確認 → status を archived 化 or 削除（articles の RLS / 削除手段を要確認。専用 RPC 無し）
@@ -69,7 +63,7 @@
    - Run 詳細ログ + `supabase/functions/deep-research/index.ts` ソース再読
    - 必要ならプロンプトに「complete アクションは呼ぶな」を明示
 
-> ✅ 完了済み（履歴は [docs/session-history.md](docs/session-history.md)）: 思考学習マップ フェーズB/C ＋ B1作り替え（2026-06-18）／ glossary ジャンル新設・60トピック網羅（2026-06-20）。
+> ✅ 完了済み（履歴は [docs/session-history.md](docs/session-history.md)）: 思考学習マップ フェーズB/C ＋ B1作り替え（2026-06-18）／ glossary ジャンル新設・60トピック網羅（2026-06-20）／ **秘密設定ファイルを git 射程外（`C:\dev\.secrets\`）へ退避**（2026-06-21、[[secret-config-file-disappeared]] 恒久対策）。
 
 ## 🔗 重要なリソース
 
@@ -81,8 +75,8 @@
 | GitHub Pages ビューワー | https://takfukushima1978-spec.github.io/research-hub/ |
 | Anthropic Scheduled Tasks 一覧 | https://claude.ai/code/scheduled |
 | Discord 通知チャンネル | 個人サーバー `#research-hub-notify` |
-| ローカル設定 (.supabase-config) | `C:\dev\tak-work\リサーチ\auto-research\.supabase-config` |
-| ローカル設定 (.discord-config) | `C:\dev\tak-work\リサーチ\auto-research\.discord-config` |
+| ローカル設定 (.supabase-config) | **`C:\dev\.secrets\.supabase-config`（正本・git 射程外）** / fallback: `C:\dev\tak-work\リサーチ\auto-research\.supabase-config` |
+| ローカル設定 (.discord-config) | **`C:\dev\.secrets\.discord-config`（正本・git 射程外）** / fallback: `C:\dev\tak-work\リサーチ\auto-research\.discord-config` |
 
 ### Trigger ID 一覧
 

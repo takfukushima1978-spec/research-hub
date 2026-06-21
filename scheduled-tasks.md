@@ -25,7 +25,7 @@
 | 項目 | 内容 |
 |---|---|
 | 使うプロンプト | `prompts/auto-research-collect.md`（**CONSOLE-READY 版ではない**。リポジトリ版＝トークンを `.supabase-config` から読む） |
-| 前提 | `C:\dev\tak-work\リサーチ\auto-research\.supabase-config` が存在すること（gitignore 済・token 源） |
+| 前提 | `C:\dev\.secrets\.supabase-config` が存在すること（正本・git 射程外・token 源）。fallback: `C:\dev\tak-work\リサーチ\auto-research\.supabase-config` |
 | 手順 | ① research-hub でローカル Claude Code 起動 → ② 上記 `.md` を渡して実行 → ③ Step 0 で token を**シェル変数**に読込（コマンド行に出ない＝bash-advisor 安全） → ④ curl は **Allow Once** で都度承認（attended） |
 | 禁止 | `Bash(curl:*)` 等の広い Always-Allow を settings.json に登録しない（dont-do 準拠）。CONSOLE-READY 版（token 埋込）をローカルで使わない |
 | 仕様の正 | 語彙・演出・ガードレールは CONSOLE 版 + `article-style-guide.md` に従う |

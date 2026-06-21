@@ -31,6 +31,9 @@ function loadConfig() {
   const relayUrl = process.env.RELAY_URL ?? DEFAULT_RELAY_URL;
   if (!token) {
     const candidates = [
+      // 正本: git 射程外（C:\dev\.secrets）。tak-work 内は git clean 等で消えうるため fallback
+      resolve(REPO_ROOT, "../.secrets/.supabase-config"),
+      resolve(REPO_ROOT, "../../.secrets/.supabase-config"),
       resolve(REPO_ROOT, "../tak-work/リサーチ/auto-research/.supabase-config"),
       resolve(REPO_ROOT, "../../tak-work/リサーチ/auto-research/.supabase-config"),
     ];
