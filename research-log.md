@@ -1,3 +1,135 @@
+## [2026-06-22] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- research-hub/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- **claude-auto-memory 新規・更新ファイル2件（2026-06-22 コミット）**:
+  1. `c--dev-My-URAWA-LOG/feedback_check_done_before_redo.md`（新規追加）
+     - 内容: backlog・navigator の「未着手」タスクに着手前に、git log で完了済みでないか照合する
+     - 背景: Session 115 で Phase 3 Step C/D が commit bf20814 で完了済みにもかかわらず navigator が backlog のままで、再実行する寸前になった（[[feedback_data_quality_signal]] 系統）
+  2. `c--dev-tak-orchestrator/default-safe-direction-by-irreversibility.md`（更新: R92 追記）
+     - 更新内容: 「行き過ぎ注意（R92）」節を追記。「カテゴリ丸ごと危険扱い」は北極星（目的）を殺す。機密は「数値情報（金額・口座・案件固有値）」であって memory 全般ではない。Tak の違和感が最後の砦。
+
+#### TBP 昇格候補
+**① `feedback_check_done_before_redo` → 「着手前に実態（git）と文書（backlog）の一致を確認する」**
+- 3条件評価:
+  1. 他プロジェクトでも同じ判断をするか？ → YES（backlog/navigator がある全プロジェクトで共通の罠）
+  2. この知見なしで同じ感覚で指示したとき問題が起きるか？ → YES（完了済みタスクの再実行リスクはどのプロジェクトでも起きる）
+  3. 特定技術でなく Tak の作業スタイル全般に適用されるか？ → YES（「文書より実態を一次確認する」は技術横断の原則）
+- **推奨: TBP-003 候補として Tak 確認を要請**
+
+**② `default-safe-direction-by-irreversibility` R92 更新 → 「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」**
+- 3条件評価:
+  1. 他プロジェクトでも同じ判断をするか？ → YES（分類・同期・公開の既定値設計はすべてのプロジェクトで直面する）
+  2. この知見なしで問題が起きるか？ → YES（インシデント直後の恐怖で全体を除外しすぎる過保守は繰り返しやすい）
+  3. 特定技術でなく Tak の作業スタイル全般か？ → YES（リスク判断の軸の具体化は設計横断）
+- **推奨: TBP-001 の「審査」節への追記候補、または TBP-004 として独立化。Tak 確認を要請**
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御の評価項目追記提案が未確認のまま継続（6/15〜6/21 提案）。
+- **TBP-001 新規照合（v2.1.186 Agent deny rules 修正）**: `Agent(type)` deny ルールと `Agent(x,y)` allowed-types 制限が「名前付きサブエージェントのスポーン」に対して適用されていなかったバグが v2.1.186 で修正。これは TBP-001 の「最小権限で開始」原則において settings.json の deny ルールが想定通りに機能していなかったことを意味する。**今後は設定の実効性をバージョン毎に確認する手順**を TBP-001 の審査項目に加えることを提案。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- isfableback.com / 日本語メディア（WebSearch: Fable 5 復旧状況）
+- WebSearch: Claude Code v2.1.186, freee/マネーフォワード/バクラク AI 更新, 会計×AI 2026年6月22日
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.186（2026-06-22 リリース）— Agent deny rules セキュリティ修正**
+- **`Agent(type)` deny ルールと `Agent(x,y)` allowed-types 制限が、名前付きサブエージェントのスポーンに対して適用されていなかった問題を修正（セキュリティ修正）**
+  - v2.1.178 以降の `Tool(param:value)` 権限構文で `Agent(model:opus)` 等の deny ルールを設定していても、named subagent spawn 時に適用されない状態だった。
+  - **Research Hub への影響**: settings.json の Agent 制限ルールが Routine 内サブエージェントで意図通りに機能していなかった可能性。v2.1.186 へのアップデート後に実挙動を確認推奨。
+- **その他の主要変更**:
+  - `claude mcp login <name>` / `claude mcp logout <name>`: インタラクティブメニューなしで MCP サーバーの CLI 認証が可能に
+  - `/workflows` エージェント詳細ビューにステータスフィルタリング（`f` キー）追加
+  - `/plugin` Installed タブに「Skills」セクション追加（インストール済みスキルの一覧表示）
+  - `teammateMode: "iterm2"` 設定追加（自動モード検知時の警告対応）
+  - "Claude Platform on AWS - refresh credentials" オプション追加（`/login` メニュー）
+  - `!` 始まりの bash コマンドが Claude の自動応答をトリガーするように（`"respondToBashCommands": false` で無効化可能）
+  - マシンスリープ後のストリーミングリクエスト失敗を修正（Routine 実行環境での安定性向上）
+  - メモリコンパクションリマインダーの改善・スキルフロントマターの kebab-case・snake_case・camelCase すべてサポート
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `claude mcp login/logout <name>` の Routine 活用検討（v2.1.186）**
+- MCP サーバーへのログインをスクリプト/CLI から実行可能に。インタラクティブメニュー不要。
+- Routine での MCP 認証フロー簡素化の可能性。`research-hub-relay` 以外の MCP 連携がある場合にセキュリティ改善の機会。
+
+**② Issue #70156 — Linux でサブエージェントが worktree マージ時に MCP 承認待ちでスタック**
+- Linux（Anthropic クラウド sandbox）でエージェントが worktree にマージされると、MCP サーバーの承認を待ってスタックするバグ（area:agents, area:mcp, bug）。
+- Research Hub の Routine は Linux 上で動作するため、サブエージェントと MCP を組み合わせた Routine（auto-research-collect 等）が対象になる可能性。修正状況の追跡を推奨。
+
+**③ Fable 5 無料期間終了（本日 6/22）後の auto モード確認**
+- 6/9〜6/22 の Fable 5 無料期間が本日終了。ただし Fable 5 は 6/12 から全面停止中で実質的に無効だった。
+- 無料期間終了後に Fable 5 が復旧した場合、auto モードでは有料利用（Agent SDK クレジット消費増）となる。要監視。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-22）**
+- Issue #70167: mcp deferred tool regression — ToolSearch ロード後に空パラメータで常に呼ばれるバグ（area:mcp, area:tools, has repro）
+- Issue #70166: Anthropic ホスト型 MCP サーバー（公式ドキュメント向け）機能要望（enhancement）
+- Issue #70165: iOS 1.260618.0 が Remote Control セッション起動でクラッシュ（regression, platform:ios）
+- Issue #70164: iOS の New Code Session タップで即クラッシュ（6/22 更新後 regression, platform:ios）
+- Issue #70162: Desktop HTTP MCP server が marketplace plugin の `.mcp.json` でカウントされるが登録されないバグ（regression）
+- Issue #70161: Statusline OSC 8 ハイパーリンクがクリック不可（v2.1.181 以降 regression）
+- Issue #70160: Anthropic API エラー: 開始数分でタイムアウト・レート制限（area:agents, area:api）
+- Issue #70159: 実行中トークンカウンターが入力フォーカスで消えるバグ（area:cost, area:tui）
+- Issue #70158: スキルコンテンツをキャッシュ済みシステムプロンプトに注入してトークンコスト削減の機能要望（enhancement）
+- Issue #70157: Zed IDE 統合でエージェントがローディング状態でスタック（area:ide）
+- Issue #70156: （上記 🟡② 参照）
+- **Research Hub の Routine 動作への直接影響**: #70156（Linux worktree MCP スタック）・#70167（deferred tool regression）が最も関連度高い。
+
+**Fable 5 / Mythos 5 停止継続（10 日目、2026-06-22 時点）**
+- 6/12 の輸出規制指令による停止が 10 日目。本日 6/22 で Fable 5 無料期間が終了。
+- isfableback.com のトラッキングサイトでは依然「No（未復旧）」の状態を継続。
+- Anthropic エグゼクティブの「近日中（coming days）」発言（6/18）から 4 日経過するも復旧なし。
+- 輸出規制指令の撤回・緩和に関する公式発表なし。Trump 大統領が「Anthropic を安全保障上の脅威と見なさない」と発言（6/20）しているが、輸出規制指令は継続中。
+
+**会計×AI トレンド（2026-06-22 時点）**
+- freee・マネーフォワード・バクラクの本日付け新着 AI 機能発表: 特定の新発表なし（継続トレンド）。
+- freee AI（beta）の5エージェント・マネーフォワード Admina × バクラク API 連携: 継続展開中。
+- 2026 年継続トレンド: 経費精算工数 75% 削減・PEPPOL 請求書標準化・財務 AI の「効率化→戦略変革」フェーズ移行（過去レポートから継続）。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/21 提案から継続、全 8 項目）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 公式 best-practices ページへの追記確認（URL: https://code.claude.com/docs/en/best-practices）
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜）、無料期間終了（6/22）、復旧状況錯綜」注記とともに追記提案
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-22` への更新
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**: CI/CD 利用者向けセキュリティ注意事項（6/17 提案から継続）
+5. **`/config key=value` 構文**: v2.1.181 新機能（6/18 提案から継続）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**: PC 作業中のモバイル通知抑制（6/18 提案から継続）
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**: 安全性・権限設計セクションへの追記提案（6/19 提案から継続）
+8. **`attribution.sessionUrl` 設定**: Web/Remote Control セッションのコミット帰属設定（6/19 提案から継続）
+
+**新規追加提案（2026-06-22）**:
+9. **v2.1.186 Agent deny rules バグ修正**: `Agent(type)` deny ルール / `Agent(x,y)` allowed-types 制限が named subagent spawn に適用されていなかった問題の修正。権限設計セクションへの追記提案。
+10. **`claude mcp login/logout <name>`**: MCP サーバーの CLI 認証コマンド（v2.1.186 新機能）。MCP 管理セクションへの追記を提案。
+11. **`respondToBashCommands: false` 設定**: `!` bash コマンドの Claude 自動応答を無効化（v2.1.186 新機能）。Routine プロンプト設計の参考として記録。
+
+#### 新規発見ソース候補
+なし（本日は新規ソース未発見）
+
+#### 次回リサーチ推奨日
+
+2026-06-29（通常スケジュール、1週間後）
+注目点:
+① Fable 5 / Mythos 5 復旧状況（無料期間終了後の動向・輸出規制指令撤回の有無）
+② v2.1.186 Agent deny rules 修正が Routine の実挙動に与えた影響の観測
+③ Issue #70156（Linux worktree MCP スタック）のパッチリリース確認
+④ Agent SDK クレジット消費量の 2 週間目観測（6/15 施行後）
+⑤ TBP 昇格候補 2 件（feedback_check_done_before_redo / default-safe-direction-by-irreversibility R92）の Tak 確認
+
+---
+
 ## [2026-06-21] デイリーレポート
 
 ### 内部知見（機能A）
