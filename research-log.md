@@ -1,3 +1,125 @@
+## [2026-06-23] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **前回（6/22）昇格候補 2 件の継続記録**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御・Agent deny rules 修正の評価項目追記提案が未確認のまま継続（6/15〜6/22 提案）。
+- **TBP-001 新規照合①（v2.1.187 `sandbox.credentials` 設定）**: サンドボックスコマンドが認証情報ファイルとシークレット環境変数を読み取れないようにブロックする新設定が追加。TBP-001 の「最小権限で開始」原則の実装手段として `sandbox.credentials` 設定の活用を審査項目に追記する価値がある。Routine 内の認証情報漏洩リスクを構造的に低減できる。
+- **TBP-001 新規照合②（v2.1.187 org-configured model restrictions）**: 組織設定でモデル使用を制限できる機能が追加（モデルピッカー・`--model`・`/model`・`ANTHROPIC_MODEL` に反映）。TBP-001 の「最小権限で開始」の組織レベル実装手段として追記を提案。
+- **TBP-001 新規照合③（Fable 5 復旧シグナル）**: Android アプリでモデル名が再び表示され「server is temporarily rate-limiting requests」レスポンスに変化（6/23）。復旧後は auto モードで Fable 5 が選ばれ Agent SDK クレジット消費量に影響する可能性が高い。6/15 からの「課金体系への影響」評価項目追記提案と合わせて要対応。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues（WebSearch）
+- WebSearch: Claude Code v2.1.187 changelog June 23 2026
+- WebSearch: Anthropic Claude Fable 5 復旧 2026年6月23日（日本語メディア）
+- WebSearch: 会計 AI 経理 自動化 freee マネーフォワード バクラク 2026年6月23日
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.187（2026-06-23 リリース）— クレデンシャル保護 + 組織モデル制限**
+- **`sandbox.credentials` 設定（セキュリティ強化）**: サンドボックス化されたコマンドが認証情報ファイルおよびシークレット環境変数を読み取れないようにブロックする設定を追加。
+  - **Research Hub への影響**: Routine 内の Bash コマンドが意図せず `.supabase-config` 等のシークレットファイルを読み取るリスクを構造的に防止できる。settings.json への追加を検討推奨。
+- **org-configured model restrictions（組織管理向け）**: 組織設定で使用可能モデルを制限できるようになり、モデルピッカー・`--model`・`/model`・`ANTHROPIC_MODEL` に "restricted by your organization's settings" メッセージが表示される。
+  - **Research Hub への影響**: Routine の auto モードで選択されるモデルを組織レベルで制限可能に。Fable 5 復旧時の意図しない高コストモデル選択を防ぐ手段として有用。
+- **マウスクリックサポート追加**: 権限プロンプト・`/model`・`/config` 等の選択メニューでマウスクリックによる操作が可能に。
+- **バグ修正**:
+  - `--resume` が元の `-p` 実行でモデルターンがなかった場合に "No conversation found" で失敗する問題を修正。
+  - `--json-schema` とワークフロー `agent({schema})` の構造化出力: モデルが成功した StructuredOutput コール後に無限再呼び出しするバグを修正。フォローアップターンが確実に構造化出力を返すように。
+    - **Research Hub への影響**: deep-research-runner 等のワークフローエージェントの構造化出力安定性が向上。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `sandbox.credentials` 設定の Routine・settings.json への適用検討（v2.1.187）**
+- 設定場所: `.claude/settings.json` に `"sandbox": { "credentials": false }` または同等の設定を追加。
+- auto-research-collect・deep-research-runner 等の Routine でシークレット環境変数が不要な Bash コマンドを実行する場合に、クレデンシャル漏洩リスクをゼロにできる。
+- TBP-001 の「最小権限で開始」をコード一行で実現できる強力な追加手段。詳細設定値の公式ドキュメント確認を推奨。
+
+**② Fable 5 復旧への対応準備（6/23 復旧シグナル検知）**
+- Android アプリで Fable 5 モデル名が「model unavailable」→「rate-limiting」に変化（6/23 報告）。これは復旧準備中のシグナルとして解釈できる。
+- Anthropic ソウルオフィスのマネージングディレクターが「数日以内に利用可能になる」と明言（ソウル記者会見）。
+- **推奨アクション**: 復旧前に org-configured model restrictions で Fable 5 を一時ブロックするか、Agent SDK クレジット消費量監視を強化しておく。Fable 5 が auto モードで選ばれると消費量が増加する可能性が高い。
+
+**③ `agent({schema})` 構造化出力の安定性確認（v2.1.187 バグ修正）**
+- deep-research-runner はワークフロー `agent({schema})` を使用している可能性がある。v2.1.187 の修正により、成功後の StructuredOutput 無限ループが解消。
+- 次回の Routine 実行で構造化出力が安定して返ってくるか観測推奨。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-23）**
+- Issue #70453: area:cli, area:docs 向けドキュメント改善（enhancement）
+- Issue #70452: area:docs ドキュメント改善（enhancement）
+- Issue #70451: area:agents ドキュメント改善（enhancement）
+- Issue #70450: area:agent-view（claude agents TUI / --bg / FleetView / daemon bg sessions 関連）
+- Issue #70449 〜 #70446: area:docs・area:tui 系ドキュメント改善（enhancement）
+- **本日の特記事項**: 重大バグ・セキュリティ修正系 Issue なし。ドキュメント改善系が主。Research Hub の Routine 動作への直接影響なし。
+
+**Fable 5 / Mythos 5 復旧状況（11 日目、2026-06-23）**
+- 公式には依然「利用不可」のまま。
+- **復旧シグナル（本日 6/23 新報告）**: Android アプリで Fable 5 モデル名が再び表示され、レスポンスが "model unavailable" → "server is temporarily rate-limiting requests" に変化。復旧準備に入ったとの見方あり。
+- Anthropic ソウルオフィスのマネージングディレクターがソウル記者会見で「これらのモデルは数日以内に再び利用可能になる」と発言。
+- 輸出規制指令の撤回・緩和に関する公式発表はまだなし。
+- **Research Hub への影響**: 復旧が近い可能性が高い。Agent SDK クレジット消費量の変動に注意。
+
+**会計×AI トレンド（2026-06-23 時点）**
+- **freee MCP 実用化加速**: 2026年3月公開の freee MCP を活用した実践ガイドが増加。「AIアシスタントに話しかけるだけで請求書作成・仕訳入力・経費精算を自動化」が具体的な実装フローで解説される段階に（会計DX専門チームの技術ブログが充実）。
+- **バクラク AIエージェント**: 申請内容のリアルタイムレビュー・メールからの証憑自動取得・最適仕訳の自動入力・入金消込を複数専門AIエージェントが協働処理。
+- **マネーフォワード AIエージェント**: 既存業務フローを変えずにバックオフィス業務を自律的に遂行するサービスとして展開中。
+- **定量効果（最新報告）**: 仕訳入力工数 80% 削減・請求書処理時間 70% 短縮・月次決算 5 営業日早期化が報告値として定着。
+- **Tak 業務への参考**: freee × Claude Code 実践ガイドが公開（freee.co.jp × Claude Code で月100件〜数千件の仕訳を AI チェックする方法）。
+
+**Zenn / Qiita 日本語コミュニティ（2026-06-23 時点）**
+- v2.1.187 の日本語解説記事はまだ出ていない（本日夜以降に出てくる見込み）。
+- 会計×AI 実践ブログが増加継続（freee MCP 完全ガイド、経理 AI ロードマップ等）。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/22 提案から継続、全 11 項目）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 公式 best-practices ページへの追記確認（URL: https://code.claude.com/docs/en/best-practices）
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜）、復旧シグナルあり（6/23）」注記とともに追記提案
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-23` への更新
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**: CI/CD 利用者向けセキュリティ注意事項（6/17 提案から継続）
+5. **`/config key=value` 構文**: v2.1.181 新機能（6/18 提案から継続）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**: PC 作業中のモバイル通知抑制（6/18 提案から継続）
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**: 安全性・権限設計セクションへの追記提案（6/19 提案から継続）
+8. **`attribution.sessionUrl` 設定**: Web/Remote Control セッションのコミット帰属設定（6/19 提案から継続）
+9. **v2.1.186 Agent deny rules バグ修正**: named subagent spawn に deny ルールが適用されなかった問題の修正（6/22 提案から継続）
+10. **`claude mcp login/logout <name>`**: MCP サーバーの CLI 認証コマンド（6/22 提案から継続）
+11. **`respondToBashCommands: false` 設定**: `!` bash コマンドの Claude 自動応答を無効化（6/22 提案から継続）
+
+**新規追加提案（2026-06-23）**:
+12. **v2.1.187 `sandbox.credentials` 設定**: サンドボックスコマンドがクレデンシャルファイル・シークレット環境変数を読み取れないようにブロック。セキュリティ・権限設計セクションへの追記提案。TBP-001「最小権限で開始」の実装手段として重要。
+13. **v2.1.187 org-configured model restrictions**: 組織設定で使用可能モデルを制限する機能。Routine 設計・コスト制御の観点から権限設計セクションへの追記を提案。
+
+#### 新規発見ソース候補
+なし（本日は新規ソース未発見）
+
+#### 次回リサーチ推奨日
+
+2026-06-24（明日: Fable 5 復旧シグナルを受けて通常より早め）
+注目点:
+① **Fable 5 / Mythos 5 復旧確認**（Android で rate-limit レスポンスに変化。「数日以内」発言から翌日確認が重要）
+② **復旧した場合のクレジット消費量影響**: Agent SDK クレジットへの即時影響を観測
+③ v2.1.187 `sandbox.credentials` 設定の公式ドキュメント詳細確認
+④ `agent({schema})` StructuredOutput 修正の deep-research-runner への実効果
+⑤ TBP 昇格候補 2 件（6/22 提案）の Tak 確認状況
+
+---
+
 ## [2026-06-22] デイリーレポート
 
 ### 内部知見（機能A）
