@@ -33,10 +33,6 @@
 
 ## 📋 残タスク (Phase 2)
 
-0b. **テスト記事 `DIAGNOSTIC_TEST_REJECTED` のクリーンアップ**（2026-06-13 中断・未着手）
-   - id=`baab732f-81b3-4e9f-a814-8d2b4eb86287`、summary="test"。ビューワーに表示され続ける残骸
-   - 削除前に中身確認 → status を archived 化 or 削除（articles の RLS / 削除手段を要確認。専用 RPC 無し）
-
 1. **学習マップ スタンプラリー UI**
    - `index.html` に「🎯 学習マップ」タブ追加
    - 領域別カードで進捗バー表示、サブトピックは clickable で関連記事リンク
@@ -63,7 +59,7 @@
    - Run 詳細ログ + `supabase/functions/deep-research/index.ts` ソース再読
    - 必要ならプロンプトに「complete アクションは呼ぶな」を明示
 
-> ✅ 完了済み（履歴は [docs/session-history.md](docs/session-history.md)）: 思考学習マップ フェーズB/C ＋ B1作り替え（2026-06-18）／ glossary ジャンル新設・60トピック網羅（2026-06-20）／ **秘密設定ファイルを git 射程外（`C:\dev\.secrets\`）へ退避**（2026-06-21、[[secret-config-file-disappeared]] 恒久対策）。
+> ✅ 完了済み（履歴は [docs/session-history.md](docs/session-history.md)）: 思考学習マップ フェーズB/C ＋ B1作り替え（2026-06-18）／ glossary ジャンル新設・60トピック網羅（2026-06-20）／ **秘密設定ファイルを git 射程外（`C:\dev\.secrets\`）へ退避**（2026-06-21、[[secret-config-file-disappeared]] 恒久対策）／ **診断テスト記事（DIAGNOSTIC_* 計3件）を一括削除**（2026-06-25、migration `20260621000001`、シグネチャ一括削除で全件除去）。
 
 ## 🔗 重要なリソース
 
