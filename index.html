@@ -61,6 +61,36 @@
   .article-view { display: none; }
   .article-view.show { display: block; }
   .list-view.hide { display: none; }
+
+  /* Learning map (stamp rally) */
+  .learning-view { display: none; }
+  .learning-view.show { display: block; }
+  .learning-hero { background: linear-gradient(135deg, #0f3460, #1a1a2e); color: #fff; padding: 30px 20px 24px; text-align: center; }
+  .learning-hero h1 { font-size: 22px; font-weight: 800; }
+  .learning-hero p { font-size: 13px; color: #bbb; margin-top: 8px; line-height: 1.7; }
+  .learning-hero .overall-stat { display: inline-block; margin-top: 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 8px 18px; font-size: 14px; font-weight: 700; }
+  .learning-body { max-width: 680px; margin: 0 auto; padding: 18px 16px 50px; }
+  .genre-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 14px; overflow: hidden; }
+  .genre-head { display: flex; align-items: center; gap: 10px; padding: 16px 18px; cursor: pointer; user-select: none; }
+  .genre-head .gicon { font-size: 22px; }
+  .genre-head .gtitle { font-size: 17px; font-weight: 800; color: #1a1a2e; flex: 1; }
+  .genre-head .gcount { font-size: 12px; font-weight: 700; color: #888; white-space: nowrap; }
+  .genre-head .gchev { color: #bbb; font-size: 13px; transition: transform 0.2s; }
+  .genre-card.open .gchev { transform: rotate(90deg); }
+  .progress-track { height: 9px; background: #eee; border-radius: 6px; overflow: hidden; margin: 0 18px 14px; }
+  .progress-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+  .genre-body { display: none; padding: 0 14px 12px; }
+  .genre-card.open .genre-body { display: block; }
+  .area-block { margin-bottom: 10px; }
+  .area-label { font-size: 11px; font-weight: 700; color: #aaa; letter-spacing: 0.04em; padding: 6px 8px 4px; }
+  .topic-row { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 8px; font-size: 14px; color: #444; line-height: 1.4; }
+  .topic-row.linked { cursor: pointer; transition: background 0.15s; }
+  .topic-row.linked:hover { background: #f7f7f9; }
+  .topic-row .stamp { font-size: 14px; flex-shrink: 0; }
+  .topic-row .ttitle { flex: 1; }
+  .topic-row .tchev { color: #ccc; font-size: 12px; }
+  .topic-row.nolink .ttitle { color: #999; }
+  .learn-back { display: inline-block; margin: 16px 0 0 16px; color: #14b8a6; font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer; }
   .back-btn { position: fixed; top: 10px; left: 10px; z-index: 20; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
   .ext-link { position: fixed; top: 10px; right: 10px; z-index: 20; background: #e94560; color: #fff; border: none; border-radius: 20px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
 
@@ -179,6 +209,7 @@
     <h1>Tak's Research Library</h1>
     <p>パーソナルAIリサーチ基盤</p>
     <a href="thinking-map.html" style="display:inline-block;margin-top:10px;color:#14b8a6;font-weight:700;font-size:14px;text-decoration:none;border:1.5px solid #14b8a6;border-radius:10px;padding:7px 14px;">🧭 思考学習 世界観マップを見る →</a>
+    <button onclick="showLearning()" style="display:inline-block;margin-top:10px;margin-left:8px;background:none;color:#e94560;font-weight:700;font-size:14px;cursor:pointer;border:1.5px solid #e94560;border-radius:10px;padding:7px 14px;">🎯 学習マップ（スタンプラリー）→</button>
   </div>
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="キーワードで検索..." oninput="applyFilters()">
@@ -202,6 +233,16 @@
   <div class="article-content" id="articleContent"></div>
   <div id="researchResults"></div>
   <div id="feedbackSection"></div>
+</div>
+
+<div class="learning-view" id="learningView">
+  <a class="learn-back" onclick="showList()">← ライブラリに戻る</a>
+  <div class="learning-hero">
+    <h1>🎯 学習マップ スタンプラリー</h1>
+    <p>基礎の面埋め進捗。ジャンルをタップで開閉、トピックをタップで関連記事へ。</p>
+    <div class="overall-stat" id="learningOverallStat"></div>
+  </div>
+  <div class="learning-body" id="learningBody"><div class="loading">読み込み中...</div></div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
@@ -291,6 +332,7 @@ let filters = { status: 'all', category: null, tagL1: null, tagL2: null };
 let deepResearchMap = {};
 let feedbackMap = {};
 let currentArticleId = null;
+let learningTopics = null;  // 学習マップ: 遅延ロード（初回 showLearning でfetch）
 
 const TAG_COLORS = {
   'accounting': '#3b82f6',
@@ -580,6 +622,7 @@ async function toggleFlag(articleId, flag) {
 async function showArticle(slug, extUrl, articleId) {
   currentArticleId = articleId || null;
   document.getElementById('listView').classList.add('hide');
+  document.getElementById('learningView').classList.remove('show');
   document.getElementById('articleView').classList.add('show');
   document.getElementById('articleContent').innerHTML = '<div class="loading">読み込み中...</div>';
   document.getElementById('researchResults').innerHTML = '';
@@ -663,8 +706,124 @@ async function submitFeedback() {
 function showList() {
   document.getElementById('listView').classList.remove('hide');
   document.getElementById('articleView').classList.remove('show');
+  document.getElementById('learningView').classList.remove('show');
   document.getElementById('deepResearchFab').classList.remove('show');
   window.scrollTo(0, 0);
+}
+
+// ===== 学習マップ スタンプラリー =====
+async function showLearning() {
+  document.getElementById('listView').classList.add('hide');
+  document.getElementById('articleView').classList.remove('show');
+  document.getElementById('learningView').classList.add('show');
+  window.scrollTo(0, 0);
+  if (learningTopics === null) {
+    try {
+      const res = await fetch(SUPABASE_URL + "/rest/v1/learning_topics?select=topic_id,genre,area,subarea,title,coverage_status,article_count,related_article_ids,priority&order=genre.asc,area.asc,priority.desc", {
+        headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept-Profile": "research" }
+      });
+      learningTopics = await res.json();
+    } catch (e) {
+      document.getElementById('learningBody').innerHTML = '<div class="loading">読み込みに失敗しました</div>';
+      return;
+    }
+  }
+  renderLearningMap();
+}
+
+// genre スラッグ → L1タグの label_ja / icon を引く（無ければスラッグ）
+function genreMeta(slug) {
+  const t = allTags.find(x => x.level === 1 && x.name === slug);
+  return {
+    label: t ? (t.label_ja || t.name) : slug,
+    icon: t && t.icon ? t.icon : '📚',
+    sort: t ? (t.sort_order ?? 999) : 999,
+    color: TAG_COLORS[slug] || '#888'
+  };
+}
+
+function renderLearningMap() {
+  const topics = learningTopics || [];
+  // ジャンルごとに集約
+  const byGenre = {};
+  topics.forEach(t => {
+    (byGenre[t.genre] = byGenre[t.genre] || []).push(t);
+  });
+  // L1タグの sort_order 順にジャンルを並べる
+  const genres = Object.keys(byGenre).sort((a, b) => genreMeta(a).sort - genreMeta(b).sort);
+
+  // 全体進捗
+  const isDone = s => s === 'covered' || s === 'deep';
+  const totalAll = topics.length;
+  const doneAll = topics.filter(t => isDone(t.coverage_status)).length;
+  const pctAll = totalAll ? Math.round(doneAll / totalAll * 100) : 0;
+  document.getElementById('learningOverallStat').textContent = `全体 ${doneAll} / ${totalAll} トピック（${pctAll}%）`;
+
+  const html = genres.map(g => {
+    const meta = genreMeta(g);
+    const list = byGenre[g];
+    const total = list.length;
+    const done = list.filter(t => isDone(t.coverage_status)).length;
+    const deep = list.filter(t => t.coverage_status === 'deep').length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+
+    // area ごとにグルーピング（出現順を保持）
+    const byArea = {};
+    const areaOrder = [];
+    list.forEach(t => {
+      if (!byArea[t.area]) { byArea[t.area] = []; areaOrder.push(t.area); }
+      byArea[t.area].push(t);
+    });
+
+    const areasHtml = areaOrder.map(area => {
+      const rows = byArea[area].map(t => {
+        const aid = (t.related_article_ids && t.related_article_ids.length) ? t.related_article_ids[0] : null;
+        const art = aid ? allArticles.find(a => a.id === aid) : null;
+        const stamp = t.coverage_status === 'deep' ? '🌟' : (t.coverage_status === 'covered' ? '✅' : '⬜');
+        if (art) {
+          return `<div class="topic-row linked" data-slug="${escAttr(art.slug)}" data-aid="${art.id}">
+            <span class="stamp">${stamp}</span><span class="ttitle">${escHtml(t.title)}</span><span class="tchev">›</span></div>`;
+        }
+        return `<div class="topic-row nolink"><span class="stamp">${stamp}</span><span class="ttitle">${escHtml(t.title)}</span></div>`;
+      }).join('');
+      return `<div class="area-block"><div class="area-label">${escHtml(area)}</div>${rows}</div>`;
+    }).join('');
+
+    const deepBadge = deep ? `<span class="gcount">🌟${deep} 深掘り</span>` : '';
+    return `<div class="genre-card" data-genre="${escAttr(g)}">
+      <div class="genre-head" onclick="toggleGenreCard(this)">
+        <span class="gicon">${meta.icon}</span>
+        <span class="gtitle">${escHtml(meta.label)}</span>
+        ${deepBadge}
+        <span class="gcount">${done}/${total}・${pct}%</span>
+        <span class="gchev">▶</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:${meta.color}"></div></div>
+      <div class="genre-body">${areasHtml}</div>
+    </div>`;
+  }).join('');
+
+  const body = document.getElementById('learningBody');
+  body.innerHTML = html || '<div class="loading">トピックがありません</div>';
+
+  // トピック行クリック → 記事を開く（イベント委譲でクォート崩れを回避）
+  body.querySelectorAll('.topic-row.linked').forEach(row => {
+    row.addEventListener('click', () => {
+      showArticle(row.dataset.slug, '', row.dataset.aid);
+    });
+  });
+}
+
+function toggleGenreCard(headEl) {
+  headEl.closest('.genre-card').classList.toggle('open');
+}
+
+// 簡易エスケープ（タイトル等の表示・属性用）
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+}
+function escAttr(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 // ===== Modal =====
