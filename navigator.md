@@ -33,11 +33,6 @@
 
 ## 📋 残タスク (Phase 2)
 
-1. **学習マップ スタンプラリー UI**
-   - `index.html` に「🎯 学習マップ」タブ追加
-   - 領域別カードで進捗バー表示、サブトピックは clickable で関連記事リンク
-   - 関連 RPC: `get_claude_code_coverage_summary`
-
 2. **Discord 通知に学習マップ進捗バー埋め込み**
    - `auto-research-morning-discord` の embed に「🎯 X/36 (Y%)」表示
    - 領域別の差分も提示（前日 → 今日の覆い率）
@@ -59,7 +54,7 @@
    - Run 詳細ログ + `supabase/functions/deep-research/index.ts` ソース再読
    - 必要ならプロンプトに「complete アクションは呼ぶな」を明示
 
-> ✅ 完了済み（履歴は [docs/session-history.md](docs/session-history.md)）: 思考学習マップ フェーズB/C ＋ B1作り替え（2026-06-18）／ glossary ジャンル新設・60トピック網羅（2026-06-20）／ **秘密設定ファイルを git 射程外（`C:\dev\.secrets\`）へ退避**（2026-06-21、[[secret-config-file-disappeared]] 恒久対策）／ **診断テスト記事（DIAGNOSTIC_* 計3件）を一括削除**（2026-06-25、migration `20260621000001`、シグネチャ一括削除で全件除去）。
+> ✅ 完了済み（履歴は [docs/session-history.md](docs/session-history.md)）: 思考学習マップ フェーズB/C ＋ B1作り替え（2026-06-18）／ glossary ジャンル新設・60トピック網羅（2026-06-20）／ **秘密設定ファイルを git 射程外（`C:\dev\.secrets\`）へ退避**（2026-06-21、[[secret-config-file-disappeared]] 恒久対策）／ **診断テスト記事（DIAGNOSTIC_* 計3件）を一括削除**（2026-06-25、migration `20260621000001`、シグネチャ一括削除で全件除去）／ **学習マップ スタンプラリーUI を index.html に実装**（2026-06-25、8ジャンル127件をアコーディオン+進捗バー+トピック→記事リンク。learning_topics を anon 遅延fetch・クライアント集計。スコープは learning_topics 全体を採用＝Claude Code 限定の原案から拡大）。
 
 ## 🔗 重要なリソース
 
