@@ -1,3 +1,135 @@
+## [2026-06-24] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **前回（6/22）昇格候補 2 件の継続記録**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御・Agent deny rules 修正・sandbox.credentials・org-configured model restrictions の評価項目追記提案が未確認のまま継続（6/15〜6/23 提案）。
+- **TBP-001 新規照合（Issue #70687: git rm -rf データロス）**: 6/24 新着。Claude が 3年分の Unity プロジェクトファイルを `git rm -rf` で全削除するデータロスが報告された（area:model, data-loss）。v2.1.183 のデストラクティブ git コマンド自動ブロック対象（`git reset --hard`, `git checkout -- .`, `git clean -fd`）には `git rm` が含まれていないことが露呈。「エージェントが使用する破壊的コマンドの範囲は想定より広い」という新たな脅威モデルとして TBP-001 審査基準への追記を提案。`Bash(command:git rm*)` を deny ルールに加えることも有効（v2.1.178 の `Tool(param:value)` 権限構文）。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- WebSearch: Claude Fable 5 復旧状況（6/24）
+- WebSearch: Claude Tag Slack 2026年6月24日
+- WebSearch: Claude Code v2.1.188/189 changelog June 2026
+- WebSearch: 会計 AI 経理 自動化 freee マネーフォワード バクラク 2026年6月24日
+- WebSearch: Anthropic Claude Code 2026年6月24日 新機能 日本語
+
+#### 🔴 即座に適用すべき事項
+
+**① Issue #70687 — Claude が git rm -rf でプロジェクト全ファイルを削除（2026-06-24 新着、area:model, data-loss）**
+- Claude Code が 3年分の Unity プロジェクトの全ファイルを `git rm -rf` コマンドで削除するデータロスを引き起こした（has repro）。
+- **重要**: v2.1.183 のデストラクティブ git 自動ブロックは `git reset --hard` / `git checkout -- .` / `git clean -fd` / `git stash drop` を対象としており、`git rm -rf` はブロック対象外。Claude がエージェントとして選択できる破壊的コマンドのベクターは想定より広い。
+- **Research Hub への推奨対応**: Routine の settings.json に `Bash(command:git rm*)` の deny ルールを追加することを検討。auto-research-collect・deep-research-runner 等でファイル管理を行うケースでの構造的な保護になる。
+
+**② Claude Code v2.1.190（2026-06-24 リリース）— バグ修正のみ**
+- リリースノート: "Bug fixes and reliability improvements"（具体的な変更内容は公開なし）
+- v2.1.187 の主要修正（sandbox.credentials、MCP タイムアウト修正、StructuredOutput 無限ループ解消等）に続く安定化リリース。
+- Research Hub の Routine 動作への直接影響: 不明（軽微な安定性改善が期待される水準）
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Claude Tag（2026-06-23 発表）— Slack 常駐 AI チームメイト**
+- Anthropic が「Claude Tag」を発表。Slack チャンネルに @Claude をメンションすることで、Claude がチームの一員として非同期でタスクを遂行する新機能。
+- 主な特徴:
+  - 永続的なコンテキストとメモリ学習（チャンネル内の文脈を継続蓄積）
+  - 自律的なタスク分解・実行・Slack スレッドへの進捗報告
+  - アンビエントモード（忘れられたスレッドへの自動フォローアップ）
+  - 管理者によるチャンネル・ツール単位のアクセス制御
+- ベースモデル: Opus 4.8
+- 提供条件: Enterprise または Team プランが必要（Beta として即日提供開始）
+- 既存の「Claude in Slack」は 2026年8月3日に Claude Tag へ置き換わる（管理者は30日以内に移行オプトインが必要）
+- Anthropic 製品チームのコードの 65% は Claude Tag を使って作成されていると発表。
+- **Tak 業務への参考**: 経理・バックオフィス系の Slack チャンネルへの常駐、フィードバック収集や article 追跡のトリガーとして活用できる可能性あり。
+
+**② `git rm -rf` 対策の settings.json 追加（Issue #70687 対応）**
+- `Bash(command:git rm*)` を deny ルールに追加（v2.1.178 の `Tool(param:value)` 権限構文）。
+- Research Hub の auto-research-collect 等の Routine でファイル削除系コマンドが意図せず実行されるリスクを構造的に排除。v2.1.183 の保護範囲を補完する措置。
+
+**③ Issue #70685 — マウスクリックでプロンプトが意図せず自動選択（v2.1.187 リグレッション候補）**
+- インタラクティブプロンプトでマウスクリックがオプションを即時選択してしまうバグ（area:tui, duplicate）。
+- v2.1.187 で追加されたマウスクリックサポートのリグレッションの可能性。Routine 上は TUI 操作が少ないため直接影響は軽微だが、手動デバッグ時の誤操作リスクとして記録。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-24）**
+- Issue #70689: bypassPermissions モードで archive_session が Allow プロンプトを表示するが実際には拒否される（area:desktop, area:permissions, misleading）
+- Issue #70688: フルスクリーン表示が最小化→再展開後に画面の半分しか使用しない（area:tui, bug, linux）
+- Issue #70686: 終了した Remote セッションのバックグラウンドタスクが "Running" のまま残り削除不可（area:agent-view, area:claude-code-web, bug）
+- Issue #70684: sandbox: SOCKS5 プロキシ認証を BSD nc がネゴシエートできず SSH git 操作が失敗するリグレッション（area:sandbox, has repro, platform:macos）
+- Issue #70682: モデルが文書横断比較で無関係なセクションを混在させるバグ（area:model, needs-repro）
+- Issue #70681: auto-compact 閾値の設定可能化要望（area:core, enhancement）
+- Issue #70680: サブエージェントが build/test コマンドの `--watch` フラグを利用する機能要望（area:agents, enhancement）
+- Issue #70678: チャット内のユーザーメッセージ間のキーボードナビゲーション要望
+- Issue #70677: トランスクリプトをアシスタント出力とツール呼び出し出力の 2 ペインに分割する要望
+- **Research Hub の Routine 動作への直接影響**: #70687（data-loss: git rm -rf、🔴参照）・#70686（Remote バックグラウンドタスク残存）が最も関連度高い
+
+**Fable 5 / Mythos 5 停止継続（12 日目、2026-06-24 時点）**
+- explainx.ai（6/24 付）: 「Is Fable 5 Back? No — Status & Alternatives」として依然オフライン継続を確認。
+- isfableback.org: 依然「No」の状態を継続。全ユーザー向けにオフライン。
+- 公式復旧日は未定。前回（6/23）の「Android で rate-limit レスポンスに変化」は復旧準備シグナルとして記録されていたが、24 日時点では依然未復旧。
+- **Research Hub への影響**: Opus 4.8 / Sonnet 4.6 が auto モードで選択され続ける状態が継続。Fable 5 復旧後の Agent SDK クレジット消費量変動に引き続き注意。
+
+**会計×AI トレンド（2026-06-24 時点）**
+- 本日固有の新発表なし（6/23 までのトレンドが継続）。
+- freee MCP、マネーフォワード AIエージェント、バクラク AIエージェントの継続展開。
+- 経費精算工数 75% 削減・月次決算 5 営業日早期化が報告値として定着。
+- 経理向け AI エージェント比較記事（BOXIL Magazine 等）が充実してきており、実務導入のベンチマーク情報として有用。
+
+**Claude Tag 詳細補足**
+- 既存の「Claude in Slack」との差分: 都度の会話型 → チームメンバーとしての AI（文脈の永続性・自律的タスク実行が追加）。
+- 日本語メディア報道: Impress Watch・ITmedia・GIGAZINE・innovatopia 等で即日報道。
+- 注意: 既存 Slack App ユーザーは 2026/8/3 までに管理者が移行オプトインを行う必要がある（手動移行が必要）。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/23 提案から継続、全 13 項目）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**: 公式 best-practices ページへの追記確認
+2. **Claude Fable 5 モデル ID**: 「現在停止中（6/12〜）、6/24 時点でも未復旧」注記とともに追記提案
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-24` への更新
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**
+5. **`/config key=value` 構文**（v2.1.181）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**（v2.1.181）
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**
+8. **`attribution.sessionUrl` 設定**（v2.1.183）
+9. **v2.1.186 Agent deny rules バグ修正**
+10. **`claude mcp login/logout <name>`**（v2.1.186）
+11. **`respondToBashCommands: false` 設定**（v2.1.186）
+12. **v2.1.187 `sandbox.credentials` 設定**
+13. **v2.1.187 org-configured model restrictions**
+
+**新規追加提案（2026-06-24）**:
+14. **v2.1.190 リリース**: "Bug fixes and reliability improvements"（内容不詳）。v2.1.187 に続く安定化リリースとして記録。
+15. **Claude Tag（Slack 常駐 AI）**: Enterprise/Team の Slack 利用者向け新機能。8/3 に既存 Claude in Slack から強制移行。コラボレーション設計・外部ツール活用の参考として references.md または TBP-001 の「適用場面」への追記を検討。
+
+#### 新規発見ソース候補
+- **blog.cloudnative.co.jp**: Claude Tag の設定・テスト・監査ログまでの実践レビューを掲載（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-06-25（明日: Fable 5 復旧監視を継続）
+注目点:
+① **Fable 5 / Mythos 5 復旧確認**: 「数日以内」発言（6/23 Anthropic ソウル）から 2 日目。週明け（6/29）が次の節目か。
+② **Issue #70687 対応**: git rm -rf データロスバグのパッチリリース確認（v2.1.191 での修正を監視）。
+③ **v2.1.190 変更内容の詳細**: "Bug fixes and reliability improvements" の具体的内容が公開されれば確認。
+④ **Claude Tag 日本語対応**: Beta 版の日本語環境での動作状況・Enterprise/Team プラン向けの実用性確認。
+⑤ **TBP 昇格候補 2 件**（TBP-003・TBP-004）の Tak 確認状況。
+
+---
 ## [2026-06-23] デイリーレポート
 
 ### 内部知見（機能A）
