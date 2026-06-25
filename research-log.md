@@ -1,4 +1,129 @@
-## [2026-06-24] デイリーレポート
+## [2026-06-25] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 3 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御・Agent deny rules 修正・sandbox.credentials・org-configured model restrictions の評価項目追記提案が未確認のまま継続（6/15〜6/24 提案、全 15 項目）。
+- **TBP-001 新規照合①（Issue #71462: Bash tool が env 変数を "null" リテラルに上書き）**: direnv 管理・シークレット環境変数が Bash ツールで `"null"` という文字列リテラルに設定されるバグ（area:bash, platform:macos）が 6/25 新着。TBP-001「最小権限」の実装が Bash ツール層で想定外に破られる可能性。Research Hub の Routine で INTERNAL_TOKEN 等が `"null"` に化けていないか確認推奨。
+- **TBP-001 新規照合②（Issue #71461: Fleet mode 過剰トークン消費）**: Fleet モードが単純な型チェックタスクで過剰なトークンを消費するバグ（area:cost, platform:macos）。6/15 施行の Agent SDK クレジット課金との合わせ技でコスト急増リスク。TBP-001「課金コスト予測困難性」追記の根拠が増強。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- WebSearch: Anthropic Claude Fable 5 復旧 2026年6月25日
+- WebSearch: Claude Code GitHub issues new 2026-06-25
+- WebSearch: 会計 AI 経理 自動化 freee マネーフォワード 2026年6月25日
+- WebSearch: Claude Code Zenn Qiita 新着記事 2026年6月25日
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.191（2026-06-24 リリース）— /rewind・CPU 37%削減・MCP自動リトライ**
+- **`/rewind` コマンド追加**: `/clear` 実行前の会話状態から再開可能。誤クリアからの復帰が可能に。
+- **CPU 使用率 37% 削減**: ストリーミング応答中のテキスト更新を 100ms に統合。deep-research-runner 等の長時間 Routine でシステム負荷が大幅低下する可能性。
+- **MCP サーバー信頼性向上**: `tools/list`・`prompts/list`・`resources/list` の一時的なネットワークエラーで自動リトライ。MCP OAuth ディスカバリー・トークンリクエストも同様。Research Hub の Routine が Worker 経由 MCP を使う場合、ネットワーク不安定時の失敗率低下が期待できる。
+- **バックグラウンドエージェント停止後の復活防止**: ゾンビエージェント起動を防ぐ。
+- **サンドボックスネットワーク許可の永続化**: ダイアログで「Yes」を選択したホストがセッション中記憶される（Routine でのホスト承認フロー簡素化）。
+- **その他バグ修正**: /permissions Recently-denied タブ・エージェントパネルスクロール行ずれ・MCP HTTP 404 エラーでの URL 表示・`/voice` 組織ポリシー無効化時のメッセージ改善
+
+**② Issue #71462 — Bash tool が direnv管理環境変数を "null" に上書き（2026-06-25 新着）**
+- Bash ツールが redacted または direnv 管理の環境変数を `"null"` という文字列リテラルに設定するバグ（area:bash, platform:macos）。
+- **Research Hub への影響**: Routine 内で INTERNAL_TOKEN 等のシークレット変数を参照している場合、Bash コマンド後に `"null"` に書き換えられて Worker への認証が失敗する可能性。Routine ログで `X-Internal-Token: null` が送信されていないか要確認。修正パッチリリースを監視推奨。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① `/rewind` コマンドの活用（v2.1.191）**
+- Routine やインタラクティブセッションで `/clear` を誤実行した場合に直前状態に巻き戻せる。
+- deep-research-runner の途中で文脈をリセットしたい場面での保険として有用。
+
+**② マネーフォワード AI Cowork（2026年7月提供予定）の動向追跡**
+- 経理・労務・法務業務を AI が「同僚」として自律処理するサービス。**Claude Agent SDK + MCP を技術基盤**として採用した国内初の大型 SaaS 事例。
+- Research Hub の 会計×AI 記事軸として 7 月提供時に記事化を推奨。Routine プロンプトの「会計×AI 重要発表」枠に該当。
+
+**③ Issue #71461 Fleet mode 過剰トークン消費の影響確認**
+- Agent SDK クレジット（6/15 施行）と合わせてコスト影響が大きい。
+- Routine 内でサブエージェントを並列実行する際は Fleet モードでなく `pipeline()` / `parallel()` を使う設計を優先する。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-25）**
+- Issue #71466: macOS デスクトップ VoiceOver が AI 応答を読み上げない回帰バグ（invalid）
+- Issue #71465: v2.1.193 で Terminal.app の TUI マウスクリックが反応しない（area:tui, regression, macos）
+- Issue #71464: `context: fork` スラッシュコマンドが出力をレンダリングしない（area:skills, has repro, windows）
+- Issue #71463: Safety ブロックが読み取り専用の firewall audit を妨害（area:permissions, duplicate, linux）
+- Issue #71462: Bash ツールが env 変数を "null" に設定（area:bash, macos）← 🔴参照
+- Issue #71461: Fleet mode 過剰トークン消費（area:cost, macos）← 🟡参照
+- Issue #71460〜71455: ドキュメント改善 (DOCS): Plugin marketplace renames・background shell memory pressure・shell mode autocomplete・OpenTelemetry `OTEL_LOG_ASSISTANT_RESPONSES`・auto mode `classifyAllShell`・IntelliJ EDT regression
+- **Research Hub の Routine 動作への直接影響**: #71462（env var "null"バグ）が最も関連度高い
+
+**Fable 5 / Mythos 5 状況（13 日目、2026-06-25 時点）**
+- 依然として全ユーザー向けに停止継続。公式復旧日は未定。
+- 予測市場（Polymarket 等）では 2026-07-01 までの復旧確率が約 57% と推計。
+- 6/23 の Android レートリミット変化シグナルからの続報なし。
+- **Research Hub への影響**: Opus 4.8 / Sonnet 4.6 が auto モードで継続選択中。Fable 5 復旧後のクレジット消費急増に引き続き注意。
+
+**会計×AI トレンド（2026-06-25 時点）**
+- **マネーフォワード AI Cowork（2026年7月提供予定）**: Claude Agent SDK + MCP を技術基盤に採用した AI 同僚サービス。経理・労務・法務を自律処理。国内主要 SaaS が Anthropic のエージェント基盤を採用した最初の大型事例として記録。
+- **freee「AIおまかせ明細取得」β版（3/26 開始継続）**: モバイル Suica 等の PDF 明細からデータを自動抽出。freee AI の実用化フェーズ拡大が継続。
+- 国内経理部門の AI 導入率: 約 24.3%（2026 年 4 月時点）。75% 以上が未導入でポテンシャル大。
+- 経理 AI エージェント比較記事（BOXIL Magazine）が充実し、実務導入の比較基準が標準化段階へ。
+
+**Zenn / Qiita 日本語コミュニティ（2026-06-25 時点）**
+- 「Claude Code 6月新機能 — 5段階エージェントと/cdコマンドで自律開発を実現する」（Qiita）が引き続き参照多数。
+- 「Claude CodeでPRレビューを自動化する設計と実装 — 全PRの83%をAIレビューだけでマージ」（Qiita, nogataka氏）が話題継続。
+- v2.1.191 の日本語解説記事はまだ公開なし（本日夜以降に出てくる見込み）。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/24 提案から継続、全 15 項目）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**（6/15〜）
+2. **Claude Fable 5 モデル ID**（停止継続中、復旧確率 57%→7/1）（6/15〜）
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-25`
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**（6/17〜）
+5. **`/config key=value` 構文**（v2.1.181, 6/18〜）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**（v2.1.181, 6/18〜）
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**（6/19〜）
+8. **`attribution.sessionUrl` 設定**（v2.1.183, 6/19〜）
+9. **v2.1.186 Agent deny rules バグ修正**（6/22〜）
+10. **`claude mcp login/logout <name>`**（v2.1.186, 6/22〜）
+11. **`respondToBashCommands: false` 設定**（v2.1.186, 6/22〜）
+12. **v2.1.187 `sandbox.credentials` 設定**（6/23〜）
+13. **v2.1.187 org-configured model restrictions**（6/23〜）
+14. **v2.1.190 リリース**（バグ修正のみ, 6/24〜）
+15. **Claude Tag（Slack 常駐 AI）**（6/23〜）
+
+**新規追加提案（2026-06-25）**:
+16. **v2.1.191 `/rewind` コマンド**: 会話巻き戻し機能。ユーザーガイド・操作性セクションへの追記提案。
+17. **v2.1.191 CPU 使用率 37% 削減**: ストリーミング応答中のパフォーマンス大幅改善。パフォーマンス関連セクションへの追記。
+18. **v2.1.191 MCP ネットワークエラー自動リトライ**: `tools/list` 等の一時エラーで再試行。MCP 信頼性設計の参考情報として追記。
+
+#### 新規発見ソース候補
+なし（本日は新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+
+2026-06-26（明日: Fable 5 復旧監視継続）
+注目点:
+① **Fable 5 復旧確認**: 予測市場 57%→7/1。週末にかけてシグナル注意。
+② **Issue #71462 パッチ確認**: Bash tool env var "null" バグの修正リリース（Routine シークレット保護に直結）。
+③ **マネーフォワード AI Cowork 詳細**: 7月提供開始に向けて技術詳細が公開されれば記事化推奨。
+④ **v2.1.192 以降のリリース**: MCP 安定化・バグ修正系が続く場合は確認。
+⑤ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 3 日経過）。
+
+---## [2026-06-24] デイリーレポート
 
 ### 内部知見（機能A）
 #### 新規・更新 ADR
