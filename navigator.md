@@ -96,6 +96,7 @@
 
 直近のみ。**それ以前の全履歴は [docs/session-history.md](docs/session-history.md) に退避**（さらに古い経緯は `git log --oneline`）。
 
+- **2026-06-25**: 保守3点。①秘密設定を git 射程外 `C:\dev\.secrets\` へ退避（前回継続・[[secret-config-file-disappeared]] 恒久対策、4スクリプトを fallback 探索化）②診断テスト記事 DIAGNOSTIC_* を**計3件**一括削除（navigator 記載は1件だったが独立検証で3件発覚→シグネチャ一括削除に。migration `20260621000001`）③**学習マップ スタンプラリーUI** を index.html に実装（8ジャンル127件・アコーディオン+進捗バー+トピック→記事リンク・anon遅延fetch・クライアント集計）
 - **2026-06-20**: glossary ジャンル新設（8ジャンル目）→ **17→60トピックに一括増補（網羅~100%）**。非エンジニア向け基礎用語・Claude Codeコマンド（承認注意点を R77 4層に紐づけ）。派生で tak-orchestrator R84（permission 挙動の版差ドリフト検証）起票
 - **2026-06-18〜20**: 基礎記事の充実を **7ジャンル 67/67 完走**（headless 自律3バッチ）
 - **2026-06-18**: 思考学習マップを **B1階層ナビ型に作り替え＋フェーズB/C完了**（Web検証で確証度再判定・記事リンク21）
@@ -108,6 +109,7 @@
 |---|---|---|---|
 | 2026-05-24 | [navigator.md は初期設定に組み込む](learnings/2026-05-24_new-project-phase2.md) | `~/.claude/skills/new-project/SKILL.md` Phase 2 追加 | `3f2d78b` |
 | 2026-05-26 | [エージェント指示は破られる前提で構造的防御を組む](learnings/2026-05-26_claude-code-watch-launch.md) | `~/.claude/rules/design-patterns.md` 追加候補 | `2042d1b` |
+| 2026-06-25 | [静的ビューワーUI追加は実データnode dry-runでロジック先行検証](learnings/2026-06-25_static-viewer-dryrun-verification.md) | design-patterns 追加候補（UI実装前検証版） | `e75ac54` |
 
 > 集約フロー: project `learnings/` で `promote_to_global: true` のものを、夜間タスク (aggregate-learnings) でグローバル `My-Profile-and-Memory/learnings/` に集約する。
 
