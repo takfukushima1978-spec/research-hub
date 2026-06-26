@@ -1,3 +1,147 @@
+## [2026-06-26] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 4 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御・Agent deny rules 修正・sandbox.credentials・org-configured model restrictions の評価項目追記提案が未確認のまま継続（6/15〜6/25 提案、全 18 項目）。
+- **TBP-001 新規照合①（Issue #71702〜#71706 Anthropic API レート制限集中報告）**: 6/26 朝に同一症状のレート制限バグが 5 件連続で報告（area:api, duplicate/external）。Anthropic API サーバー側の一時的スロットリング事象の可能性。Research Hub の Routine（auto-research-collect 等）が朝3時台に実行中にレート制限に当たる可能性を記録。TBP-001「課金コスト予測困難性」とあわせて「外部 API の可用性リスク」の審査項目追記を提案。
+- **TBP-001 新規照合②（Issue #71697: v2.1.193 Auto session recap 停止回帰）**: v2.1.193 でアイドル復帰後の自動セッションリキャップが発動しなくなるバグ。Routine の長時間セッション（deep-research-runner 等）でのコンテキスト継続性に影響する可能性。
+- **TBP-001 新規照合③（Issue #71708: Windows OAuth CERT_HAS_EXPIRED 回帰）**: Windows ネイティブ環境で OAuth ログイン時に証明書期限切れエラーが発生するリグレッション（curl は同ホストで成功）。手動でプロキシ・VPN・AV なしで再現確認済み（has repro）。Tak のローカル環境がWindowsの場合、直接影響する可能性あり。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- WebSearch: Claude Fable 5 復旧状況 2026年6月26日
+- WebSearch: Anthropic Claude new release announcement June 2026
+- WebSearch: 会計 AI 経理 自動化 freee マネーフォワード バクラク 2026年6月
+- WebSearch: Claude Code Zenn Qiita 新着 2026年6月26日
+
+#### 🔴 即座に適用すべき事項
+
+**① Anthropic API サーバーレート制限の集中発生（2026-06-26 新着、area:api）**
+- 6/26 朝に Issue #71702〜#71706 の5件が相次いで登録（いずれも "Server Rate Limiting (Request Throttling)"）。
+- 症状: 「Anthropic API Error: Server rate limiting — temporary request throttling」が通常使用中に発生（macOS, area:api, duplicate/external）。
+- 6/22 にも同様の Issue #70160（area:agents, area:api）が記録されており、断続的なサーバー側スロットリングが継続している模様。
+- **Research Hub への影響**: auto-research-collect（3:03 JST）・auto-claude-code-watch（4:00 JST）・deep-research-runner（6:00 JST）がまとめてレート制限に当たる可能性。Routine のリトライロジックが機能しているか次回実行後に確認推奨。
+- **推奨対応**: Routine プロンプトに「API レート制限（429）に当たった場合は 60 秒待機してリトライ」の指示を追加することを検討。
+
+**② Issue #71708 — Windows OAuth CERT_HAS_EXPIRED 回帰（2026-06-26 新着、area:auth, regression, has repro）**
+- Windows ネイティブインストール環境で OAuth ログイン時に「CERT_HAS_EXPIRED」エラーが発生する回帰バグ。
+- プロキシ/VPN/アンチウイルスなしの環境で curl は同ホストへのアクセスに成功するため、Claude Code 側の証明書バンドル問題の可能性。
+- **Tak の Windows 環境への影響**: 直接関連する可能性あり。修正パッチリリースを監視推奨。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Claude Code v2.1.193（2026-06-25 リリース）— autoMode.classifyAllShell + OTEL ログ**
+- 前回（6/25 報告）の v2.1.191 リリース内容（/rewind・CPU 37%削減）に続く追加機能リリース:
+  - **`autoMode.classifyAllShell` 設定**: すべての Bash/PowerShell コマンドを auto-mode 分類器経由でルーティング。未知のコマンドが auto-mode でブロックされる挙動を制御できる。
+  - **`OTEL_LOG_ASSISTANT_RESPONSES=1`**: OpenTelemetry の `claude_code.assistant_response` ログイベント追加。Routine の詳細トレーシング基盤として活用可能。
+  - **Bash モードにライブファイルパスオートコンプリート**: `!` コマンド入力時にファイルパスが補完される（手動デバッグ時の操作性向上）。
+  - **MCP サーバー認証通知**: 起動時に認証が必要な MCP サーバーの通知を追加。
+  - **アイドルバックグラウンドシェルの自動メモリ圧力排出**: 長時間 Routine でのメモリ安定性向上の可能性（`CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1` で無効化可能）。
+  - **バグ修正**: `/model` 表示の古い状態バグ・バックグラウンドタスク引き継ぎ失敗・ピン止めエージェントの自動更新後再プロンプト・MCP OAuth 401/403 での自動再実行
+- **Research Hub への影響**: auto-mode 使用 Routine での Bash コマンドルーティング動作が変わる可能性。`autoMode.classifyAllShell` のデフォルト値確認を推奨。
+
+**② Issue #71709 — Swarm/マルチエージェントのセッション名表示改善（enhancement）**
+- Swarm/マルチエージェントの TUI 表示で、raw tmux コマンド名ではなくセッション名を表示する機能要望（area:agents, area:tui, enhancement）。
+- **Research Hub への影響**: Workflow ベースの Routine（auto-research-collect, deep-research-runner）でサブエージェントが複数動く場合の視認性向上につながる可能性。
+
+**③ API レート制限対策 + Fable 5 復旧後のコスト管理**
+- Issue #71702〜#71706 のレート制限集中に加え、Fable 5 復旧後に auto モードでコスト急増するリスクが継続。
+- `org-configured model restrictions`（v2.1.187）で復旧直後の Fable 5 自動選択を一時ブロックする準備を推奨。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-26）**
+- Issue #71709: Swarm マルチエージェント: raw tmux コマンドの代わりにセッション名表示 + 完了エージェント自動クリーンアップ（area:agents, area:tui, enhancement, macos）
+- Issue #71708: Windows OAuth CERT_HAS_EXPIRED（area:auth, bug, has repro, windows, regression）← 🔴参照
+- Issue #71707: ツール権限要求時に allowlist コマンドの正確なフォーマットを表示する機能要望（area:permissions, enhancement）
+- Issue #71706〜#71702: Anthropic API サーバーレート制限バグ（area:api, bug/duplicate/external, macos）← 🔴参照
+- Issue #71700: Kitty キーボードプロトコルがケイパビリティ検出でなく端末名の allowlist でゲートされているバグ（area:tui, bug, has repro, linux）
+- Issue #71699: split-DNS VPN 環境で `claude update` が "getaddrinfo EREFUSED" で失敗するバグ（area:networking, bug, linux）
+- Issue #71698: `/usage` テキストが Edit ツール diff ブロック後に選択不可になるバグ（area:tui, bug, windows）
+- Issue #71697: v2.1.193 でアイドル復帰後の auto session recap が発動しないバグ（area:tui, bug, has repro, macos）← TBP-001 照合済み
+- **Research Hub の Routine 動作への直接影響**: #71702〜#71706（APIレート制限）・#71697（auto session recap停止）が最も関連度高い
+
+**Fable 5 / Mythos 5 状況（14 日目、2026-06-26 時点）**
+- 依然として全ユーザー向けに停止継続（未復旧）。公式復旧日は引き続き未定。
+- Anthropic MD クリス・チャウリ（ソウル記者会見）の「数日以内」発言（6/23）から 3 日経過するも復旧なし。
+- 予測市場 Kalshi: 7/1 までの復旧確率は約 57% 水準で変化なし。
+- **Research Hub への影響**: Opus 4.8 / Sonnet 4.6 が auto モードで引き続き選択中。復旧後のクレジット消費急増に注意。
+
+**Claude プラットフォーム新機能（2026年6月 Anthropic 発表）**
+- **Claude Tag on Slack（Beta）**: Enterprise/Team プランでのみ提供（6/23 発表。6/24 レポートで詳細済）。8/3 に既存 Claude in Slack から強制移行。
+- **Claude Managed Agents**: 自前 sandbox + プライベート MCP サーバーへの接続をサポート。
+- **Enterprise 向け Okta MCP コネクター**: 管理者が一度設定すれば全ユーザーがゼロタッチで利用可能に。
+
+**会計×AI トレンド（2026-06-26 時点）**
+- **freee MCP 公式対応**: AI が freee データに直接読み書きできるようになり「話しかけるだけで仕訳・請求書・経費精算」が本格化。MCP 対応がない他社（マネーフォワード等）とは差別化要因に。
+- **バクラク AIエージェント**: バックオフィス特化型。API 経由で業務実行・承認フローへの組み込みまで対応。申請レビュー・証憑自動取得・仕訳自動入力・入金消込を複数専門エージェントで協働処理。
+- **マネーフォワード AI Cowork（2026年7月提供予定）**: Claude Agent SDK + MCP を技術基盤として採用。経理・労務・法務を AI が「同僚」として自律処理するサービス（国内 SaaS 初の大型 Anthropic エージェント基盤採用事例）。7月提供開始前後に記事化推奨。
+- **経理 AI 実務普及率**: 2026年4月時点で約 24.3%（75% 以上が未導入）。BOXIL Magazine の経理向け AI エージェント比較記事が充実し、実務導入の比較基準が標準化フェーズに。
+
+**Zenn / Qiita 日本語コミュニティ（2026-06-26 時点）**
+- 「Claude Code 6月新機能 — 5段階エージェントと/cdコマンドで自律開発を実現する」（Qiita）が引き続き高参照。
+- 「Claude CodeでPRレビューを自動化する設計と実装 — 全PRの83%をAIレビューだけでマージ」（Qiita, nogataka氏）が話題継続。
+- 「コードを書けない私が、AIに『チーム』を持たせるまで」（Qiita, saitoko氏）: Zenn Books として書籍化。
+- 「17万スター超のCLAUDE.mdに学ぶ、Claude Codeを暴走させない運用術」（Qiita）が新着人気記事。
+- v2.1.193 の日本語解説記事は未確認（今夜以降公開見込み）。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/25 提案から継続、全 18 項目）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**（6/15〜）
+2. **Claude Fable 5 モデル ID**（停止継続中、復旧確率 57%→7/1、14日目）（6/15〜）
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-26`
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**（6/17〜）
+5. **`/config key=value` 構文**（v2.1.181, 6/18〜）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**（v2.1.181, 6/18〜）
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**（6/19〜）
+8. **`attribution.sessionUrl` 設定**（v2.1.183, 6/19〜）
+9. **v2.1.186 Agent deny rules バグ修正**（6/22〜）
+10. **`claude mcp login/logout <name>`**（v2.1.186, 6/22〜）
+11. **`respondToBashCommands: false` 設定**（v2.1.186, 6/22〜）
+12. **v2.1.187 `sandbox.credentials` 設定**（6/23〜）
+13. **v2.1.187 org-configured model restrictions**（6/23〜）
+14. **v2.1.190 リリース**（バグ修正のみ, 6/24〜）
+15. **Claude Tag（Slack 常駐 AI）**（6/23〜）
+16. **v2.1.191 `/rewind` コマンド**: 会話巻き戻し機能（6/25〜）
+17. **v2.1.191 CPU 使用率 37% 削減**: ストリーミングパフォーマンス改善（6/25〜）
+18. **v2.1.191 MCP ネットワークエラー自動リトライ**（6/25〜）
+
+**新規追加提案（2026-06-26）**:
+19. **v2.1.193 `autoMode.classifyAllShell` 設定**: 全 Bash/PowerShell コマンドを auto-mode 分類器経由でルーティング。権限設計・auto mode 制御セクションへの追記提案。
+20. **v2.1.193 `OTEL_LOG_ASSISTANT_RESPONSES` 環境変数**: OpenTelemetry の assistant_response ログイベント。監視・トレーシングセクションへの追記提案。
+21. **v2.1.193 バックグラウンドシェル自動メモリ圧力排出**: `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1` で無効化可能。パフォーマンスセクションへの追記提案。
+
+#### 新規発見ソース候補
+なし（本日は新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+
+2026-06-27（明日: Fable 5 復旧監視・API レート制限状況継続）
+注目点:
+① **Fable 5 復旧確認**: 14日目継続。Kalshi 予測 57%→7/1 が引き続き節目。週末前の本日・明日に動く可能性。
+② **Issue #71708 パッチ確認**: Windows OAuth CERT_HAS_EXPIRED 回帰の修正リリース監視。
+③ **API レート制限集中（#71702〜#71706）の続報**: Anthropic サーバー側の問題か、クライアント側の問題か確認。
+④ **マネーフォワード AI Cowork 詳細**: 7月提供開始に向けた事前発表・技術詳細が出れば即記事化推奨。
+⑤ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 4 日経過）。
+
+---
 ## [2026-06-25] デイリーレポート
 
 ### 内部知見（機能A）
