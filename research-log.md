@@ -1,3 +1,151 @@
+## [2026-06-27] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 5 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御・Agent deny rules 修正・sandbox.credentials・org-configured model restrictions の評価項目追記提案が未確認のまま継続（6/15〜6/26 提案、全 21 項目）。
+- **TBP-001 新規照合①（Claude Mythos 5 US 限定解除 — 最重要）**: 6/26〜27 に米国政府（商務省）が Anthropic に対し Mythos 5 を 100+ 米国企業・政府機関へリリースすることを許可。6/12 の輸出規制指令（deemed export）による停止から 15 日目での部分解除。Fable 5（一般公開版）については政府レターに記載なし。関係者によれば解除に向けて交渉継続中だが timeline 未定。「外部 AI サービスは地政学的リスク・輸出規制による突然のサービス停止リスクを持つ」（6/16 提案の TBP-001 追記候補）の最新具体例として記録。
+- **TBP-001 新規照合②（v2.1.195 hook matchers exact-match 変更）**: ハイフン含む識別子（`code-reviewer`, `mcp__brave-search` 等）の hook matcher が substring-match → exact-match に変更（v2.1.195, 6/26）。settings.json の deny/allow ルールで hyphenated ツール名を指定している場合、今まで substring で意図しない幅広マッチが発生していた可能性。v2.1.195 更新後に既存 hook 設定の挙動確認を推奨。TBP-001「最小権限で開始」の実効性評価項目に「バージョン毎の hook/deny 設定挙動確認」を追記する材料。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- WebSearch: Anthropic Claude Mythos 5 Fable 5 US institutions limited release June 27 2026
+- WebSearch: Anthropic Claude new release announcement June 27 2026
+- WebSearch: 会計 AI 経理 自動化 freee マネーフォワード バクラク 2026年6月27日
+- WebSearch: Claude Code Zenn Qiita 新着記事 2026年6月27日
+- WebSearch: マネーフォワード AI Cowork 2026年7月 freee MCP AI会計
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Mythos 5 — 米国政府が 100+ 機関への限定解除を承認（2026-06-26〜27 最新）**
+- 米国政府（商務省）が Anthropic に対し、Claude Mythos 5 を 100 以上の米国企業・政府機関へリリースすることを許可。
+- 背景: 6/12 の輸出規制指令（deemed export）による全面停止後 15 日目での部分解除。Amazon CEO アンディ・ジャシーが財務長官に Fable 5 のジェイルブレイク脆弱性を報告したことが停止の引き金。
+- **Fable 5（一般公開版）の扱い**: 政府レターは Fable 5 について明示せず。関係者によれば Fable 5 解除に向けて交渉継続中だが、具体的な timeline は未定。
+- **Research Hub への影響**: Fable 5 の一般解除は未確定のため、引き続き Opus 4.8 / Sonnet 4.6 が auto モードで使用される可能性が高い。復旧後の Agent SDK クレジット消費急増に備えた準備（org-configured model restrictions での一時ブロック等）を推奨。
+- 参照: [9to5Mac](https://9to5mac.com/2026/06/26/anthropic-cleared-to-release-claude-mythos-5-to-over-100-us-institutions/) / [Semafor](https://www.semafor.com/article/06/27/2026/us-releases-powerful-anthropic-model-mythos-to-some-us-companies) / [CNN](https://edition.cnn.com/2026/06/26/tech/anthropic-mythos-release) / [CNBC](https://www.cnbc.com/2026/06/26/us-government-anthropic-claude-mythos5-ai.html)
+
+**② Claude Code v2.1.195（2026-06-26 リリース）— hook matchers 修正 + voice 修正**
+- **`CLAUDE_CODE_DISABLE_MOUSE_CLICKS` 設定追加**: フルスクリーンモードでマウスクリック/ドラッグ/ホバーを無効化しつつスクロールは維持。誤クリックによる意図しない操作を防げる。
+- **hook matchers with hyphenated identifiers の修正（重要）**: `code-reviewer` や `mcp__brave-search` のようなハイフン含む識別子が substring-match → exact-match に変更。既存の hook/deny ルールの挙動確認が必要（↑再検討トリガー②参照）。
+- **voice dictation auto-submit 修正（日本語・中国語・Thai 含む）**: スペースなしで書く言語での auto-submit が発動しなかったバグを修正。Routine での日本語音声入力がある場合に影響。
+- **macOS voice dictation の長時間セッション修正**: 入力デバイス変更後に無音を録音するバグを修正。
+- **external plugins の install consent 修正**: project `.claude/settings.json` のみで有効化された外部プラグインが明示的なインストール同意を要求するよう修正（セキュリティ強化）。
+- **background jobs データ消失修正**: 新バージョンで書き込まれた background jobs が消失または データロスするバグを修正。
+- **Remote session startup 改善**: provisioning checklist 追加により起動時の状態把握が容易に。
+- **`claude agents` 完了リスト改善**: 利用可能な縦方向スペースを最大限活用するよう改善。
+- **Research Hub への影響**: hook matchers の exact-match 変更が最も影響大。settings.json の既存 deny/allow ルール確認を推奨。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① v2.1.195 hook matchers 変更後の既存設定確認**
+- `code-reviewer`, `mcp__brave-search` 等のハイフン含む識別子を hook/deny ルールで使用している場合、exact-match 変更後の挙動が変わる可能性がある。
+- Research Hub の Routine 設定で hyphenated ツール名を指定している箇所があれば動作確認を推奨。
+- v2.1.178 の `Tool(param:value)` 構文と組み合わせて使用している場合も注意が必要。
+
+**② マネーフォワード AI Cowork（2026年7月提供開始）の追跡と記事化**
+- MCP サーバーの設定・運用が一切不要で、AI が自律的に経理・労務・法務等のバックオフィス業務を遂行するサービス。
+- Anthropic Claude Agent SDK + MCP を技術基盤として採用した国内初の大型 SaaS 事例。複数の AI エージェントが並列かつ自律的に連携。
+- 7 月提供開始後に Research Hub の auto-research-collect の「会計×AI 重要発表」枠で即時記事化推奨。
+- 参照: [マネーフォワード公式](https://corp.moneyforward.com/news/release/service/20260407-mf-press-1/)
+
+**③ Fable 5 一般解除への準備（Mythos 5 US 限定解除を受けて）**
+- Mythos 5 の US 限定解除（6/26-27）確認済み。Fable 5 の解除も交渉継続中と報道。
+- org-configured model restrictions（v2.1.187）で Fable 5 復旧直後の auto モード選択を一時ブロックするか、Agent SDK クレジット消費量の急増に備えた監視体制の準備を推奨。
+- 復旧シグナルは isfableback.org 等で随時確認。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-27）**
+- Issue #71923: Feature Request — Claude thinking の TUI 表示可視性向上（area:tui, enhancement, macos）
+- Issue #71922: BUG — claude-in-chrome set_permission_mode storm が CLI セッション全体を起動時に wedge（area:chrome, area:mcp, bug, has repro, windows）
+- Issue #71921: Feature Request — クリッカブルオプションの UX 改善（area:tui, area:ui, enhancement, linux, user-experience）
+- Issue #71920〜71912: ドローン開発関連の safety block バグ複数件（area:model, area:security, bug, duplicate）— Research Hub への直接影響なし
+- Issue #71914: BUG — Gmail integration fail（area:mcp, bug, external, windows）
+- Issue #71913: FEATURE — `.worktreeinclude` に git-ignored でないファイルのサポート（area:cli, enhancement）
+- **Research Hub の Routine 動作への直接影響**: #71922（chrome MCP wedge on Windows）・#71914（Gmail MCP fail on Windows）が関連するが、Research Hub の Routine は Linux sandbox で動作するため直接影響は軽微。
+
+**Anthropic 新機能・発表（2026-06-27）**
+- **Claude on Apple Foundation Models**: iOS 27 / iPadOS 27 / macOS 27 / visionOS 27 / watchOS 27 で Apple Foundation Models framework 経由で Claude が利用可能に。Apple AI との公式統合が実現。
+- **Claude Managed Agents（詳細発表）**: ユーザーが管理する sandbox 内で動作し、プライベート MCP サーバーにも接続可能。エージェントが実行するツールの環境と接続先サービスを enterprise 境界内に収めることが可能。Research Hub アーキテクチャの将来的な発展オプションとして記録。
+- **Trusted Devices for Remote Control Admins（Team/Enterprise）**: Remote Control セッション前にデバイス認証が可能に。セキュリティ強化。
+- **Anthropic Economic Index レポート（2026年6月）**: AI の経済的影響に関する最新レポート公開。[Anthropic Research](https://www.anthropic.com/research/economic-index-june-2026-report)
+
+**Fable 5 / Mythos 5 状況（2026-06-27 最新 — 15 日目）**
+- Mythos 5: US 政府が 100+ 機関への限定解除を承認（6/26〜27）。一般公開ではなく、特定の US 企業・政府機関向け。
+- Fable 5（一般公開版）: 政府レターに記載なし。交渉継続中。Timeline 未定。
+- **Research Hub への影響**: Fable 5 の一般解除が確認されるまで、引き続き Opus 4.8 / Sonnet 4.6 が使用される状態が継続。
+
+**会計×AI トレンド（2026-06-27 時点）**
+- **マネーフォワード AI Cowork（7月提供予定）**: 経理・労務・法務をMCP設定不要でAIが自律処理。Anthropic Claude Agent SDK + MCP 採用。「MCPすら不要」という独自アプローチが freee MCP 直接活用と対比される差別化点。
+- **freee × マネーフォワード MCP 対応比較**: note.com にて「freeeとマネーフォワード、MCP対応を比較してみた」が注目（freee の MCP 先行対応優位と、マネーフォワードの MCP 不要路線の対比が整理）。
+- 継続トレンド: freee MCP による「AIに話しかけるだけで仕訳・請求書・経費精算」実用化フェーズ継続。経理 AI 導入率約 24.3%（未導入 75% 超で依然大きなポテンシャル）。
+
+**Zenn / Qiita 日本語コミュニティ（2026-06-27 時点）**
+- 「Claude Code 週次アップデートまとめ（2026/06/20週）」（Qiita, saitoko 氏）が継続参照多数。
+- 「Claude Code と Zenn 執筆環境を一から育てた記録」（Qiita/Zenn, shimo4228 氏）: Markdown lint・クロスポスト自動化等の実践事例。
+- 「コードを書けない私が、AI に『チーム』を持たせるまで」（Qiita → Zenn Books, saitoko 氏）継続話題。
+- v2.1.195 の日本語解説記事は未確認（本日夜以降公開見込み）。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/26 提案から継続、全 21 項目）:
+1. **v2.1.178 `Tool(param:value)` 権限構文**（6/15〜）
+2. **Claude Fable 5 モデル ID**（Mythos 5 US 限定解除確認、Fable 5 一般解除は未定）（6/15〜）
+3. **最終確認日更新**: `*最終確認: 2026-03-29*` → `2026-06-27`
+4. **Claude Code GitHub Actions セキュリティ脆弱性 v1.0.94**（6/17〜）
+5. **`/config key=value` 構文**（v2.1.181, 6/18〜）
+6. **`CLAUDE_CLIENT_PRESENCE_FILE` 環境変数**（v2.1.181, 6/18〜）
+7. **v2.1.183 デストラクティブ git コマンド自動ブロック**（6/19〜）
+8. **`attribution.sessionUrl` 設定**（v2.1.183, 6/19〜）
+9. **v2.1.186 Agent deny rules バグ修正**（6/22〜）
+10. **`claude mcp login/logout <name>`**（v2.1.186, 6/22〜）
+11. **`respondToBashCommands: false` 設定**（v2.1.186, 6/22〜）
+12. **v2.1.187 `sandbox.credentials` 設定**（6/23〜）
+13. **v2.1.187 org-configured model restrictions**（6/23〜）
+14. **v2.1.190 リリース**（バグ修正のみ, 6/24〜）
+15. **Claude Tag（Slack 常駐 AI）**（6/23〜）
+16. **v2.1.191 `/rewind` コマンド**（6/25〜）
+17. **v2.1.191 CPU 使用率 37% 削減**（6/25〜）
+18. **v2.1.191 MCP ネットワークエラー自動リトライ**（6/25〜）
+19. **v2.1.193 `autoMode.classifyAllShell` 設定**（6/26〜）
+20. **v2.1.193 `OTEL_LOG_ASSISTANT_RESPONSES` 環境変数**（6/26〜）
+21. **v2.1.193 バックグラウンドシェル自動メモリ圧力排出**（6/26〜）
+
+**新規追加提案（2026-06-27）**:
+22. **v2.1.195 `CLAUDE_CODE_DISABLE_MOUSE_CLICKS` 設定**: フルスクリーンモードでマウスクリック/ドラッグ/ホバーを無効化。UI 制御セクションへの追記提案。
+23. **v2.1.195 hook matchers exact-match 変更**: ハイフン含む識別子が exact-match に変更。権限設計・hook 設定セクションへの注意事項として追記提案。既存設定の再確認が必要な破壊的変更。
+24. **Claude on Apple Foundation Models**: iOS 27 / macOS 27 等での Claude API 利用。モデル利用方法セクションへの追記提案。
+25. **Claude Managed Agents プライベート sandbox + MCP**: エンタープライズ向けプライベート環境エージェント実行。アーキテクチャ設計セクションへの追記提案。
+
+#### 新規発見ソース候補
+- **note.com/sabori_keiri**: 「freeeとマネーフォワード、MCP対応を比較してみた」著者。会計×AI 実践の現場視点（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-06-28（明日: Fable 5 一般解除監視継続）
+注目点:
+① **Fable 5 一般解除確認**: Mythos 5 限定解除を受けて交渉継続中。isfableback.org 等でリアルタイム監視。
+② **v2.1.196 以降のリリース確認**: hook matchers 変更の影響等のバグ修正が出る可能性。
+③ **マネーフォワード AI Cowork 追加情報**: 7月提供開始に向けて技術詳細・プライシングが出る可能性。
+④ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 5 日経過）。
+⑤ **Claude on Apple Foundation Models 詳細**: iOS 27 等での実装方法・API 仕様の公式ドキュメント確認。
+
+---
 ## [2026-06-26] デイリーレポート
 
 ### 内部知見（機能A）
