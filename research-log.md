@@ -1,3 +1,104 @@
+## [2026-06-28] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 6 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御・Agent deny rules 修正・sandbox.credentials・org-configured model restrictions の評価項目追記提案が未確認のまま継続（6/15〜6/28 提案、全 21 項目）。
+- **TBP-001 新規照合①（マネーフォワード AI Cowork — Claude Agent SDK × MCP 採用）**: マネーフォワードが 2026年7月 より AI Cowork を提供開始（4月発表）。技術基盤に Claude Agent SDK + MCP を採用。バックオフィス（会計・労務・法務）を自律遂行する AI エージェントサービス。Draft & Approve（AI下書き→人間承認）・AI 監査ログ・ガードレール機能を搭載。TBP-001「外部 AI サービスのガバナンス設計」評価項目に「エージェント系サービスの Draft & Approve パターン」を追記する材料。
+- **TBP-001 新規照合②（Claude Code v2.1.195 — pkill regex over-matching セキュリティ問題）**: GitHub issue #72153 より、Auto-Classifier が危険な `pkill -f` コマンドを hidden regex over-matching で許可してしまうバグが報告（2026-06-28）。allowlist/denylist ルールの regex が over-match するリスクは TBP-001「最小権限で開始」の重要な実装注意点として記録。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- Claude Code GitHub Releases: https://github.com/anthropics/claude-code/releases（WebFetch）
+- Claude Code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- WebSearch: Anthropic Claude announcement June 28 2026
+- WebSearch: Claude Code new features update June 28 2026
+- WebSearch: 会計 AI 経理 自動化 freee マネーフォワード 2026年6月28日
+- WebSearch: Claude Code Zenn Qiita 新着記事 2026年6月28日
+- WebSearch: マネーフォワード AI Cowork Claude Agent SDK MCP 2026年7月
+- WebSearch: Claude Managed Agents sandbox MCP private 2026年6月
+- WebSearch: Claude Corps Anthropic fellowship program 2026
+
+#### 🔴 即座に適用すべき事項
+
+**① [Bug] pkill -f コマンドの Auto-Classifier 危険 regex over-match（GitHub #72153, 2026-06-28）**
+- Auto-Classifier が `pkill -f` などの危険なコマンドを hidden regex over-matching によって誤って許可してしまうバグが報告。
+- Research Hub の Worker や Supabase Edge Function 経由のタスクでは直接影響しないが、Routines でシェルコマンドを allowlist に登録している場合、regex の over-match リスクを認識しておく必要あり。
+- **推奨アクション**: `.claude/settings.json` の allow パターンを正規表現的に確認し、予期しないコマンドが許可されていないか見直す。
+
+**② Claude Code Desktop が Fable 5 停止後に EPERM エラーでクラッシュ（GitHub #72157, 2026-06-28）**
+- Fable 5 停止（6/12）後、Claude Code Desktop が EPERM エラーでクラッシュするバグが確認。
+- Fable 5 が未解除の現在（6/28 時点、一般向けは未確定）も続いている可能性あり。
+- **推奨アクション**: Claude Code Desktop を使用している場合は `claude --version` で最新版（v2.1.195）への更新を確認。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① マネーフォワード AI Cowork（2026年7月提供開始）**
+- バックオフィス業務（会計・労務・法務）を自律遂行する AI エージェントサービス。Claude Agent SDK + MCP 採用。
+- Draft & Approve パターン（AI 下書き→人間最終承認）とガードレール機能・AI 監査ログを搭載。
+- Tak の本業（経理部長）に直結。7月提供開始後に評価。
+- 参照: [マネーフォワード プレスリリース](https://corp.moneyforward.com/news/release/service/20260407-mf-press-1/)
+
+**② Claude Code v2.1.195 の `/plugin marketplace update` + `/reload-plugins` バグ（GitHub #72162）**
+- プラグインマーケットプレイス更新後、`/reload-plugins` を実行しても変更が反映されない問題（macOS）。
+- Research Hub の Routines でプラグインを使用している場合に影響する可能性あり。
+- v2.1.196 以降での修正を待つか、workaround として Claude Code 再起動が必要な可能性。
+
+**③ Claude Code 6月新機能 — ネストサブエージェント5段階 + /cd コマンド**
+- Zenn/Qiita での解説記事が活発（kai_kou 氏 Qiita 記事）。ネストサブエージェントの5段階対応と `/cd` コマンドによる自律開発実現が主なトピック。
+- Research Hub の deep-research-runner や auto-research-collect でサブエージェントを活用する場合の参考に。
+- 参照: [Qiita 記事（Claude Code 6月新機能）](https://qiita.com/kai_kou/items/81cee59a85d82535e986)
+
+#### 🟢 参考情報
+
+**① Claude Corps — Anthropic $150M フェローシップ（2026-06-12〜17 発表）**
+- Anthropic が非営利団体向けに 1,000人の AI フェローを配置する $150M フェローシップを開始。
+- 報酬 $85,000/年（1年間）。初回 100 人は 2026-10-19 開始。応募締切 7/17。
+- 対象: 18歳以上・フルタイム就業 2年未満。米国非営利団体への AI 実装支援。
+- Research Hub や Tak 自身の AI 活用との直接接点は少ないが、Anthropic の社会的取り組みとして記録。
+- 参照: [Anthropic Claude Corps](https://www.anthropic.com/news/claude-corps)
+
+**② Claude Managed Agents — 自己ホスト型 Sandbox + MCP Tunnels（2026-05-26 Code with Claude London 発表）**
+- 自己ホスト型 Sandbox（パブリックベータ）: エージェントループは Anthropic インフラ、ツール実行は自社環境。Cloudflare/Daytona/Modal/Vercel 等で管理可能。
+- MCP Tunnels（リサーチプレビュー）: プライベートネットワーク内の MCP サーバーへ外部公開なしでアクセス可能。
+- Research Hub の Worker/Supabase 構成でのセキュリティモデル強化に参考になる設計思想。
+- 参照: [Anthropic ブログ](https://claude.com/blog/claude-managed-agents-updates)
+
+**③ freee「AIおまかせ明細取得」β版提供開始（2026-03-26 発表）**
+- PDF 等からの仕訳元データ（明細）を AI で自動作成するβ機能。
+- マネーフォワード AI Cowork との比較軸として、freee の AI 戦略の方向性を示す。
+
+**④ Zenn/Qiita 注目記事（2026年6月後半）**
+- 「Claude Codeを"優秀な新卒部下"として使い倒す」（Zenn, yoshiaki0217）: 個人開発爆速化の全ワークフロー。
+- 「Claude Codeと Zenn 執筆環境を一から育てた記録」（Zenn, shimo4228）: pre-commit hook から learnings スキルへの自動抽出フロー。
+- 「コードを書けない私が、AIに『チーム』を持たせるまで」（Qiita, saitoko）: SE歴26年の管理職が Claude Code で 9体 AI 編集部を構成した実践録。
+
+#### references.md 更新提案
+変更なし。今回の外部情報は Claude Code のバグ修正・フェローシップ・会計系サービス更新が中心であり、Anthropic 公式ベストプラクティスドキュメントの変更は確認されていない。
+
+#### 新規発見ソース候補
+- [AI Agent Journal](https://ai-agent.platina-life.com/) — マネーフォワード AI Cowork 等の国内 AI エージェントニュースに詳しい。追加評価候補。評価目安: ⭐⭐⭐
+- [AI/DX Media (image-pit.com)](https://media.image-pit.com/) — Claude Agent SDK × 国内ビジネス事例の解説記事あり。評価目安: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-06-29（翌日）。マネーフォワード AI Cowork の正式提供開始状況（7月予定）と Fable 5 一般解除動向を引き続き監視。
+
+---
+
 ## [2026-06-27] デイリーレポート
 
 ### 内部知見（機能A）
