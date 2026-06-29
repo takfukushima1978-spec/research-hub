@@ -1,3 +1,128 @@
+## [2026-06-29] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 7 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御・hook matcher 変更・Sandbox OOM 等の評価項目追記提案が未確認のまま継続（6/15〜6/28 提案、全 25 項目）。
+- **TBP-001 新規照合①（Claude in Microsoft Foundry GA — 2026-06-29）**: Azure 上で Claude Opus 4.8 + Haiku 4.5 が Messages API で GA。エンタープライズ向けに Azure の認証・課金・ガバナンスコントロールを使用して Claude を利用可能に。TBP-001「外部 AI サービスのガバナンス設計」にエンタープライズ環境でのマルチクラウド接続パターン（Azure Foundry 経由の Claude Code 設定ドキュメントも公開）を追加する材料として記録。
+- **TBP-001 新規照合②（Issue #72367 — Sandbox OOM バグ、2026-06-29 新着）**: Sandbox が workspace を再帰的に node_modules まで列挙してメモリ枯渇（OOM）になるバグ（area:sandbox, perf:memory, has repro, linux）。Research Hub の Routine は Linux サンドボックス上で動作するため、長時間タスクでのメモリ枯渇リスクが存在する。TBP-001「外部ツール導入審査」の「実行環境リソース上限」評価項目として追記を提案。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- WebSearch: Anthropic Claude announcement news June 29 2026
+- WebSearch: Claude Code v2.1.196 v2.1.197 release changelog June 29 2026
+- WebSearch: Fable 5 Mythos 5 復旧 status June 29 2026
+- WebSearch: Claude Azure Microsoft Foundry generally available June 2026
+- WebSearch: 会計 AI 経理 自動化 マネーフォワード freee バクラク 2026年6月29日
+- WebSearch: Claude Code Zenn Qiita 新着記事 2026年6月29日
+
+#### 🔴 即座に適用すべき事項
+
+**① Issue #72367 — Sandbox が node_modules を再帰列挙 → メモリ枯渇 OOM（2026-06-29 新着、area:sandbox, perf:memory, has repro, linux）**
+- Sandbox が workspace を再帰的に列挙する際に node_modules を含めてしまいメモリ上限に到達する深刻なバグ（再現確認済み）。
+- **Research Hub への影響**: auto-research-collect・deep-research-runner 等の Routine が Linux サンドボックス上で動作するため、node_modules を含むディレクトリ構造が存在する場合に Routine が途中終了するリスク。
+- **推奨アクション**: Routine 内で使用しているディレクトリに node_modules が存在していないか確認。worker/ ディレクトリの node_modules が sandbox 起動時に列挙対象になっていないかチェック推奨。修正パッチリリース（v2.1.196 以降）を監視。
+
+**② Claude in Microsoft Foundry が本日 GA（2026-06-29）**
+- Claude Opus 4.8 と Haiku 4.5 が Azure 上で一般提供開始（Messages API）。
+- 課金: Claude Consumption Units (CCU) として Azure 請求に統合（MACC ドローダウン対応）。
+- エンタープライズ向けに Azure の認証・ネットワーク・ガバナンス・データレジデンシー（US データゾーン選択可）が使用可能。
+- **Research Hub への直接影響**: 現在 Anthropic Routines で直接利用しているため Azure Foundry へ移行の必要はない。ただし将来的な企業環境での Claude Code 利用拡大シナリオの参考として記録。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Fable 5 の 7 月初旬復旧への準備（6/29 最新報道）**
+- Trump 政権が Fable 5 の全般解除に向けて準備中との報道（Axios・GIGAZINE 6/29）。Pentagon・NSA の正式クリアは未取得だが 7 月初旬の解除が有力視される。
+- Mythos 5 は 6/26〜27 に US 重要インフラ組織向けに限定解除済みで、次のステップは一般向け Fable 5 解除。
+- **推奨アクション**: 復旧直後に auto モードで Fable 5 が選ばれ Agent SDK クレジット消費量が急増する可能性。org-configured model restrictions（v2.1.187）で一時ブロックする準備を事前に行うか、消費量監視を強化しておく。isfableback.org / Anthropic 公式 X（@AnthropicAI）でリアルタイム監視推奨。
+
+**② Claude Code on Microsoft Foundry ドキュメント確認（6/29 新着）**
+- Azure 環境でのエンタープライズ向け Claude Code 設定方法が公式ドキュメントとして公開（code.claude.com/docs/en/microsoft-foundry）。
+- Tak の現環境（Anthropic Routines）への直接影響はないが、社内展開や組織向け Claude Code 利用を検討する際の参考に。
+
+**③ Issue #72359 — Project memory & session context がリポジトリのリネーム/移動で孤立するバグ（2026-06-29 新着）**
+- .claude/ ディレクトリの project memory とセッションコンテキストが、リポジトリのディレクトリを rename/move したときにサイレントに切り離されるバグ（enhancement）。
+- research-hub や My-Profile-and-Memory のディレクトリを移動した場合の注意点として記録。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-06-29）**
+- Issue #72367: Sandbox OOM（area:sandbox, perf:memory, has repro, linux）← 🔴参照
+- Issue #72366: Feature Request — 左サイドバーに Pinned / Current Works / Recents を追加（area:ui, enhancement）
+- Issue #72365: Cyber block false positive — H.264 ビデオデコードパイプラインのデバッグが誤ブロック（area:model, bug, linux）
+- Issue #72364: Feature Request — Agent 完了/停止時間の表示改善（area:agent-view, area:tui, enhancement）
+- Issue #72362: Feature Request — 単一プロンプト向けワンショットモデルオーバーライド（area:model, enhancement）
+- Issue #72360: TUI fullscreen が iTerm2 でスクロールバックを妨害するバグ（area:tui, bug, macos）
+- Issue #72359: Project memory がリポジトリリネーム/移動で孤立（memory, enhancement）← 🟡③参照
+- Issue #72358・#72357・#72355・#72354: Cyber block false positive 複数件（ドローン飛行 UI、ffmpeg パラメータ調整 — 重複含む、area:model, bug）
+- Issue #72356: Agent execution loop が corrupted state に（area:agents, bug, needs-repro, intellij, macos）
+- **Research Hub の Routine 動作への直接影響**: #72367（Sandbox OOM）が最も関連度高い。
+
+**Fable 5 / Mythos 5 状況（17 日目、2026-06-29 時点）**
+- **Fable 5（一般向け）**: 依然停止継続。6/12 の輸出規制指令の効力が継続中（刑事・民事罰則付き）。
+- **Mythos 5**: 6/26〜27 の Lutnick 書簡により、US 重要インフラ組織・US 政府機関・Anthropic 外国人スタッフに限定解除（変更なし）。
+- **次のステップ**: Pentagon・NSA の正式クリアが出れば Fable 5 の一般向け解除へ。Trump 政権が 7 月初旬の解除に向けて準備中との報道（Axios 6/27、GIGAZINE 6/29）。
+- 参照: [GIGAZINE](https://gigazine.net/gsc_news/en/20260629-anthropic-fable-5-return-soon/) / [Axios 6/27](https://www.axios.com/2026/06/27/anthropic-fable-5-return-soon) / [TechTimes 6/28](https://www.techtimes.com/articles/319213/20260628/claude-fable-5-still-offline-us-clears-mythos-5-critical-infrastructure.htm)
+
+**Claude Code バージョン（6/29 時点）**
+- 最新バージョンは v2.1.195（6/26 リリース）から変更なし。v2.1.196 以降は本日時点で未確認。
+- チェンジログ: https://code.claude.com/docs/en/changelog で確認済み。
+
+**Claude in Microsoft Foundry GA（2026-06-29）詳細**
+- Anthropic と Microsoft の協業拡大として GA 発表。Claude Opus 4.8 + Haiku 4.5 対応（Messages API）。
+- プロンプトキャッシング・extended thinking も利用可能。
+- Claude Code の Foundry 向け設定ドキュメントも同日公開（code.claude.com/docs/en/microsoft-foundry）。
+- 参照: [Anthropic ブログ](https://claude.com/blog/claude-in-microsoft-foundry) / [Azure ブログ](https://azure.microsoft.com/en-us/blog/claude-in-microsoft-foundry-is-now-generally-available/)
+
+**会計×AI トレンド（2026-06-29 時点）**
+- 本日固有の新発表なし（継続トレンド）。
+- freee MCP・マネーフォワード AI Cowork（7月提供予定）・バクラク AIエージェントのトレンドが継続。
+- 経理 AI の「3階層モデル（SaaS + AI + 業務フロー）」実装ガイドが充実（aipicks.jp, firecracker.jp 等で解説記事増加）。
+- freee MCP 完全ガイド（hatenabase.jp/blog/freee-mcp/）が実務派に好評。Claude Code との統合事例として記録。
+
+**Zenn / Qiita 日本語コミュニティ（2026-06-29 時点）**
+- 本日固有の新記事は確認できず（6/29 時点では前日・前週の記事が引き続き参照多数）。
+- 参照継続: 「Claude Code と Zenn 執筆環境を一から育てた記録」（shimo4228）・「Claude Code を"優秀な新卒部下"として使い倒す」（yoshiaki0217）。
+- v2.1.195 の日本語解説記事は今後出てくる見込み。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/28 提案から継続、全 25 項目）:
+1〜25: 前回レポート（6/28）の references.md 継続未確認項目（1〜21 + 22〜25）を引き継ぎ。
+
+**新規追加提案（2026-06-29）**:
+26. **Claude in Microsoft Foundry GA（6/29）**: Azure 上での Claude Opus 4.8 + Haiku 4.5 GA。エンタープライズ向け Claude 利用の設定・課金（CCU）を references.md のエンタープライズ展開セクションへ追記提案。
+27. **Claude Code on Microsoft Foundry ドキュメント（6/29）**: code.claude.com/docs/en/microsoft-foundry が新設。Foundry 経由の Claude Code 設定方法として参照セクションへの追記提案。
+
+#### 新規発見ソース候補
+- [capacityglobal.com/news](https://capacityglobal.com/news/fable5-return-imminent/) — Fable 5 / Mythos 5 政策動向の速報。地政学的リスク追跡として評価候補: ⭐⭐⭐
+- [isfable5back.com](https://isfable5back.com/) — Fable 5 復旧状況リアルタイムチェッカー（isfableback.org と別サイト）。評価候補: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-06-30（翌日）。Fable 5 一般向け解除の動向（7月初旬見込み）・v2.1.196 リリース確認・Issue #72367（Sandbox OOM）パッチ対応を監視。
+注目点:
+① **Fable 5 一般向け解除確認**: Trump 政権の 7 月初旬解除見込みを受けて翌日も監視継続。
+② **v2.1.196 以降リリース確認**: Sandbox OOM (#72367) 等のバグ修正パッチを監視。
+③ **マネーフォワード AI Cowork 7 月提供開始**: 7 月初旬の提供開始情報を記事化できるか確認。
+④ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 7 日経過）。
+⑤ **Azure Foundry + Claude Code 活用事例**: GA 直後の初期事例・ユーザーレポートを確認。
+
+---
 ## [2026-06-28] デイリーレポート
 
 ### 内部知見（機能A）
