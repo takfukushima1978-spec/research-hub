@@ -1,3 +1,138 @@
+## [2026-06-30] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 8 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 課金体系変更・地政学的リスク・デストラクティブ操作自動防御・hook matcher 変更・Sandbox OOM 等の評価項目追記提案が未確認のまま継続（6/15〜6/29 提案、全 27 項目）。
+- **TBP-001 新規照合①（Claude Code v2.1.197 — Sonnet 5 がデフォルトモデルに変更、2026-06-30）**: auto モードで選ばれるモデルが Sonnet 4.6 → Sonnet 5 に変更。プロモーション価格は〜8/31 まで $2/$10 per Mtok（その後 $3/$15）。Research Hub の Routine で auto モードが有効な場合はコスト試算の更新が必要。TBP-001「課金コスト予測困難性」「外部ツールのモデル変更リスク」評価項目への追記材料として記録。なお Priority Tier は Sonnet 5 非対応。
+- **TBP-001 新規照合②（Claude Apps Gateway — 2026-06-30）**: Amazon Bedrock・Google Cloud 向けの Claude Code 自己ホスト型コントロールプレーン。企業向けに SSO・一元化ポリシー・ロールベースアクセス・ユーザー別コスト追跡・支出上限を設定可能。TBP-001「外部 AI サービスのガバナンス設計」評価項目に「コントロールプレーン型ガバナンスの選択肢」として追記を提案。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- WebSearch: Anthropic Claude announcement news June 30 2026
+- WebSearch: Claude Code v2.1.197 Sonnet 5 default model June 30 2026 changelog
+- WebSearch: anthropics claude-code GitHub issues new June 30 2026
+- WebSearch: Claude Science Anthropic life sciences drug discovery June 30 2026
+- WebSearch: Claude Code Sonnet 5 Zenn Qiita 新着記事 2026年6月30日
+- WebSearch: 会計 AI 経理 自動化 freee マネーフォワード バクラク 2026年6月30日
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.197（2026-06-30 リリース）— Claude Sonnet 5 がデフォルトモデルに**
+- **Claude Sonnet 5 がデフォルトモデルに設定**（最大エージェント特化 Sonnet）:
+  - ネイティブ 1M トークンコンテキストウィンドウ・128K max output tokens
+  - プロモーション価格: 〜2026/08/31 まで $2/$10 per Mtok（以降 $3/$15）
+  - Sonnet 4.6 と同等のツール・プラットフォーム機能（Priority Tier のみ非対応）
+  - 計画立案・ブラウザ/ターミナル操作・自律実行が数ヶ月前の大型モデル水準に
+- **v2.1.196 の主要機能（6/29 リリース）**（前回レポートから詳細補足）:
+  - 組織デフォルトモデル（管理者が Console で設定可）
+  - セッションのデフォルト名（起動時に読みやすい名前を自動生成）
+  - ファイル添付の Cmd/Ctrl+クリック → Finder/エクスプローラーで即表示
+  - バックグラウンドセッション信頼性向上（プロセス停止/再起動後も長実行継続）
+  - ストリーム監視（5分間無応答で自動リトライ）がデフォルト全プロバイダーで有効
+- **Research Hub への影響**: Routine が auto モードで動作する場合、Sonnet 5 が選択される可能性がある。プロモーション価格期間中（〜8/31）はコスト影響が小さいが、9月以降は $3/$15 に上昇するため事前の消費量試算が必要。
+
+**② Issue #72518 — "Claude Code にスパイウェアが埋め込まれた" 疑惑バグ（2026-06-30、area:security, macOS）**
+- タイトルは過激だが、Anthropic が Claude Code に telemetry または予期しない通信を組み込んでいるという疑惑のバグ報告（macOS）。
+- **Research Hub への影響**: Routine のクラウド sandbox 環境では直接影響しないが、ローカル環境での Claude Code 利用時に参照すべき情報として記録。Anthropic の公式回答（issue close 理由等）を次回確認推奨。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Claude Sonnet 5 の Routine での性能評価**
+- 最もエージェント機能に特化した Sonnet モデルとして、deep-research-runner や auto-research-collect でのタスク完結率・品質が向上する可能性。
+- プロモーション価格期間（〜8/31）中に積極的に利用し、コスト対効果を測定しておくことを推奨。
+- 参照: [Anthropic ブログ](https://www.anthropic.com/news/claude-sonnet-5) / [TechCrunch](https://techcrunch.com/2026/06/30/anthropic-launches-claude-sonnet-5-as-a-cheaper-way-to-run-agents/)
+
+**② Claude Apps Gateway の活用検討（Amazon Bedrock / Google Cloud 向け）**
+- Claude Code 向けの企業自己ホスト型コントロールプレーン（SSO・ポリシー・コスト追跡・支出上限）。
+- Research Hub の Routine コスト管理を強化する手段として、将来的な移行オプションとして記録。
+- 参照: (Anthropic 公式発表、2026-06-30)
+
+**③ Fable 5 一般解除の継続監視（6/30 時点）**
+- 6/29 報告では Trump 政権が「7月初旬の解除に向けて準備中」との報道（Axios・GIGAZINE）。
+- 6/30 現在、正式解除のアナウンスは未確認。isfableback.org / @AnthropicAI で継続監視推奨。
+- 解除後は v2.1.197 で Sonnet 5 と Fable 5 の auto 選択がどう変わるかを確認する必要あり。
+
+#### 🟢 参考情報
+
+**Claude Science — ライフサイエンス向けフラッグシップ新製品（2026-06-30 発表）**
+- Anthropic が「Claude Science」を発表。60以上の科学データベース・計算ツールを統合したワークベンチ。
+- タンパク質構造予測・薬物毒性予測・薬剤再利用・創薬など、計算生物学・製薬分野に特化。
+- 位置付け: Claude Code がプログラミングでやったことを生命科学でも実現する製品。
+- Dario Amodei CEO: "Claude Science will do the same for life sciences as Claude Code did for programming."
+- Anthropic は社内で「顧みられない疾患」向け薬物探索プログラムも同日開始。
+- 対象: Beta として Pro/Max/Team/Enterprise ユーザー向け（macOS・Linux）。
+- **Research Hub への直接影響**: なし（Takの本業との直接接点は少ないが、Anthropic の製品拡大戦略として記録）。
+- 参照: [Bloomberg](https://www.bloomberg.com/news/articles/2026-06-30/anthropic-releases-claude-science-for-automating-research) / [CNBC](https://www.cnbc.com/2026/06/30/anthropic-launches-ai-drug-discovery-program-claude-science.html) / [MIT Technology Review](https://www.technologyreview.com/2026/06/30/1139987/claude-science-is-anthropics-newest-flagship-product/)
+
+**Anthropic × カリフォルニア州パートナーシップ（2026-06-30）**
+- カリフォルニア州が Anthropic と協定を締結。州機関・市・郡に対し Claude 50% 割引 + 無料ワークフォーストレーニング・技術支援を提供。
+- **Research Hub への直接影響**: なし。ただし公共機関向け AI 展開の参考情報として記録。
+
+**GitHub Issues 新着（2026-06-30）**
+- Issue #72612: API/agents バグ（macOS）
+- Issue #72611: TUI 改善要望（enhancement）
+- Issue #72609: API バグ（macOS、needs-repro）
+- Issue #72608: MCP 改善要望（enhancement）
+- Issue #72607: browser/Chrome 拡張 duplicate バグ（macOS）
+- Issue #72606: agents 改善要望（VS Code）
+- Issue #72605: auth/CLI バグ
+- Issue #72518: [BUG] "spyware" 疑惑（← 🔴② 参照）
+- **Research Hub の Routine 動作への直接影響**: #72518（security）が参考情報として最も関連度高い。他は軽微な bug/enhancement。
+
+**Claude Sonnet 5 国内メディア反応（2026-06-30 時点）**
+- ITmedia が即日報道（「Sonnet 5 公開──停止中のミュトスとは別に Opus 級」）。
+- Zenn/Qiita の詳細解説記事は今後出てくる見込み（Sonnet 5 発表が本日夕方のため）。
+- 参照: [ITmedia（一部 7/1 付）](https://www.itmedia.co.jp/news/articles/2607/01/news057.html) / [ai-heartland.com](https://ai-heartland.com/news/news-claude-sonnet-5-release/)
+
+**会計×AI トレンド（2026-06-30 時点）**
+- 本日固有の新発表なし（継続トレンド）。
+- freee MCP・マネーフォワード AI Cowork（7月提供予定）・バクラク AIエージェントのトレンドが継続。
+- freee × Claude Code 実践ガイド（firecracker.jp/blog/freee-claude-code）が実務派に好評。
+- 経理 AI 導入効果: 仕訳入力 80% 削減・請求書処理 70% 短縮・月次決算 5 営業日早期化が標準報告値として定着。
+
+**Fable 5 / Mythos 5 状況（6/30 時点）**
+- 6/29 時点で「Trump 政権が 7月初旬の一般解除に向けて準備中」（Axios・GIGAZINE）。
+- 6/30 現在、正式解除アナウンスは未確認。Sonnet 5 がデフォルトモデルになったことで、Fable 5 復旧後の auto 選択ロジックがどう変わるかも要確認。
+
+#### references.md 更新提案
+
+継続未確認項目（6/15〜6/29 提案から継続、全 27 項目）:
+1〜27: 前回レポート（6/29）の references.md 継続未確認項目（1〜25 + 26〜27）を引き継ぎ。
+
+**新規追加提案（2026-06-30）**:
+28. **Claude Code v2.1.197 — Claude Sonnet 5 がデフォルトモデルに**: references.md の「デフォルトモデル」「コスト試算」セクションへの追記提案。プロモーション価格（〜8/31: $2/$10, 以降: $3/$15）と Priority Tier 非対応を記載。
+29. **Claude Apps Gateway（Bedrock/GCP 向け）**: 企業向け Claude Code コントロールプレーン（SSO・ポリシー・コスト追跡・支出上限）。ガバナンス設計セクションへの追記提案。
+30. **Claude Science（2026-06-30）**: ライフサイエンス向け新製品。60+ 科学 DB 統合ワークベンチ。Anthropic 製品ロードマップセクションへの追記提案。
+
+#### 新規発見ソース候補
+- [ai-heartland.com/news](https://ai-heartland.com/news/news-claude-sonnet-5-release/) — Claude Sonnet 5 の全仕様解説（日本語・詳細）。評価候補: ⭐⭐⭐
+- [theaicronicle.com](https://theaicronicle.com/en/news/research/anthropic-claude-science-pharma-research) — Claude Science の製薬研究への活用解説。評価候補: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-07-01（翌日）。Fable 5 一般解除動向・Claude Sonnet 5 の Routine での実挙動確認・Issue #72518 の Anthropic 公式回答を監視。
+注目点:
+① **Fable 5 一般解除確認**: Trump 政権「7月初旬」見込み。7/1 が最初の観測ポイント。解除後は Sonnet 5 + Fable 5 の auto 選択ロジックを確認。
+② **Claude Sonnet 5 の Routine での挙動確認**: v2.1.197 更新後、auto-research-collect 等の Routine で Sonnet 5 が選ばれているか確認。コスト影響を試算。
+③ **Issue #72518 の続報**: Anthropic の公式回答（close 理由・security 説明）を確認。
+④ **マネーフォワード AI Cowork 7月提供開始**: 正式な提供開始アナウンスがあれば即時記事化推奨。
+⑤ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 8 日経過）。
+
+---
 ## [2026-06-29] デイリーレポート
 
 ### 内部知見（機能A）
