@@ -1,4 +1,138 @@
-## [2026-06-30] デイリーレポート
+## [2026-07-01] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 9 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 前回（6/30）の全未確認項目（1〜30）を引き継ぎ継続。
+- **TBP-001 新規照合①（Fable 5 復活 — 2026-07-01）**: Fable 5 が 7/1 より全ユーザー向けに復旧（6/12〜6/30 の 19 日間停止後）。auto モードで Fable 5 が選択されるリスクが現実化。7/7 まで週次利用量 50% 含む、7/8 以降は使用クレジット制（$10/$50 per Mtok）に移行。TBP-001「課金体系変更」「地政学リスク」評価項目追記が特に必要な状況に。Research Hub の Routine が auto モードで動作する場合、7/8 以降コスト急増リスクあり。org-configured model restrictions（v2.1.187）で制御可能。
+- **TBP-001 新規照合②（ジェイルブレイクスコアリングフレームワーク — 2026-07-01）**: Anthropic・Amazon・Microsoft・Google 共同でジェイルブレイク重大度スコアリングフレームワークを提案。4軸（能力向上度・能力範囲・武器化容易性・発見可能性）。TBP-001「外部 AI ツールの安全性評価」に業界標準スコアリング指標として追記する材料。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- WebSearch: Anthropic Claude Code changelog July 2026 new features
+- WebSearch: Anthropic news announcement July 1 2026
+- WebSearch: Claude Code GitHub issues new July 2026
+- WebSearch: Fable 5 Claude Code July 1 2026 available plans pricing
+- WebSearch: Anthropic jailbreak scoring framework Amazon Microsoft Google July 2026
+- WebSearch: 会計 AI 経理自動化 マネーフォワード freee バクラク 2026年7月
+- WebSearch: Claude Code Fable 5 Zenn Qiita 2026年7月1日
+- WebSearch: Claude Code security flaw GitHub Action July 2026 vulnerability
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Fable 5 復活（2026-07-01）— 全ユーザー向け再展開**
+- **7/1 より全ユーザー向けに Fable 5 が復旧**（6/12〜6/30 の 19 日間停止後）。米商務省が 6/30 に輸出規制を解除。
+- **利用可能プランと期限（重要）**:
+  - Pro / Max / Team / Select Enterprise: 7/7 まで週次使用量の最大 **50%** が含まれる（グレース期間）
+  - **7/8 以降**: 使用クレジット制（$10/$50 per Mtok）に完全移行
+  - 正規料金: 入力 $10/Mtok、出力 $50/Mtok（プロンプトキャッシュ 90% 割引）
+- **新しいサイバーセキュリティ分類器**: Fable 5 復旧と同時に追加。ジェイルブレイク耐性強化済み。
+- **Research Hub への影響**:
+  - auto モードの Routine は 7/1 から Fable 5 が選択される可能性あり
+  - 7/7 まではグレース期間内だが、7/8 以降のコスト急増に要注意
+  - **推奨対応**: org-configured model restrictions（v2.1.187）で Fable 5 選択を制御するか、グレース期間中にコスト影響を測定
+- 参照: Al Jazeera / NBC News / 9to5Mac（2026-07-01）
+
+**② Claude Code GitHub Actions 重大脆弱性（継続確認 — 修正済み v1.0.94）**
+- GMO Flatt Security (RyotaK) 発見。prompt injection で CI/CD secrets 窃取・OIDC トークン取得・悪意ある push が可能だった脆弱性。
+- **claude-code-action v1.0.94 で修正済み**（6/17 報告から継続確認）。
+- **Research Hub への影響**: research-hub で Claude Code GitHub Actions を使用している場合は v1.0.94 以上を確認推奨。
+- 参照: The Hacker News / flatt.tech
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① Fable 5 の Routine での動作確認とコスト測定（7/1〜7/7 グレース期間中）**
+- 7/7 まではグレース期間内で追加コスト発生なし。この期間に auto モードでの Fable 5 選択頻度・品質・タスク完結率を測定。
+- deep-research-runner・auto-research-collect での品質向上を実測し、7/8 以降の $10/$50 コスト対効果を判断する材料に。
+- org-configured model restrictions（v2.1.187）で制御しながら段階的に試すアプローチが安全。
+
+**② マネーフォワード AI Cowork の 7 月開始を監視・記事化**
+- 7 月提供開始が確認（Claude Agent SDK + MCP 採用のバックオフィス AI サービス）。
+- Tak の本業（経理部長）に直結する国内初の大型 Anthropic エージェント基盤採用事例。
+- Research Hub の auto-research-collect の「会計×AI 重要発表」枠で即時記事化推奨。
+
+**③ ジェイルブレイクスコアリングフレームワークの詳細確認（Anthropic + 業界共同）**
+- Anthropic・Amazon・Microsoft・Google 共同で業界統一ジェイルブレイク重大度スコアリングを提案中。
+- 4軸（能力向上度・能力範囲・武器化容易性・発見可能性）。セキュリティ評価の標準化が進む可能性。
+- TBP-001 の安全性評価基準のアップデート材料として詳細を追跡。
+
+#### 🟢 参考情報
+
+**Claude Code 最新バージョン状況（7/1 時点）**
+- 最新: v2.1.197（6/30 リリース）。主要機能:
+  - Claude Sonnet 5 がデフォルトモデル（前回レポート済み）
+  - `sandbox.credentials` 設定（クレデンシャルファイルブロック）
+  - org-configured model restrictions（モデルピッカー・`--model` 等）
+  - マウスクリックサポート（選択メニューのフルスクリーンモード）
+  - ストリーミング idle watchdog がデフォルト全プロバイダーで有効（5分無応答→自動リトライ）
+  - `--resume` バグ修正（`-p` 実行でモデルターンなしの場合の "No conversation found" 修正）
+  - `--json-schema` と `agent({schema})` 構造化出力の信頼性向上
+
+**GitHub Issues 新着（2026-07-01）**
+- Issue #72894: Claude Code Routines on web（スケジュール + webhook タスク）— Routine 関連の改善要望（最も関連度高い）
+- Issue #72892: Claude Code 動作に関する質問
+- Issue #72891: TUI keybindings 強化要望（enhancement）
+- Issue #72890: VS Code on Windows のバグ
+- Issue #72889: macOS バグ
+- Issue #72888: Anthropic API on macOS（duplicate）
+
+**Fable 5 / Mythos 5 復旧詳細（2026-07-01）**
+- Fable 5: 全ユーザー向けに 7/1 より復旧（Claude.ai / Claude Platform / Claude Code / Claude Cowork）
+- Mythos 5: US 限定解除の状態は継続（一般向け Mythos 5 の扱いは未確認）
+- 参照: The Hacker News
+
+**会計×AI トレンド（2026-07-01 時点）**
+- **マネーフォワード AI Cowork（2026年7月）**: 7 月提供開始。経理・労務・法務を Claude Agent SDK + MCP で自律遂行。「MCP 設定不要」が差別化点。AI エージェント 4 本命（freee / マネーフォワード / バクラク / TOKIUM）の中で大型リリース。
+- **freee**: バックオフィス全体をカバーする SaaS エコシステム継続展開。
+- **バクラク AIエージェント**: バックオフィス特化型。API 経由の業務実行・承認フロー組み込みが特徴。
+
+**Zenn / Qiita 日本語コミュニティ（2026-07-01）**
+- 「Claude Fable 5 を 1 日使ってみて」（Qiita, yo_arai 氏）— Fable 5 復旧直後の実践レポート（7/1 当日公開）
+- 「Claude Fable 5 を解説。性能・料金・セーフガードの仕組みまとめ」（Zenn, sunagaku 氏）
+- ITmedia: 「Claude Fable 5、日本で明日再開もサブスクで使えるのは「1週間限定」」
+
+**参考: Claude Sonnet 5 プロモーション価格（継続確認）**
+- 〜2026/08/31: $2/$10 per Mtok（プロモーション）
+- 2026/09/01 以降: $3/$15 per Mtok（通常価格）
+- 9 月以降のコスト増加に備えた消費量試算が必要
+
+#### references.md 更新提案
+
+継続未確認項目（1〜30）: 前回レポート（6/30）の継続未確認項目を引き継ぎ。
+
+**新規追加提案（2026-07-01）**:
+31. **Claude Fable 5 復旧（7/1）と料金体系**: 6/12〜6/30 の停止から復旧。7/7 まで週次利用量 50% 含む、7/8〜 $10/$50 per Mtok（キャッシュ 90% 割引）。references.md の「Fable 5 モデル ID」「停止中」注記を「7/1 より復旧、料金 $10/$50 Mtok」に更新提案。
+32. **ジェイルブレイクスコアリングフレームワーク（Anthropic + Amazon + Microsoft + Google）**: 業界統一の重大度スコアリング（4軸）を提案中。セキュリティ評価セクションへの追記提案。
+33. **Claude Sonnet 5 の 9 月以降価格上昇（$2→$3/$10→$15 per Mtok）**: プロモーション終了日（8/31）の明記と試算推奨を references.md に追記。
+
+#### 新規発見ソース候補
+- digitalapplied.com/blog — Fable 5 の 7/7 以降の使用クレジット移行ガイド。評価候補: ⭐⭐⭐
+- marktechpost.com — Fable 5 再展開 + サイバーセキュリティ分類器の詳細記事。評価候補: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-07-02（翌日）。Fable 5 復旧後の Routine 実挙動・コスト影響確認・マネーフォワード AI Cowork 7 月開始詳細を監視。
+注目点:
+① **Fable 5 の Routine 実挙動確認**: auto モードで Fable 5 が選択されているか、コスト影響を実測（7/7 グレース期間内）。
+② **マネーフォワード AI Cowork 正式提供開始アナウンス**: 正式日程・価格・プラン詳細確認。即時記事化対象。
+③ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 9 日経過）。
+④ **GitHub Actions 脆弱性 v1.0.94**: research-hub リポジトリでの GitHub Actions 使用有無の確認推奨。
+⑤ **Sonnet 5 の Routine コスト試算**: プロモーション価格期間（〜8/31）中に消費量ベースラインを確立。
+
+---## [2026-06-30] デイリーレポート
 
 ### 内部知見（機能A）
 #### 新規・更新 ADR
