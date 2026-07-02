@@ -1,3 +1,130 @@
+## [2026-07-02] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 10 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 前回（7/1）の全未確認項目（1〜33）を引き継ぎ継続。
+- **TBP-001 新規照合①（バックグラウンドエージェント自動 commit/push/PR — v2.1.198、2026-07-01）**: `claude agents` から起動したバックグラウンドエージェントがコード作業完了時に自動 commit・push・ドラフト PR を作成するようになった（従来は「入力待ちで停止」）。TBP-001「最小権限で開始」において、外部ツールの自律的 git 操作範囲が大幅拡大。Research Hub の Routine で意図しない git 操作が自動化されるリスクを評価する必要あり。allowlist/deny 設定の再確認を推奨。
+- **TBP-001 新規照合②（マネーフォワード AI Cowork 7 月提供開始確認）**: Claude Agent SDK + MCP 採用のバックオフィス AI が 2026 年 7 月より提供開始予定（本日確認）。TBP-001「外部 AI サービスのガバナンス設計」に「MCP 設定不要のエージェント型バックオフィスサービス」パターンを追記する材料として継続記録。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- WebSearch: Anthropic Claude Code new features update July 2 2026
+- WebSearch: Claude Code GitHub issues new July 2026
+- WebSearch: Anthropic news announcement July 2026 new model
+- WebSearch: Claude Code background agents auto commit push PR July 2026
+- WebSearch: Claude Code Zenn Qiita 2026年7月2日 新着
+- WebSearch: 会計 AI 経理自動化 freee マネーフォワード バクラク 2026年7月
+- WebSearch: マネーフォワード AI Cowork リリース 2026年7月
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.198（2026-07-01）— バックグラウンドエージェント自動 commit/push/ドラフト PR**
+- **最重要変更**: `claude agents` から起動したバックグラウンドエージェントがコード作業完了時に自動的に commit・push・ドラフト PR をオープンするようになった（「入力待ちで停止」から「自動実行」へ挙動変更）。
+- 安全設計: エージェントは独立した git worktree で動作しメインブランチを汚染しない。PR は draft（マージは人間が判断）。
+- 補完機能: バックグラウンドエージェント通知（`agent_needs_input` / `agent_completed`）が Notification フックで発火。
+- **Research Hub への影響**:
+  - Routine のバックグラウンドエージェントが自動的に git 操作を行う可能性あり
+  - 既存の `Bash(command:git rm*)` deny ルールと合わせて設定を見直す
+  - worktree 分離設計により通常の作業ディレクトリへの影響は軽微だが、意図しない branch/PR 生成に注意
+
+**② Claude in Chrome 一般公開（v2.1.198, 2026-07-01）**
+- Claude in Chrome が GA（一般提供）開始。ブラウザとの公式ネイティブ統合が正式リリース。
+- **Research Hub への直接影響**: なし。ただし日常ブラウジング補助として活用可能。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① マネーフォワード AI Cowork の 7 月提供開始確認・記事化（最優先）**
+- 「2026 年 7 月より提供開始予定」として 4 月発表済み。Claude Agent SDK + MCP 採用のバックオフィス AI サービス。「今月の経理業務をまとめて」と指示するだけで AI が自律処理。
+- Tak の本業（経理部長）に直結する国内 SaaS 初の大型 Anthropic エージェント基盤採用事例。
+- 本日（7/2）調査では正式提供開始アナウンスは未確認（7 月開始予定は変更なし）。正式アナウンス確認次第 auto-research-collect の「会計×AI 重要発表」枠で即時記事化推奨。
+- 参照: corp.moneyforward.com / biz.moneyforward.com/ai-cowork/
+
+**② バックグラウンドエージェント通知フック（`agent_needs_input` / `agent_completed`）の活用検討**
+- v2.1.198 で追加された Notification フックでエージェントの状態変化を外部通知可能。
+- Research Hub 応用例: deep-research-runner 完了時に Discord 通知フック連携（auto-research-morning-email の Worker /notify/discord と組み合わせ）。
+
+**③ /dataviz スキル（v2.1.198 新規追加）の活用**
+- チャート・ダッシュボード設計ガイダンス + 実行可能カラーパレットバリデータを含む新スキル。
+- Research Hub の index.html ビューワーの可視化改善候補。
+
+#### 🟢 参考情報
+
+**Claude Code v2.1.198 詳細（2026-07-01 リリース、32 変更含む）**
+- Claude in Chrome GA
+- バックグラウンドエージェントが完了時に自動 commit/push/ドラフト PR（← 🔴① 参照）
+- `agent_needs_input` / `agent_completed` Notification フック追加
+- /dataviz スキル（チャート・ダッシュボード設計）
+- Gateway 機能強化: AWS 上の Claude Platform (anthropicAws) をアップストリームプロバイダーとして追加。モデル未発見時のフェイルオーバーチェーン改善
+- Explore エージェントがメインセッションのモデルを継承（Opus 上限）
+- サブエージェントとコンテキスト圧縮が extended thinking 設定を継承
+- ネットワーク信頼性向上: ECONNRESET 等の一時的なドロップで自動リトライ（バックオフ付き）
+- バグ修正: `/diff` パネルがブランチ切替時に未更新・マークダウンテーブル全画面ラップ・AWS Platform と Mantle セッションの STS トークン期限切れ後のデッドエンド・macOS バックグラウンドエージェントのローカルネットワークホスト接続問題
+
+**GitHub Issues 新着（2026-07-02）**
+- Issue #73612: macOS バグ（再現手順待ち）
+- Issue #73611: iOS バグ
+- Issue #73610: model バグ（VS Code / Windows）
+- Issue #73609: cost / TUI バグ（macOS）
+- Issue #73608: VS Code バグ（Linux、詳細再現手順あり）
+- Issue #73607: agent-view / TUI バグ（claude agents / --bg / FleetView / daemon）
+- **Research Hub の Routine 動作への直接影響**: #73607（agent-view / --bg 関連）が最も関連度高い。
+
+**Anthropic ニュース（2026-07-01〜02 継続確認）**
+- **Fable 5 / Mythos 5 復旧継続**: 7/1 より全ユーザー向け再展開済み。7/7 までグレース期間（週次利用量の 50% 含む）、7/8 以降クレジット制（$10/$50 per Mtok、キャッシュ 90% 割引）。
+- **Claude Sonnet 5**: 引き続きデフォルトモデル（プロモーション価格〜8/31: $2/$10 per Mtok、以降 $3/$15）。
+- **Claude Science（6/30 発表）**: ライフサイエンス向け Beta 版。Pro/Max/Team/Enterprise ユーザー向け（macOS・Linux）継続展開。
+
+**会計×AI トレンド（2026-07-02 時点）**
+- **マネーフォワード AI Cowork**: 2026 年 7 月開始予定継続確認。正式リリースアナウンスは本日時点で未確認。「今月の経理業務をまとめて」と指示するだけで AI が経理・労務・法務を自律処理（Claude Agent SDK + MCP 採用、MCP 設定不要）。先行受付受付中。
+- **freee**: 国産会計 AI エージェント 4 本命（freee / マネーフォワード / バクラク / TOKIUM）の一角。AI 仕訳・銀行口座連携継続展開。
+- **バクラク AIエージェント**: 15,000+ 企業利用継続（請求書処理・経費精算特化型）。
+- **経理 AI 普及率**: 2026 年時点で約 24.3%（75% 以上が未導入）。AI エージェント化が本格普及フェーズへ。
+
+**Zenn / Qiita 日本語コミュニティ（2026-07-02）**
+- 「claude agents が自動 PR を作るようになったので中身を検証した」（Qiita, kai_kou 氏）— v2.1.198 の自動 PR 機能の詳細検証。通知イベント `agent_needs_input` / `agent_completed` の活用方法まで解説（本日公開）。
+- 「Claude Fable 5 が帰ってきたので情報を整理した」（Zenn, acntechjp 氏）— Fable 5 復旧後の詳細情報まとめ。
+- 「AI Daily Digest — 2026年7月2日：Meta Compute、Claude Sonnet 5、コーディングエージェント革命」（Qiita）— Claude Sonnet 5 が Opus 4.8 に迫るパフォーマンスを達成と解説。
+
+#### references.md 更新提案
+
+継続未確認項目（1〜33）: 前回レポート（7/1）の継続未確認項目を引き継ぎ（詳細は 7/1 レポート参照）。
+
+**新規追加提案（2026-07-02）**:
+34. **v2.1.198 バックグラウンドエージェント自動 commit/push/ドラフト PR**: エージェントが worktree 完了時に自律的に git 操作を行う仕様変更。セキュリティ・権限設計セクションへの注意事項追記を提案。
+35. **v2.1.198 `agent_needs_input` / `agent_completed` Notification フック**: バックグラウンドエージェント状態変化通知フック。hooks セクションへの追記提案。Routine 設計のイベント駆動化に活用可能。
+36. **Claude in Chrome GA（v2.1.198）**: ブラウザとの公式ネイティブ統合が一般公開。プラットフォーム統合セクションへの追記提案。
+37. **/dataviz スキル（v2.1.198）**: チャート・ダッシュボード設計スキル（実行可能カラーパレットバリデータ含む）。スキル一覧セクションへの追記提案。
+
+#### 新規発見ソース候補
+- freeai.help/blog — Claude Code v2.1.198 バックグラウンドエージェント自動 PR の詳細解説記事。評価候補: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-07-03（翌日）。マネーフォワード AI Cowork 正式提供開始アナウンス・Fable 5 グレース期間終了（7/7）前のコスト影響測定を継続監視。
+注目点:
+① **マネーフォワード AI Cowork 正式提供開始確認**: 7 月開始予定の正式アナウンスを監視。確認次第即時記事化対象。
+② **Fable 5 グレース期間（〜7/7）中のコスト影響測定**: 7/8 以降 $10/$50 per Mtok クレジット制移行前に Routine の auto モードでの Fable 5 選択頻度・コスト影響を実測。
+③ **v2.1.198 バックグラウンドエージェント挙動確認**: Routine での自動 commit/push/PR 挙動を実観測。意図しない git 操作の有無を確認。
+④ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 10 日経過）。
+⑤ **Claude Code v2.1.199 以降リリース確認**: v2.1.198 の 32 変更に続く追加修正が出る可能性。
+
+---
+
+
 ## [2026-07-01] デイリーレポート
 
 ### 内部知見（機能A）
