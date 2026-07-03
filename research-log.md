@@ -1,3 +1,122 @@
+## [2026-07-03] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 11 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 前回（7/2）の全未確認項目（1〜37）を引き継ぎ継続。
+- **TBP-001 新規照合①（v2.1.200 デフォルト権限モード "manual" 変更 — 2026-07-03）**: デフォルト権限モードが `"default"` から `"manual"` に変更（破壊的変更）。`"manual"` モードはすべての操作で逐一ユーザー確認を求める最も保守的な設定。TBP-001「最小権限で開始」に直接対応する変更。Routine のように確認不可能な環境では明示的に `"auto"` を settings.json に設定しないと Routine が停止するため要確認。
+- **TBP-001 新規照合②（v2.1.200 AskUserQuestion 自動継続廃止 — 2026-07-03）**: `AskUserQuestion` ツール呼び出し後の自動継続挙動が廃止。Routine 内でエージェントが `AskUserQuestion` を使用するプロンプトになっている場合、Routine がユーザー入力待ちで停止するリスク。プロンプトへの「AskUserQuestion を使わず推測して進む」指示追加を推奨。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- WebSearch: Claude Code changelog v2.1.199 v2.1.200 July 3 2026
+- WebSearch: Anthropic news announcement July 3 2026
+- WebSearch: Claude Code GitHub issues new July 3 2026
+- WebSearch: マネーフォワード AI Cowork freee 会計 AI 2026年7月
+- WebSearch: Anthropic revenue OpenAI comparison 2026
+- WebSearch: freee MCP OSS オープンソース Claude Code 2026
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.200（2026-07-03 リリース）— デフォルト権限モードの破壊的変更**
+- **デフォルト権限モードが `"default"` → `"manual"` に変更**:
+  - `"manual"` モード: すべてのツール使用で逐一ユーザー確認を求める（最も保守的な設定）
+  - Routine のように非インタラクティブ環境では明示的に `"auto"` を指定しないと確認待ちで停止する
+  - **Research Hub への推奨対応**: 各 Routine の settings.json に `"defaultPermissionMode": "auto"` が明示されているか確認。Auto-research-collect・deep-research-runner・auto-claude-code-watch・feedback-article-runner・auto-research-morning-email の設定確認を推奨。
+- **`AskUserQuestion` 自動継続の廃止**:
+  - `AskUserQuestion` ツール呼び出し後の自動継続がなくなり、明示的なユーザー入力待ちで停止するようになった
+  - **Research Hub への影響**: Routine プロンプト内で `AskUserQuestion` が使用されると Routine が完了せず停止。プロンプト設計の見直しを検討推奨（「確認が必要な場合は推測して作業を継続する」等の指示を追加）
+- **バグ修正（重要）**:
+  - バックグラウンドセッションがスリープ後に停止するバグを修正 → Routine の長時間実行安定性向上
+  - レート制限ヒット時にサブエージェントが空の結果を返すバグを修正 → deep-research-runner・auto-research-collect での安定性向上
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① v2.1.199 スタック化スラッシュスキル（`/skill-a /skill-b`、最大5スキル）**
+- v2.1.199（2026-07-02 リリース）で追加。複数のスラッシュスキルをスペース区切りで最大5スキルまでスタック実行できる機能。
+- 例: `/auto-research-collect /feedback-article-runner` のように2つのスキルを連続実行可能。
+- Research Hub の Routine プロンプト設計で複数機能の組み合わせタスクフローを実装する際の参考に。
+
+**② マネーフォワード AI Cowork 正式提供開始アナウンス監視継続（最優先）**
+- 2026年7月開始予定（4月発表）のアナウンスが 7/3 時点でも未確認。
+- Claude Agent SDK + MCP 採用のバックオフィス AI。Tak の本業（経理部長）に直結。
+- 今週中にアナウンスがある可能性。確認次第 auto-research-collect の「会計×AI 重要発表」枠で即時記事化推奨。
+
+**③ Fable 5 グレース期間終了（7/7）前のコスト影響測定**
+- 7/7 まで週次利用量の 50% が含まれるグレース期間。7/8 以降は $10/$50 per Mtok のクレジット制に完全移行。
+- Routine の auto モードで Fable 5 が選択されている場合、7/8 以降のコスト急増に備えて事前に消費量を測定しておく必要あり。
+- org-configured model restrictions（v2.1.187）で 7/8 以降の Fable 5 選択を制御する準備を推奨。
+
+#### 🟢 参考情報
+
+**Claude Code v2.1.199 詳細（2026-07-02 リリース）**
+- **スタック化スラッシュスキル（最大5スキル）**: `/skill-a /skill-b` 形式でスペース区切りで複数スキルを一括実行
+- **SSL 証明書エラーの即時失敗**: SSL 証明書エラー時にリトライを消費せず即失敗するよう変更（ネットワーク障害の診断が容易に）
+- **ストリーミングエラー時の部分出力保持**: ストリーミング途中でエラーが発生しても部分出力が保持される。long-running Routine（deep-research-runner 等）での再実行コスト低減に有効
+
+**Anthropic が OpenAI を収益で上回ったとの報道（2026-07-03 時点）**
+- Anthropic の run-rate 売上高が $47B+（年換算）で OpenAI の $24-25B を上回ったとの報道。評価額 $965B（IPO 準備継続中）。
+- **Research Hub への影響**: サービス安定性・継続性の観点からはポジティブシグナル。
+
+**freee-mcp OSSとして公開済み — 270+ APIs から Claude Code で直接操作可能**
+- freee が MCP サーバーをオープンソースで GitHub 公開。Claude Code から freee の 270 以上の API（仕訳・請求書・経費精算・銀行口座・決算等）に直接アクセス可能。
+- **Tak 本業への直結度**: 経理部長として freee-mcp を Claude Code に組み込む実践的価値が非常に高い。
+- TBP-001「外部 MCP 導入審査」の具体的適用対象として記録（審査→最小権限→段階拡張のプロセス推奨）。
+- 参照: github.com/freee/freee-mcp
+
+**会計×AI トレンド（2026-07-03 時点）**
+- 2026年に国内会計ソフト各社（freee / マネーフォワード / バクラク）が AI エージェントを本体機能として標準搭載するフェーズへ本格移行。
+- freee: 「Claude Code から直接 API 操作（freee-mcp OSS 公開）」路線
+- マネーフォワード AI Cowork: 「AI が勝手にやる（MCP設定不要）」路線
+- 両社のアプローチの差別化が 2026 年下半期の実務導入の判断軸に。
+- バクラク AIエージェント: 15,000+ 企業利用継続（請求書処理・経費精算特化型）。
+
+**GitHub Issues 新着（2026-07-03）**
+- v2.1.200 リリース直後のため、新機能に関連する新着 Issues は今後増加する見込み。
+- デフォルト権限モード変更（`"default"` → `"manual"`）に関する報告・フィードバックが注目点。
+
+**Zenn / Qiita 日本語コミュニティ（2026-07-03 時点）**
+- v2.1.200 のデフォルト権限モード変更に関する日本語解説記事は今夜以降出てくる見込み（破壊的変更のため注目度高い）。
+- v2.1.199 スタック化スラッシュスキルの実験記事も近日公開予定。
+- 会計×AI 実践記事継続増加（freee-mcp × Claude Code 実用ガイドが充実）。
+
+#### references.md 更新提案
+
+継続未確認項目（1〜37）: 前回レポート（7/2）の継続未確認項目を引き継ぎ（詳細は 7/2 レポート参照）。
+
+**新規追加提案（2026-07-03）**:
+38. **v2.1.199 スタック化スラッシュスキル**: 複数スキルをスペース区切りで最大5スキルまで一括実行（`/skill-a /skill-b`）。スキルセクションへの追記提案。
+39. **v2.1.200 デフォルト権限モード "manual" 変更（破壊的変更）**: `"default"` から `"manual"` に変更。settings.json に `defaultPermissionMode: "auto"` を明示しないと Routine が停止。権限設計セクションへの重要注意事項として追記提案。
+40. **v2.1.200 AskUserQuestion 自動継続廃止**: Routine プロンプトで AskUserQuestion 使用禁止を明示する必要性。Routine 設計ガイドラインセクションへの追記提案。
+
+#### 新規発見ソース候補
+なし（本日は新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-04（翌日）。v2.1.200 Routine への影響確認・マネーフォワード AI Cowork 正式アナウンス監視継続。
+注目点:
+① **v2.1.200 デフォルト権限モード変更の Routine への影響確認**: 現行 Routine が `"auto"` モードで動作しているか settings.json を確認。
+② **マネーフォワード AI Cowork 正式提供開始アナウンス**: 7 月開始予定。正式アナウンス確認次第即時記事化対象。
+③ **Fable 5 グレース期間（〜7/7）中のコスト実測**: 7/8 以降 $10/$50 per Mtok 移行前に Routine での Fable 5 選択頻度・コスト影響を確認。
+④ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 11 日経過）。
+⑤ **v2.1.201 以降のリリース確認**: v2.1.200 破壊的変更後の追加修正が出る可能性。
+
+---
+
 ## [2026-07-02] デイリーレポート
 
 ### 内部知見（機能A）
