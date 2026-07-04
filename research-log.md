@@ -1,3 +1,114 @@
+## [2026-07-04] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → ファイルなし（フォルダは存在するが中身なし）のためスキップ
+- **継続記録（6/22 提案から 12 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 前回（7/3）の全未確認項目（1〜40）を引き継ぎ継続。
+- **TBP-001 新規照合①（Fable 5 グレース期間終了 7/7 — 7/8 以降クレジット制）**: 7/8 以降、Fable 5 は $10/$50 per Mtok のクレジット制に完全移行。グレース期間（週次利用量 50% 含む）は 7/7 で終了。Routine が auto モードで Fable 5 を選択している場合、7/8 以降コスト急増リスク。TBP-001「課金体系変更リスク」の最も具体的な試験日が 3 日後に迫っている。org-configured model restrictions（v2.1.187）での事前制御を検討推奨。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- WebSearch: Anthropic news announcement July 4 2026
+- WebSearch: Claude Code GitHub issues new July 4 2026
+- WebSearch: Claude Code v2.1.201 v2.1.202 changelog July 4 2026
+- WebSearch: Zenn Qiita Claude Code 新着記事 2026年7月
+- WebSearch: 会計 AI 経理 自動化 生成AI 2026年7月
+- WebSearch: freee マネーフォワード バクラク AI機能 2026年7月
+- WebSearch: マネーフォワード AI Cowork リリース 正式提供 2026年7月4日
+- WebSearch: Anthropic Claude Fable 5 pricing July 8 2026 credit system
+
+#### 🔴 即座に適用すべき事項
+
+**① Fable 5 グレース期間終了まで 3 日（7/7 終了、7/8 よりクレジット制完全移行）**
+- 7/7（日曜）でグレース期間終了。7/8（月曜）より Fable 5 は $10/$50 per Mtok の使用クレジット制に移行。
+- キャッシュ価格: ヒット $1/Mtok、5分キャッシュ書き込み $12.50/Mtok、1時間キャッシュ書き込み $20/Mtok。
+- **Research Hub への推奨対応**:
+  - 7/8 前に各 Routine の settings.json で `"defaultPermissionMode": "auto"` が設定済みか確認（v2.1.200 破壊的変更の影響確認）
+  - auto モードで Fable 5 が選ばれている頻度を確認し、7/8 以降のコスト見積もりを立てること
+  - 必要に応じて org-configured model restrictions（v2.1.187）で 7/8 以降の Fable 5 選択を制限
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① マネーフォワード AI Cowork の正式アナウンス監視継続（最優先）**
+- 7月提供開始予定で先行受付中だが、7/4 時点でも正式な提供開始アナウンスは未確認。
+- 内容: Claude Agent SDK + MCP 採用のバックオフィス AI。経理・労務・法務を自律処理。AI が「同僚として」対話形式でバックオフィス業務を遂行（MCP 設定不要）。ガバナンス機能（Draft & Approve・AI 監査ログ・ガードレール）搭載。2030 年までに AI で ARR 150 億円超を目標として発表済み。
+- Tak の本業（経理部長）に直結。正式アナウンス確認次第 auto-research-collect「会計×AI 重要発表」枠で即時記事化推奨。
+- 参照: biz.moneyforward.com/ai-cowork/
+
+**② v2.1.200 の Routine 設定影響確認（デフォルト "manual" 変更対応）**
+- v2.1.200（7/3 リリース）でデフォルト権限モードが `"default"` から `"manual"` に変更済み。Routine で `"auto"` を明示設定しているか要確認。
+- 今週中に各スケジュールタスクの実行ログで停止していないか確認を推奨。前回（7/3）レポートからの継続課題。
+
+**③ Zenn/Qiita 注目記事（7月新着）**
+- 「正直に言う。お前のClaude Codeの使い方は間違っている」（Qiita ニュース 7/1）: Claude Code の使い方の盲点を指摘する内容
+- 「Claude Code のモデル切り替え・使い分け戦略」（Qiita）: Sonnet 5・Fable 5・Opus の使い分けガイド。「なんとなく感覚で切り替え」からの脱却を解説
+- 「コードを書けない私が、AIに『チーム』を持たせるまで」（Qiita → Zenn Books）: SE歴26年管理職が 9体 AI エージェント編集部を Claude Code で構築した実践記録（継続話題）
+
+#### 🟢 参考情報
+
+**Claude Code v2.1.201（2026-07-03 リリース）**
+- Claude Sonnet 5 セッションでハーネスリマインダーのためにシステムロールを mid-conversation で使わなくなった（前回 v2.1.200 のハーネスリマインダー設計の refinement。ノイズ低減）
+- 7/4 時点で v2.1.202 以降の新バージョンリリースは未確認（v2.1.201 が最新）
+
+**GitHub Issues 新着（2026-07-04）**
+- Issue #74272: VS Code バグ（natkuhn）
+- Issue #74271: cost/statusline/TUI enhancement（natkuhn）
+- Issue #74270: model area macOS バグ（EthanSK）
+- Issue #74269: model area バグ（再現手順待ち、ariannamethod）
+- Issue #74268: TUI enhancement macOS（dmccullo7-afk）
+- Issue #74267: model area duplicate bug macOS（bbaassssiiee）
+- Issue #74266: sandbox area bug macOS（ariannamethod）
+- **Research Hub Routine への直接影響**: model/TUI 系バグが多いが Routine への直接影響は軽微。sandbox バグ(#74266) は macOS のため Linux sandbox で動く Routine への影響なし。
+
+**会計×AI トレンド（2026-07-04 時点）**
+- **マネーフォワード AI Cowork**: 7月提供開始予定で先行受付中（7/4 時点で正式開始アナウンス未確認）。Claude Agent SDK + MCP 採用、経理・労務・法務を AI 同僚として自律処理。ガバナンス機能（Draft & Approve・AI 監査ログ・ガードレール）搭載。2030 年までに AI で ARR 150 億円超を目標発表済み。
+- **freee**: MCP 対応継続。Claude Code から freee-mcp（OSS）で 270+ API を操作可能。実務導入加速中。
+- **バクラク**: 規定違反の自動検出で差し戻し率 60% 減を達成との報告継続。15,000+ 企業で利用継続。
+- **経理 AI 普及率**: 2026 年時点で約 24.3%（75% 以上が未導入）。AI エージェント化が本格普及フェーズ継続。
+- **2026 年 AI 経理のキーワード**: 仕訳入力 75% 削減・請求書処理 70% 短縮・月次決算 5 営業日早期化が業界標準報告値として定着。
+
+**Anthropic 全体動向（7/4 時点）**
+- IPO 準備継続（評価額 $965B）。Revenue run-rate が $47B+ で OpenAI の $24〜25B を上回ったとの報道が継続。
+- 業界ジェイルブレイクスコアリングフレームワーク（Anthropic + Amazon + Microsoft + Google）: 4軸スコアリング推進継続中。
+- Claude Enterprise 新機能強化: 管理者向けアナリティクス強化・モデルレベルエンタイトルメント・支出アラートが追加。
+
+#### references.md 更新提案
+
+継続未確認項目（1〜40）: 前回レポート（7/3）の継続未確認項目を引き継ぎ（詳細は 7/3 レポート参照）。
+
+**新規追加提案（2026-07-04）**:
+41. **Fable 5 クレジット制移行（7/8 以降）**: $10/$50 per Mtok（キャッシュヒット $1/Mtok、5分書き込み $12.50/Mtok、1時間書き込み $20/Mtok）。グレース期間（〜7/7）終了後の料金体系を references.md の「モデル料金」セクションに記載提案。
+42. **v2.1.201 ハーネスリマインダーのシステムロール廃止**: Claude Sonnet 5 セッションで mid-conversation システムロールを使わなくなる仕様変更。プロンプト設計・システムプロンプトセクションへの追記提案。
+
+#### 新規発見ソース候補
+なし（本日は新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-05（翌日）。Fable 5 グレース期間終了（7/7）前の最終確認とマネーフォワード AI Cowork 正式アナウンス監視継続。
+注目点:
+① **Fable 5 グレース期間終了（7/7）**: 7/8 からのクレジット制移行に備え、Routine での Fable 5 選択頻度を今週中に確認。必要に応じて org-configured model restrictions で制御を検討。
+② **マネーフォワード AI Cowork 正式アナウンス**: 7月提供開始予定の正式リリースを引き続き監視。確認次第即時記事化対象。
+③ **v2.1.202 以降のリリース確認**: v2.1.201 以降の新バージョンがあれば確認。
+④ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 12 日経過）。
+⑤ **Claude Enterprise 新機能詳細確認**: 管理者向けアナリティクス強化・支出アラートの詳細確認。
+
+---
+
+
 ## [2026-07-03] デイリーレポート
 
 ### 内部知見（機能A）
