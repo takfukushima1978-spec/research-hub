@@ -1,3 +1,138 @@
+## [2026-07-05] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 13 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）新規照合①（Claude Code GitHub Action prompt injection 脆弱性 — 2026年6月開示）**:
+  - Claude Code GitHub Action に CVSS v4.0: 7.8 の重大な脆弱性が発見・修正済み（fix: v1.0.94）。
+  - 攻撃手法: 悪意あるボットが GitHub issue を作成 → Claude Code GitHub Action が読み取り → CI/CD secrets（ANTHROPIC_API_KEY, AWS_SECRET_ACCESS_KEY, GITHUB_TOKEN 等）をissueに書き出してしまう。
+  - 根本原因: `checkWritePermissions` 関数が `[bot]` で終わるアクター名を無条件に信頼。GitHub Apps はパブリックリポジトリへの暗黙の読み取り権限を持つため bypass 可能だった。
+  - サプライチェーンリスク: Anthropic 自身のアクションリポジトリも対象だったため、下流プロジェクト全体に影響しうる。
+  - TBP-001「審査→最小権限→段階拡張」は Claude Code GitHub Action（Anthropic 公式ツールを含む）にも適用すべきことを示す具体例。GitHub Actions への最小権限設定（`permissions: read-only`）と定期的な権限レビューを推奨。
+  - 参照: https://flatt.tech/research/posts/poisoning-claude-code-one-github-issue-to-break-the-supply-chain/
+- **TBP-001（外部ツール導入審査）継続**: 前回（7/4）の全未確認項目（1〜42）を引き継ぎ継続。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- WebSearch: Anthropic Claude news announcement July 5 2026
+- WebSearch: Claude Code GitHub issues new July 5 2026
+- WebSearch: Claude Code GitHub Action security vulnerability 2026
+- WebSearch: Claude Code prompt injection supply chain security 2026 July
+- WebSearch: マネーフォワード AI Cowork 正式リリース 2026年7月
+- WebSearch: Zenn Qiita Claude Code 新着記事 2026年7月5日
+- WebSearch: 会計 AI 経理 自動化 税務 生成AI 2026年7月
+- WebSearch: freee バクラク AI機能 アップデート 2026年7月
+- WebSearch: Claude Code v2.1.202 v2.1.203 release July 5 2026
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code GitHub Action プロンプトインジェクション脆弱性（2026年6月開示、修正済み）**
+- **重要度: CVSS v4.0 = 7.8**（Anthropic 評価）
+- GMO Flatt Security の RyotaK 氏が 2026年1月に報告、Anthropic が4日以内に修正（v1.0.94 以降で対応）。
+- **攻撃シナリオ**: ボットアカウントが悪意あるプロンプトを含む GitHub issue を作成 → Claude Code GitHub Action がトリアージで読み取り → CI/CD シークレット（API キー・クレデンシャル等）を issue に書き出す → 攻撃者が収集。
+- **2026-06-25 時点の最新PoC**: 間接プロンプトインジェクションにより開発者の user 権限でインタラクティブシェルを実行可能（環境変数全取得可能）。
+- **推奨対応**:
+  1. Research Hub で `claude-code-action` を使用している場合: `claude-code-action@v1.0.94` 以上に更新
+  2. GitHub Actions の `permissions:` を `read-only` または必要最小限に制限
+  3. Routine のプロンプトに「外部 issue の内容を信頼しない」旨の指示を検討
+  4. パブリックリポジトリで CI/CD シークレットを扱う場合は特に注意
+- 参照: https://flatt.tech/research/posts/poisoning-claude-code-one-github-issue-to-break-the-supply-chain/
+- 参照: https://cybersecuritynews.com/new-claude-code-attack/
+
+**② Fable 5 グレース期間終了まで 2 日（7/7 終了、7/8 よりクレジット制完全移行）**
+- 昨日（7/4）レポートからの継続。7/7（日曜）でグレース期間終了。7/8（月曜）より完全クレジット制。
+- $10/$50 per Mtok（キャッシュヒット $1/Mtok、5分キャッシュ書き込み $12.50/Mtok、1時間キャッシュ書き込み $20/Mtok）。
+- **今日（7/5）が対応のラストチャンス**: 各 Routine の Fable 5 使用量確認と必要に応じた org-configured model restrictions 設定を推奨。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① マネーフォワード AI Cowork 正式アナウンス監視継続（最優先）**
+- 7/5 時点でも正式な提供開始アナウンスは未確認。7月中の正式リリース予定は変わらず（4月7日発表時点の予告）。
+- Claude Agent SDK + MCP 採用のバックオフィス AI（経理・労務・法務を AI 同僚として自律処理）。MCP設定不要で利用可能。
+- Tak の本業（経理部長）に直結。確認次第 auto-research-collect「会計×AI 重要発表」枠で即時記事化推奨。
+- 参照: https://biz.moneyforward.com/ai-cowork/
+
+**② Claude Sonnet 5 プロモーション価格（〜2026年8月31日）の活用最大化**
+- Claude Sonnet 5 が Claude Code のデフォルトモデルに。プロモーション価格 $2/$10 per Mtok（8/31まで）。1M トークンのネイティブコンテキストウィンドウ搭載。
+- Routine での Sonnet 5 活用を最大化し、8月末以降の価格変更前に消費パターンを把握しておく価値あり。
+- 参照: releasebot.io/updates/anthropic/claude
+
+**③ Claude Science（研究者向け AI ワークベンチ）の詳細確認**
+- Anthropic が Claude Science を発表。科学者向けに研究ツール・パッケージを統合し、監査可能なアーティファクトを生成。計算リソースへの柔軟なアクセスを提供。
+- 参照: https://www.anthropic.com/news/claude-science-ai-workbench
+
+#### 🟢 参考情報
+
+**Claude Code v2.1.201（2026-07-03 リリース）が依然最新**
+- 7/5 時点で v2.1.202 以降の新バージョンリリースは未確認（v2.1.201 が最新）。
+- 前回からの継続情報：v2.1.201 = Claude Sonnet 5 セッションでのハーネスリマインダー用 mid-conversation システムロール廃止。
+
+**Claude Code GitHub Issues 新着（2026-07-05）**
+- #74601（area:mcp, enhancement, VS Code）
+- #74600（area:agents, area:cost, bug, 再現手順あり）
+- #74599（area:agents, area:cost, area:model, bug, macOS）
+- #74598（area:tui, bug, macOS）
+- #74596（area:security, enhancement, macOS）— セキュリティ強化リクエスト
+- Research Hub Routine への直接影響: 軽微。agents/cost 系バグは Linux sandbox で動く Routine への影響は低い。
+
+**Anthropic 全体動向（7/5 時点）**
+- Fable 5 が米国の輸出規制解除により 7/1 からグローバルに復活（7/5 は Fable 5 完全復活後の最初の週末）。
+- Claude Science 発表（研究者・製薬業界向け AI ワークベンチ）。
+- 業界共同ジェイルブレイク重大度スコアリングフレームワーク（Anthropic + Amazon + Microsoft + Google）推進継続。
+- Claude Enterprise: 管理者向けアナリティクス強化・モデルレベルエンタイトルメント・支出アラート追加。
+
+**会計×AI トレンド（2026-07-05 時点）**
+- マネーフォワード AI Cowork: 正式リリース待ち継続。
+- freee: 2026年6月16日に「freee AIアシスタント」と「freee カスタムオーダー」の提供開始（6月中旬から稼働中）。
+- バクラク: freee 会計 API 対応（仕訳・証憑をワンクリック連携）は継続。7月特有の新機能アップデートは未確認。
+- 2026年の経理AI普及率: 約24.3%（前回報告値からの継続）。75%超が未導入でまだ成長余地大。
+
+**ZCode（中国発）の参入**
+- Z.ai（智譜AI）が Claude Code・Cursor・GitHub Copilot と競合する無料デスクトップ ADE「ZCode」を macOS/Windows/Linux 向けに公開。GLM-5.2 モデルベース。市場の競争激化を示すシグナル。
+
+**Zenn/Qiita 注目記事（7月新着）**
+- 「AI Daily Digest 2026年7月5日 — AI投資額が5,100億ドル、Claude Sonnet 5、Kling AIが28億ドル調達」（Qiita）: 7/5 時点のAIトレンドダイジェスト
+- 「Claude Code と Zenn 執筆環境を一から育てた記録」: pre-commit hook 自動化・スキル化の実践記録
+- 「コードを書けない私が、AIに『チーム』を持たせるまで」（Zenn Books）: 9体 AI エージェント編集部構築（継続話題）
+
+#### references.md 更新提案
+
+継続未確認項目（1〜42）: 前回レポート（7/4）の継続未確認項目を引き継ぎ（詳細は 7/4 レポート参照）。
+
+**新規追加提案（2026-07-05）**:
+43. **Claude Code GitHub Action 最小権限設定**: プロンプトインジェクション対策として、GitHub Actions の `permissions:` を `read-only` に設定する最小権限の原則を「セキュリティ設定」セクションに記載提案。
+44. **Claude Sonnet 5 プロモーション価格（〜8/31）**: $2/$10 per Mtok + 1M トークンコンテキスト。references.md の「モデル料金」セクションに記載提案。
+45. **間接プロンプトインジェクション（OWASP LLM01:2025）**: AI エージェントが外部コンテンツ（GitHub issue, README等）を読み取る際の構造的セキュリティリスク。references.md の「セキュリティ考慮事項」セクションへの追記提案。
+
+#### 新規発見ソース候補
+- **flatt.tech（GMO Flatt Security Research）**: Claude Code GitHub Action 脆弱性の一次開示元。AI エージェントのセキュリティリサーチが充実。評価候補: ⭐⭐⭐⭐（セキュリティ一次情報源として有用）
+- **cybersecuritynews.com**: Claude Code 関連のセキュリティ報道が複数あり。評価候補: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-07-06（翌日）。Fable 5 グレース期間終了（7/7）前の最終確認。
+注目点:
+① **Fable 5 グレース期間終了（7/7）**: 残り 2 日。各 Routine の Fable 5 使用量確認と、org-configured model restrictions の設定確認を推奨。
+② **マネーフォワード AI Cowork 正式アナウンス**: 7月中のリリース予定。7/5 時点でも未確認。
+③ **Claude Code GitHub Action セキュリティ対応確認**: v1.0.94 以降への更新状況・GitHub Actions 権限設定の見直し。
+④ **Claude Sonnet 5 消費量把握**: 8/31 までのプロモーション価格を活用するための消費パターン把握推奨。
+⑤ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 13 日経過）。
+
+---
+
 ## [2026-07-04] デイリーレポート
 
 ### 内部知見（機能A）
