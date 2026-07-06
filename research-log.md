@@ -1,3 +1,124 @@
+## [2026-07-06] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 14 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち（14日目）
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち（14日目）
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 前回（7/5）の全未確認項目（1〜45）を引き継ぎ継続。
+- **TBP-001 新規照合①（Claude Apps Gateway — 企業向け SSO コントロールプレーン、2026-06-29 GA）**:
+  - Claude Code向けの自己ホスト型コントロールプレーン（Amazon Bedrock / Google Cloud / Microsoft Foundry向け）が一般提供開始。
+  - 機能: 企業SSO（OpenID Connect: Google Workspace / Microsoft Entra ID / Okta等）、一元化ポリシー、ロールベースアクセス、ユーザー別コスト追跡、日次/週次/月次支出上限設定。
+  - 開発者は短命 bearer トークンを受け取り、IdP側でのオフボーディングで即座にアクセス無効化（デフォルト1時間TTL）。
+  - TBP-001「外部 AI サービスのガバナンス設計」評価項目に「企業コントロールプレーン型ガバナンス」パターンとして追記する材料。
+- **TBP-001 新規照合②（Fable 5 グレース期間終了 7/7 — 最終確認チャンス）**: 本日（7/6）がグレース期間中の最後の実質確認日。7/8以降 $10/$50 per Mtok のクレジット制完全移行。TBP-001「課金体系変更リスク」の具体的節目。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- WebSearch: Anthropic Claude announcement news July 2026
+- WebSearch: Claude Code GitHub issues new July 6 2026
+- WebSearch: Claude Code Sonnet 5 デフォルト変更 2026年7月 日本語記事
+- WebSearch: 会計 AI 経理自動化 税務 生成AI 2026年7月
+- WebSearch: freee マネーフォワード バクラク AI機能 アップデート 2026年7月
+- WebSearch: Claude Code Zenn Qiita 新着記事 2026年7月
+- WebSearch: Claude Code apps gateway Amazon Bedrock corporate SSO 2026
+
+#### 🔴 即座に適用すべき事項
+
+**① Fable 5 グレース期間終了まで 1 日（7/7 終了、7/8 よりクレジット制完全移行）**
+- 本日（7/6）が Fable 5 グレース期間中の最終確認チャンス。
+- 7/7（日曜）でグレース期間終了。7/8（月曜）より完全クレジット制（$10/$50 per Mtok）に移行。
+- **推奨対応（本日中）**:
+  1. 各 Routine の実行ログで Fable 5 が auto モードで選択されているか確認
+  2. 必要であれば org-configured model restrictions（v2.1.187）で Fable 5 選択を制限
+  3. 7/8 以降のコスト影響を事前試算
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① マネーフォワード AI Cowork 正式アナウンス監視継続（最優先）**
+- 7/6 時点でも正式な提供開始アナウンスは未確認。7月中リリース予定は継続。
+- Claude Agent SDK + MCP 採用のバックオフィス AI（経理・労務・法務を AI 同僚として自律処理）。
+- Tak の本業（経理部長）に直結。確認次第 auto-research-collect「会計×AI 重要発表」枠で即時記事化推奨。
+
+**② Claude Apps Gateway の活用検討（企業向け Claude Code ガバナンス）**
+- 自己ホスト型コントロールプレーン（Linux コンテナ + PostgreSQL バックエンド）。
+- 開発者オフボーディング、支出上限設定（ユーザー/グループ/組織単位）、SSO統合が特徴。
+- データプライバシー: Anthropic に推論トラフィックや使用データを送信しない（Claude API 直接設定時を除く）。
+- 参照: https://code.claude.com/docs/en/claude-apps-gateway
+
+**③ Claude Sonnet 5 コンテキスト管理最適化の実践**
+- 7/1 Qiita記事「Claude Code のコンテキスト管理とトークン消費を抑える運用方法」が参考。
+- Sonnet 5 はセッション全履歴を毎回送信しコンテキストが膨らむ特性あり → 定期的な `/compact` や `--continue` の活用が推奨。
+- Routine での long-running タスク（deep-research-runner等）のトークン消費最適化に応用可能。
+
+#### 🟢 参考情報
+
+**Claude Code v2.1.201 が依然最新（7/6 時点）**
+- v2.1.202 以降の新バージョンリリースは 7/6 時点で未確認。
+- v2.1.201（7/3）= Claude Sonnet 5 セッションでのハーネスリマインダー mid-conversation システムロール廃止。
+
+**GitHub Issues 新着（2026-07-06）**
+- Issue #74928: model area bug（再現手順要求、Linux）
+- Issue #74927: CLI/MCP area regression（Linux、eslerm 報告）
+- Issue #74926: hooks/statusline area enhancement（beardfaceguy）
+- Issue #74925: （bprzybysz、内容未詳）
+- Issue #74924: auth/bash area bug（macOS、sworrl）
+- Issue #74923: model area bug duplicate（Linux、mauriaparker-kimedics）
+- Issues #74922, #74921: auth/bash 関連（sworrl）
+- **Research Hub の Routine 動作への直接影響**: CLI/MCP regression (#74927、Linux) が最も注意。Linux sandbox で動く Routine への潜在的影響あり（次回実行で確認推奨）。
+
+**Anthropic 全体動向（7/6 時点）**
+- Fable 5: グレース期間最終日（7/7 終了）。7/1 からグローバル復旧済み。
+- Claude Sonnet 5: デフォルトモデル継続。プロモーション価格（$2/$10 per Mtok）は 8/31 まで。
+- Claude Science: ライフサイエンス向けワークベンチ（β版）継続展開。
+- Claude Enterprise: 管理者向けアナリティクス強化・モデルレベルエンタイトルメント・支出アラート追加。
+
+**会計×AI トレンド（2026-07-06 時点）**
+- **マネーフォワード AI Cowork**: 7/6 時点でも正式リリースアナウンス未確認。7月中予定継続。
+- **弥生「AI取引入力β版」（2026年新機能）**: 簿記知識不要で取引を自然文入力→AIが仕訳に変換。クラウド会計の AI 機能強化継続。
+- **PwC「Tax AI Assistant」**: 日本の税法に特化した生成 AI ツール。リサーチ・文書作成・要約の税務業務効率化を提供。実務 AI 活用の上位事例として記録。
+- **経理 AI 普及率**: 2026年時点約 24.3%（75% 以上が未導入、導入余地大）。
+- **2026年経理AI キーワード**: 仕訳入力 75% 削減・請求書処理 70% 短縮・月次決算 5 営業日早期化が業界標準値として定着継続。
+
+**Zenn/Qiita 注目記事（7月新着）**
+- 「Claude Code のコンテキスト管理とトークン消費を抑える運用方法」（Qiita, 7/1, Yasushi-Mo）: セッション全履歴送信のコスト問題と `/compact`・`--continue` 活用術
+- Qiitaニュース「正直に言う。お前のClaude Codeの使い方は間違っている」（7/1）: Claude Code の使い方の盲点特集
+- 「Claude Code を4ヶ月使ってわかった、おすすめコマンド・スキル 10 選」（Qiita, wataru86）: 実践的スキル集
+- Claude Sonnet 5 解説記事多数（uravation.com、crystal-method.com、DevelopersIO等）
+
+#### references.md 更新提案
+
+継続未確認項目（1〜45）: 前回レポート（7/5）の継続未確認項目を引き継ぎ（詳細は 7/5 レポート参照）。
+
+**新規追加提案（2026-07-06）**:
+46. **Claude Apps Gateway 詳細（SSO + Bedrock/GCP + 中央ポリシー + 支出上限）**: 自己ホスト型コントロールプレーン（OpenID Connect経由のSSO、開発者オフボーディング、ユーザー/グループ/組織単位の支出上限、データはAnthropicに送信されない）。ガバナンス設計セクションへの追記提案。
+
+#### 新規発見ソース候補
+なし（本日は新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-07（翌日）。Fable 5 グレース期間終了（本日 7/6 が最終確認日）後の 7/7 クレジット制移行確認。
+注目点:
+① **Fable 5 クレジット制完全移行（7/8 から）**: 7/7 グレース期間終了後のコスト影響監視。7/8 の最初の Routine 実行ログ確認推奨。
+② **マネーフォワード AI Cowork 正式アナウンス**: 7月中リリース予定の継続監視。
+③ **Claude Code v2.1.202 以降リリース確認**: v2.1.201 以降の新バージョン。
+④ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 14 日経過）。
+⑤ **GitHub Issue #74927（CLI/MCP regression, Linux）のパッチリリース確認**: Linux sandbox で動く Routine への影響監視。
+
+---
+
 ## [2026-07-05] デイリーレポート
 
 ### 内部知見（機能A）
