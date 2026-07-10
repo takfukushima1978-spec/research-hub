@@ -25,3 +25,13 @@ worker/node_modules/
 # （ルート側の package.json / package-lock.json は除外設定が継承されるため明示的に許可）
 !worker/package.json
 !worker/package-lock.json
+
+# 参考資料/ の外部提供 Office 一次資料（尾原コミュニティ等・数十〜100MB超）は生のまま追跡しない
+# GitHub の 100MB push 上限に抵触する上、有料コミュニティの著作物を push しない（2026-07-10・R111）
+# 自作の md 地図・pptx-diet 圧縮版（*_diet.*）は追跡する
+参考資料/*.docx
+参考資料/*.pptx
+参考資料/*.xlsx
+!参考資料/*_diet.docx
+!参考資料/*_diet.pptx
+!参考資料/*_diet.xlsx
