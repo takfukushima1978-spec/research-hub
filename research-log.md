@@ -1,3 +1,125 @@
+## [2026-07-10] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち18日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち
+- **TBP-004候補**（2026-06-22 提案・確認待ち18日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（security-guidance 公式プラグイン）**: Anthropic が全プラン無料の `security-guidance` プラグイン（`/plugin install security-guidance@claude-plugins-official`）を提供開始。リアルタイムのセキュリティ脆弱性検出・修正支援が可能になった。TBP-001「外部ツール導入審査」の「審査」フェーズにおいて、公式 Anthropic プラグインを活用したコード品質チェックが自動化支援ツールとして活用できる。安全性の高い公式プラグインとして最小権限から試用を推奨。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code公式チェンジログ（⭐⭐⭐⭐⭐）
+- Anthropic公式ブログ（⭐⭐⭐⭐⭐）
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）
+- Zenn / Qiita 検索
+- 会計×AI: freee / マネーフォワード / バクラク Web検索
+- WebSearch: Claude Design / security-guidance plugin 2026年7月
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.206（2026-07-09）新着機能まとめ**
+- **/cd コマンド改善**: ディレクトリ変更時にパス候補を提示するオートコンプリート機能を追加。手動作業での操作性が向上。
+- **/doctor で CLAUDE.md トリミング提案**: `/doctor` がシステムプロンプトの最適化候補として CLAUDE.md のトリミング提案を行う機能を追加。長くなった CLAUDE.md を定期的に整理する契機になる。
+- **/commit-push-pr の push 自動許可拡張**: `remote.pushDefault` 設定がある場合、または単一リモートのみの場合に、push 操作を確認なしで自動許可するよう拡張。Routine での自動コミット・プッシュフローが安定化。
+- **EnterWorktree の安全強化**: `.claude/worktrees/` 配下以外の git worktree への入場前に確認プロンプトを表示するよう変更。意図しない worktree 操作を防止。
+- **バックグラウンドエージェントの自動アップグレード**: Claude Code のバージョン更新直後にバックグラウンドエージェントが自動的に新バージョンにアップグレードされるよう変更。Routine の長時間実行中にバージョン更新が発生しても継続性が向上。
+- **MCP server-level request_timeout_ms バグ修正（重要）**: サーバーレベルの `request_timeout_ms` 設定が無視されていたバグを修正。Research Hub の Routine で MCP タイムアウトを明示設定していた場合に意図通りに動作するようになった。
+- **ログイン期限切れエラー改善**: 認証失効時に誤解を招くエラーメッセージを表示していた問題を、`/login` を促す明確なメッセージに改善。Routine が認証エラーで停止した場合のデバッグが容易になる。
+- **OAuth MCP バグ修正**: OAuth MCP サーバーのトークンリフレッシュ失敗後、手動再認証なしに復帰できなかったバグを修正。
+- **JetBrains IDE ターミナルちらつき修正**: JetBrains 環境でのターミナルちらつきを修正。
+- 🔴 アクション: `claude --version` で v2.1.206 以上を確認。MCP タイムアウト設定の実効性を次回 Routine 実行で観測推奨。
+
+**2. Claude Design（Anthropic Labs、リサーチプレビュー）**
+- Anthropic が Claude Design を Anthropic Labs 経由でリサーチプレビュー提供開始。Claude Opus 4.7 を搭載し、デザイン・プロトタイプ・スライド作成に特化。
+- 対象: Pro / Max / Team / Enterprise プランで利用可能（Anthropic Labs よりオプトイン）。
+- Research Hub への応用: ビューワーの UI 改善案やレポート図解作成への活用可能性あり。
+- 🔴 アクション: Anthropic Labs (labs.anthropic.com) でオプトイン可能か確認。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. security-guidance 公式プラグイン（全プラン無料）**
+- コマンド: `/plugin install security-guidance@claude-plugins-official`
+- 機能: セッション中のリアルタイム脆弱性検出・修正提案（XSS、SQL インジェクション、認証漏れ等 OWASP Top 10 カバー）。
+- Research Hub での活用: insert-article Edge Function や Worker のコードをリポジトリに書く際の自動セキュリティチェック。TBP-001「外部ツール導入審査」の「審査」フェーズを公式プラグインで補強できる。
+- 全プラン無料・公式 Anthropic 提供のため TBP-001 の「審査→最小権限→段階拡張」手順を経る優先度は低いが、念のため試用前の動作確認を推奨。
+- 🟡 アクション: 次回 Claude Code セッション開始時に `/plugin install security-guidance@claude-plugins-official` を実行して試用。
+
+**2. /doctor CLAUDE.md トリミング提案機能の活用**
+- research-hub の CLAUDE.md（2,000 字超）が長大化しているため、`/doctor` によるトリミング候補の抽出が有用な可能性。
+- Research Hub での活用: CLAUDE.md の肥大化防止・スキル分離による Progressive Disclosure 実現の契機として `/doctor` を定期実行する運用ルール化を検討。
+- 🟡 アクション: 次回 Research Hub セッション開始時に `/doctor` を実行し、CLAUDE.md のトリミング提案が出るか確認。
+
+**3. マネーフォワード AI Cowork 正式リリースアナウンス監視継続（最優先）**
+- 7/10 時点でも正式リリースアナウンス未確認（7月中リリース予定継続）。残り21日以内。
+- Claude Agent SDK + MCP 採用のバックオフィス AI（経理・労務・法務を AI 同僚として自律処理）。
+- Tak の本業（経理部長）に直結。確認次第 auto-research-collect「会計×AI 重要発表」枠で即時記事化推奨。
+- 🟡 アクション: 毎日 biz.moneyforward.com/ai-cowork/ で正式開始確認。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-07-10）**
+- Issue #76508〜#76515: permissions / tools / model 系バグ（macOS / Linux 混在）
+- 主要な Routine への直接影響は確認されず。model 系バグは auto モードのモデル選択精度に微影響の可能性あり。
+
+**Zenn / Qiita（2026-07-10 時点）**
+- 「Claude Code の無料セキュリティ監査プラグインで脆弱性を自動検出・修正する方法」（Zenn, 7/10）: security-guidance プラグインの使い方と OWASP Top 10 カバー範囲の解説。
+- 「/doctor が CLAUDE.md の肥大化を診断するようになった — v2.1.206」（Qiita, 7/10）: 具体的なトリミング提案例の紹介。
+- v2.1.206 の日本語解説記事が本日複数公開。MCP timeout 修正が特に実務的に注目されている。
+
+**会計×AI トレンド（2026-07-10 時点）**
+- **マネーフォワード AI Cowork**: 7/10 時点でも正式リリースアナウンス未確認（継続監視）。7月末まで残り21日。
+- **freee AI OCR**: 手書き領収書 75%前後・印刷レシート 90% 超の精度（2026年大幅アップデート継続）。
+- **経理 AI 導入率**: 約 24.3%（75% 以上が未導入、導入余地大）。
+- **バクラク**: 規制違反自動検出で差し戻し率 60% 削減事例が継続。
+
+**Claude Design の技術詳細**
+- ベースモデル: Claude Opus 4.7（新モデル）。Opus 4.8 よりデザイン・ビジュアル表現に特化。
+- 対応出力: UI モックアップ・インフォグラフィック・プレゼン資料・プロトタイプ HTML。
+- 価格: Pro/Max/Team/Enterprise のサブスクリプション内に含まれる（追加課金なし）。
+- 注意: Anthropic Labs プロダクトはリサーチプレビューのため将来的な仕様変更あり。
+
+#### references.md 更新提案
+**提案（自動更新しない — Takの確認後に実施）:**
+- **v2.1.206 EnterWorktree 安全強化**: `.claude/worktrees/` 外 worktree への確認プロンプト。worktree 設計セクションへの追記提案。
+- **v2.1.206 バックグラウンドエージェント自動アップグレード**: Routine 継続性向上。バックグラウンドセッション設計セクションへの追記提案。
+- **v2.1.206 MCP server-level request_timeout_ms 修正**: MCP タイムアウト設定の実効性が保証されるようになった。MCP 設計セクションへの追記提案。
+- **security-guidance 公式プラグイン（全プラン無料）**: `/plugin install security-guidance@claude-plugins-official` でリアルタイム脆弱性検出。プラグイン活用セクションへの追記提案。
+- **Claude Design（Anthropic Labs、リサーチプレビュー）**: Opus 4.7 ベース。デザイン・スライド・プロトタイプ特化。Anthropic 製品ロードマップセクションへの追記提案。
+
+#### 新規発見ソース候補
+なし（本日新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-11（翌日）。
+注目点:
+① **マネーフォワード AI Cowork 正式リリースアナウンス**: 7月末まで残り21日。毎日監視推奨。
+② **security-guidance プラグインの実用性確認**: Research Hub コードへの適用結果を確認。
+③ **v2.1.206 MCP timeout 修正の実効確認**: 次回 Routine 実行で MCP タイムアウト設定が有効になっているか観測。
+④ **Claude Design のオプトイン確認**: Anthropic Labs での試用申請状況。
+⑤ **TBP-003・TBP-004 昇格候補**: 6/22 提案から 18 日経過（Tak 確認待ち）。
+
+---
+
+### クロスリファレンス（機能C）
+
+#### TBP/ADR 再評価トリガー
+- **TBP-001 再評価トリガー（security-guidance 公式プラグイン）**: Anthropic が「外部ツール導入審査の自動化支援ツール」として機能する公式セキュリティプラグインを提供開始。TBP-001「審査→最小権限→段階拡張」の「審査」フェーズを、公式プラグインによる自動スキャンで補完・強化できる材料として記録。外部ツール導入前の審査手順に「security-guidance プラグインでコードスキャン」を組み込むことを提案（任意）。
+
+#### references.md 更新判定
+**本日は更新不要**: 上記の提案は Tak の確認待ち。Anthropic 公式ベストプラクティス文書の新規変更は確認されていない。
+
+---
 ## [2026-07-09] デイリーレポート
 
 ### 内部知見（機能A）
