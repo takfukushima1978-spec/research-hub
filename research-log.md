@@ -1,3 +1,86 @@
+## [2026-07-11] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち19日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち
+- **TBP-004候補**（2026-06-22 提案・確認待ち19日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（Claude Fable 5 再デプロイ）**: Claude Fable 5（Mythosクラスモデル）が2026-07-01に全ユーザー向けに再デプロイ。Claude Code でも利用可能に。TBP-001「外部ツール導入審査」の観点では、新モデルを使った自律エージェント機能の権限範囲を見直すタイミング。特に「より長時間自律動作できる」特性上、allowlist設計の粒度を再点検することを推奨。
+- **TBP-001 再評価トリガー（Claude Code /doctor 新機能）**: v2.1.206で `CLAUDE.md` のトリム提案をする `/doctor` チェックが追加。CLAUDE.md に「Claudeが自力で導出できる内容」が含まれていないか定期チェックが自動化された。TBP-001の「段階拡張」フェーズで /doctor を活用した CLAUDE.md メンテナンスをルーティンに組み込むことを検討。
+- **TBP-002 再評価トリガー（今回なし）**: TBP-002（英語パス）に関連する外部情報の変化なし。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.201〜v2.1.206
+- Anthropic公式ブログ（⭐⭐⭐⭐⭐）: Fable 5再デプロイ / ベルナンキ氏LTBT就任 / アルバータ州政府事例
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/11新規issue確認
+- Zenn / Qiita 検索（2026年7月分）
+- 会計×AI: マネーフォワード AI Cowork / 電帳法・インボイス改正動向
+- WebSearch: Claude Fable 5 / Mythos 5 能力詳細
+
+#### 🔴 即座に適用すべき事項
+
+1. **Claude Fable 5 が Claude Code で利用可能に（2026-07-01〜）**
+   - Fable 5 は Mythosクラスで「過去最高のベンチマーク性能」。SW エンジニアリング・知識作業・ビジョン・科学研究など全領域で SOTA。Stripe が50M行Rubyマイグレーションを1日で完了（通常チーム2ヶ月相当）。
+   - 価格: $10/M input / $50/M output（Mythos Preview の半額以下）
+   - **注意**: サイバーセキュリティ・生物・化学・蒸留関連の危険リクエストは自動的に Claude Opus 4.8 で処理され、ユーザーに通知される
+   - 当面 Research Hub の Routines プロンプトでモデル選択指示がある場合は整合性を確認する
+
+2. **電帳法・インボイス制度（Takさん本業直結）**
+   - 電帳法: 2026年1月から電子取引データの電子保存が**完全義務化**（宥恕措置終了済み）。紙保存は不可。
+   - インボイス控除率: 2026年10月〜 80%→70%（2026年10月〜2028年9月）→50%（2028年10月〜2030年9月）→30%（2030年10月〜）に段階引き下げ。即時対応より計画的移行フェーズに入った段階。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+1. **Claude Code `/doctor` コマンドでCLAUDE.mdをトリム**（v2.1.206新機能）
+   - CLAUDE.md に「Claudeが自力導出できる内容」が混入していないか自動チェックしてくれる。Research Hub や My-Profile-and-Memory の CLAUDE.md を `/doctor` にかけてみる価値あり。
+   - 参考: `v2.1.206 (July 9, 2026)` - /doctor check that proposes trimming checked-in CLAUDE.md files
+
+2. **マネーフォワード AI Cowork の評価**
+   - 2026年7月提供開始予定。AIが「同僚」として経理・労務・法務業務を自律処理するサービス。Takさんの本業（経理部長）に直結。早期評価・パイロット検討価値あり。
+
+3. **Zenn記事:「正直に言う。お前のClaude Codeの使い方は間違っている」（2026-07-01）**
+   - Qiita Tech Festa 2026 関連記事で注目度高。Claude Code の実践的な使い方の誤解を指摘する内容。ハーネス設計の見直しヒントになる可能性あり。要精読。
+
+#### 🟢 参考情報
+
+- **Anthropic と Alberta 州政府**: Claude Code（Opus+Sonnet）で 4.66億行のコードを20時間でスキャンし、セキュリティ脆弱性を自動検出・修正。大規模コードベース監査における Claude Code の実用性を示す事例（2026-07-06）。
+- **Anthropic ジャイルブレーク対策フレームワーク**: Amazon/Microsoft/Google 等と共同で業界横断のジャイルブレーク深刻度スコアリングフレームワークを発表（2026-07-02）。Fable 5 の安全分類器と連動。
+- **Ben Bernanke が Anthropic LTBT に参加**（2026-07-09）: 元 FRB 議長がロングタームベネフィットトラストの独立メンバーに就任。Anthropic のガバナンス強化の一環。
+- **Claude Code GitHub stars**: 131K starに到達。「IDE不要でClaude Codeに移行する開発者が増加」（Augment Code の分析記事）。
+- **経理AI全般**: 2026年の最適戦略は「AI-OCR（定型処理）+ 生成AI（判断・分析・文書作成）」の二刀流が定説化。経理部門のAI導入率24.3%、活用者の75.6%が効率化を実感。
+- **Qiita: Claude Code + Codex 用超高速サンドボックス作成法**（2026-07-10 投稿）: Security重視の環境構築記事。Research Hub の Claude Code sandbox 設計参考に。
+
+#### references.md 更新提案
+
+以下の更新が必要か検討:
+- **Claude Fable 5 / Mythos 5 のモデルID追加**: `claude-fable-5` / `claude-mythos-5` が正式モデルIDとして使用可能になった。Claude API references に追記候補。
+- **根拠**: 公式ドキュメント記載 (`platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5`) に基づく。
+
+※ 直接更新は行わない。Takの確認後に実施。
+
+#### 新規発見ソース候補
+
+| ソース | URL | 種別 | 評価候補 | 発見日 |
+|---|---|---|---|---|
+| releasebot.io/updates/anthropic/claude-code | https://releasebot.io/updates/anthropic/claude-code | Claude Code自動更新トラッカー | ⭐⭐⭐ | 2026-07-11 |
+| gradually.ai/en/changelogs/claude-code/ | https://www.gradually.ai/en/changelogs/claude-code/ | Claude Codeチェンジログまとめ | ⭐⭐⭐ | 2026-07-11 |
+| uravation.com | https://uravation.com/media/ | 日本語AI実践ガイド（経理×AI含む） | ⭐⭐⭐ | 2026-07-11 |
+
+#### 次回リサーチ推奨日
+2026-07-12（Claude Code v2.1.206 以降の続報 / マネーフォワード AI Cowork 正式リリース状況）
+
+---
 ## [2026-07-10] デイリーレポート
 
 ### 内部知見（機能A）
