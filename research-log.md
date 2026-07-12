@@ -1,3 +1,99 @@
+## [2026-07-12] デイリーレポート
+
+### 内部知見（機能A）
+
+**decisions/ ディレクトリ確認**
+- My-Profile-and-Memory/decisions/ → 存在しないためスキップ
+- 他リポジトリ → スコープ外のためスキップ
+
+**既存 TBP 確認**
+- TBP-001（外部ツール採用審査）: 変更なし（再評価トリガーあり、後述）
+- TBP-002（日本語パス回避）: 変更なし
+
+**TBP 昇格候補**
+
+- **TBP-003 候補（保留 20 日経過）**: 「着手前に実態（git）と文書（backlog）の一致を確認する」— 昇格検討タイミング
+- **TBP-004 候補（保留 20 日経過）**: 「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— 昇格検討タイミング
+
+**TBP 再評価トリガー**
+- **TBP-001 ← Claude Code v2.1.207**: Auto mode が Bedrock / Vertex AI / Foundry でオプトインフラグなしに利用可能になった（無効化は settings の `disableAutoMode`）。TBP-001 の「審査」フェーズにクラウドプロバイダレベルのデプロイを明示的に含める改訂を提案。
+
+---
+
+### Web リサーチ（機能B）
+
+#### 🔴 重要（即対応検討）
+
+**Claude Code v2.1.207（2026-07-11 リリース）**
+- Auto mode が Bedrock / Vertex AI / Foundry へ展開（オプトインフラグ不要）。無効化: settings の `disableAutoMode`。エンタープライズ環境での注意が必要
+- ターミナルフリーズ修正: 長いリスト/テーブル/段落/コードブロック表示中のキーストロークラグを修正
+- non-interactive `claude -p` / SDK で managed settings が同意なく永続記録されていたバグを修正
+- 良性のシステム生成更新から偽陽性の prompt injection 警告が出ていた問題を修正
+- auto-updater が `~/.local/bin/claude` のカスタムランチャーを上書きしていた問題を修正。`/doctor` で外部管理ランチャーの検出が可能に
+- シンタックスハイライト改善: highlight.js 11 へアップグレード
+- Mac SSH 環境で opt/cmd キー表示（alt/super の代わり）
+- 計 24 変更
+
+#### 🟡 注目（継続ウォッチ）
+
+**Anthropic Reflect Beta（2026-07-09 〜）**
+- 使用状況ダッシュボード: 習慣・ピーク活動時間帯の可視化
+- 4D AI Fluency Framework（delegation / description / discernment / diligence）
+- quiet hours 設定
+- Web / デスクトップで Free / Pro / Max ユーザー対象（Memory on 必須）
+- incognito とヘルス連携データは除外
+
+**TeraWulf × Anthropic データセンター 20 年リース（ケンタッキー州 Hawesville）**
+- 契約収益 ~$19B。長期インフラ投資として注目
+
+**Elon Musk が Anthropic を称賛・SpaceX コンピュート連携を深化（2026-07-10 前後）**
+- AI 業界の連携・競合状況の変化。Anthropic の外部パートナーシップ拡大傾向
+
+**マネーフォワード AI Cowork**
+- 依然「2026 年 7 月より提供開始予定」のまま。正式リリース確認なし。引き続きウォッチ
+
+#### 🟢 参考情報
+
+**GitHub Issues（2026-07-12 時点の新規）**
+- #76980: auth + cowork 関連 / Linux バグ
+- #76979: mcp バグ（再現手順あり）
+- #76978: api バグ / macOS
+- #76984: モデル重複問題
+- #76983: cowork + desktop / Windows バグ
+- #76982: core 機能改善 / Linux
+- #76981: invalid
+
+**Qiita Tech Festa 2026（〜7/13）**
+- 日本技術コミュニティイベント継続中。7/13 終了予定
+
+**Zenn / Qiita トレンド（2026-07-12）**
+- Zoom AI Services の MCP サーバー for Claude Code
+- Claude Code & Codex 超高速セキュアサンドボックス構築
+- Qiita トレンドポッドキャスト 2026-07-12 版
+
+**会計 × AI**
+- AI OCR による確定申告サービス（2025-07 全国展開済み）
+- 経理 AI 導入率 24.3%
+- クラウド会計 + AI 組み合わせで月 20〜40 時間削減が現実的ライン
+
+---
+
+### TBP / ADR 交差評価（機能C）
+
+**TBP-001 再評価提案**
+- トリガー: v2.1.207 で Auto mode がクラウドプロバイダ（Bedrock / Vertex AI / Foundry）へ展開
+- 提案: TBP-001 の「審査」フェーズに「クラウドプロバイダ経由デプロイ」を明示追加。エンタープライズ利用者は `disableAutoMode` によるオプトアウト検討が必要
+- 状態: レポートに記録のみ。TBP 更新は Tak が判断
+
+**references.md 更新提案**
+- v2.1.207: Auto mode on Bedrock / Vertex AI / Foundry（`disableAutoMode` 設定）
+- v2.1.207: highlight.js 11 アップグレード
+
+---
+
+### 次回リサーチ推奨日
+2026-07-13（マネーフォワード AI Cowork 正式リリース確認 / v2.1.208 以降の変更ウォッチ / Qiita Tech Festa 終了確認）
+
 ## [2026-07-11] デイリーレポート
 
 ### 内部知見（機能A）
