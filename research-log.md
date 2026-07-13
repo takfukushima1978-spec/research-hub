@@ -1,3 +1,105 @@
+## [2026-07-13] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち21日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち。21日経過でリマインド。
+- **TBP-004候補**（2026-06-22 提案・確認待ち21日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち。21日経過でリマインド。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（/checkup コマンド / v2.1.202）**: `/checkup` コマンドが未使用スキル・MCP・プラグインの削除提案・低速フック無効化・CLAUDE.md 整理・バージョン更新など「段階拡張後の定期棚卸し」を自動化する機能として確認。TBP-001「段階拡張」フェーズに「`/checkup`（または `/doctor`、v2.1.205 以降はエイリアス）を定期実行してツール一覧と権限を棚卸しする」手順を追記する改訂を提案。※ 自動改訂は行わない。Tak 確認後に実施。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.207 確認（前日 7/12 レポート済み）、本日 7/13 新リリースなし
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Fable 5 再展開状況・研究発表
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/13 新規 issue 一覧
+- Qiita: Claude Code 週次アップデートまとめ 2026/07/11 週、Qiita Tech Festa 2026
+- 会計×AI: マネーフォワード AI Cowork / freee vs MF AI 比較 / 経理自動化ガイド 2026
+- Claude Fable 5 / Mythos 5 最新状況
+
+#### 🔴 即座に適用すべき事項
+
+**Claude Fable 5 アクセス期限 7/19 まで再延長**
+- 有料サブスクライバー向け Fable 5 アクセスが 7/19 23:59 PT まで延長、かつレート制限を 50% ブースト。
+- 7/19 以降はクレジット制（$10/M input / $50/M output）のみになる見込み（Max 5x 以上は Max 内課金）。
+- Routine の auto モードが Fable 5 を選択している場合、7/19 以降のコスト変化を事前に把握しておく必要あり。
+- 🔴 アクション: 7/19 前後の Routine 実行コストを事前確認。Max 契約未満の場合はクレジット消費量に注意。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Anthropic Research: Claude の価値観の研究論文（2026-07-13）**
+- Anthropic が「Values across models and languages」を公開（7/13）。Claude Sonnet 5・Haiku 4.5 等の価値観の一貫性を多言語で評価した研究。日本語環境での Claude の挙動理解に参考になる可能性あり。
+- 🟡 アクション: alignment.anthropic.com で論文を確認。Research Hub に記事化候補として記録。
+
+**2. Claude Code /checkup コマンドをセットアップ棚卸しに活用**
+- `/checkup`（v2.1.202+、/doctor のエイリアス）でセットアップ自動診断: 未使用スキル・MCP・プラグイン削除提案、CLAUDE.md 整理、低速フック無効化、Claude Code 最新版更新、auto モード有効化、頻繁に拒否された読み取り専用コマンドの事前承認など。
+- My-Profile-and-Memory や Research Hub の CLAUDE.md / スキル / MCP 設定の棚卸しに活用できる。
+- 🟡 アクション: 次回 Claude Code セッションで `/checkup`（または `/doctor`）を実行してセットアップ状態を診断。
+
+**3. Artifacts on Pro/Max（v2.1.197〜）でリサーチレポートを Shareable ページ化**
+- セッションの出力（Research Hub 記事・レポート・分析）を live shareable ページとして公開できる。週次リサーチサマリーや Deep Research 結果の共有に活用可能。
+- 🟡 アクション: 次回 Research Hub 分析セッションで Artifacts 機能を試用してみる。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-07-13）**
+- #77274〜#77281: model / plugins / permissions / tui / cost 系のバグ・enhancement（macOS 中心）。Research Hub Routines への直接影響は確認されず。
+- 7/13 付けで area:cost, area:tui の enhancement issue が複数開設 → コスト表示改善への需要が高い。
+
+**Qiita Tech Festa 2026 終了**
+- 本日 7/13 で終了。総括: Claude Code 実践記事が急増したイベントとして記録。「お前の Claude Code の使い方は間違っている」（7/1 掲載）が特に反響大。
+
+**Qiita 週次アップデートまとめ 2026/07/11 週**
+- v2.1.202〜v2.1.207 のハイライト（日本語要約）が公開済み。
+- 3大ハイライト: ① Artifacts 機能が Pro/Max に一般開放（v2.1.197）、② /review コマンド体系の刷新（高速 PR レビューが `/review`、深掘りが `/code-review` に分離）、③ `/doctor` が CLAUDE.md 簡素化提案を行うようになった（v2.1.206）。
+
+**Anthropic 研究発表（2026-07-09〜13）**
+- 7/13: Values across models and languages（多言語価値観一貫性研究）
+- 7/09: Claude plays robotics（ロボティクス制御実験）
+- 7/08: Off switch for dual-use knowledge in AI（汎用知識の危険利用防止スイッチ研究）
+- 7/06: Global workspace in language models（LLM グローバルワークスペース研究）
+- これらは AI 安全性・能力研究の進展として記録。Anthropic の研究方向性をウォッチする上で有用。
+
+**Claude Fable 5 の特徴（v2.1 以降との統合観点）**
+- PDF・図表・チャート・ダイアグラム内容理解が強化（finance / legal / analytics での文書作業に特化）。
+- 安全分類器搭載（Mythos 5 には搭載なし）。危険リクエスト → Opus 4.8 自動ルーティング。
+- days-long エージェントハーネス対応: Claude Code / Managed Agents での長時間自律作業が本格化。
+
+**会計×AI トレンド（2026-07-13 時点）**
+- **マネーフォワード AI Cowork**: 本日も正式リリース未確認（「2026年7月より提供開始予定」継続）。7/19 以前のリリースに期待。
+- **経理 AI 導入率**: 24%、導入企業 68.3% が業務時間短縮実感（前週値から変化なし）。
+- **freee AI OCR + MF AI 仕訳比較 2026**: 両者とも AI エージェントを本体標準機能として統合する流れが明確化。freee はマッチング精度、MF は連携範囲（M365 含む）が強みとして差別化。
+- **バクラク**: 規制違反自動検出により却下率 60% 削減事例が継続。
+- **Zapier × ChatGPT 経理半自動化**: 月次決算工数を 50% 削減する実装例（記事化候補）。
+- **2026年経理DX全般**: 「AI-OCR（定型処理） + 生成AI（判断・文書作成）」の二刀流が業界定説化。
+
+#### references.md 更新提案
+- **`/doctor` コマンドの体系整理（v2.1.205〜）**: `/doctor` がフルセットアップ診断・修正ツールに昇格。`/checkup` は `/doctor` のエイリアスに。公式ベストプラクティス文書の「セットアップ診断」セクションへの追記を提案。
+- **Fable 5 アクセス延長 7/19 まで + 50% レート制限ブースト**: モデル利用状況セクションへの追記を提案。
+※ 直接更新は行わない。Takの確認後に実施。
+
+#### 新規発見ソース候補
+なし（本日新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-14（翌日）。
+注目点:
+① **マネーフォワード AI Cowork 正式リリースアナウンス**: 7/19 以前のリリース期待。毎日監視継続。
+② **Claude Fable 5 アクセス期限 7/19 接近**: 7/19 前後のコスト変化確認を事前準備。
+③ **TBP-003・TBP-004 昇格候補**: 6/22 提案から 21 日経過。Tak への確認促しとして記録。
+④ **GitHub Issue #77274〜: area:cost / area:tui エンハンスメント**: コスト表示改善の動向ウォッチ。
+⑤ **Anthropic 「Values across models」論文精読**: 日本語環境での Claude 挙動理解のため。
+
+---
 ## [2026-07-12] デイリーレポート
 
 ### 内部知見（機能A）
