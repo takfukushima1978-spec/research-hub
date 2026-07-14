@@ -1,3 +1,106 @@
+## [2026-07-14] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち22日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち。22日経過でリマインド。
+- **TBP-004候補**（2026-06-22 提案・確認待ち22日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち。22日経過でリマインド。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.208 アクセシビリティ機能）**: v2.1.208 で `axScreenReader` オプトイン機能が追加（`claude --ax-screen-reader` / 環境変数 `CLAUDE_AX_SCREEN_READER=1` / settings `"axScreenReader": true`）。ヘッドレス Routine 環境への直接影響はないが、TBP-001「外部ツール導入審査」の「機能棚卸し」観点でアクセシビリティ設定の追跡が必要なプロジェクトを評価する際の参考に。なお本機能は GitHub Issue #11002 で要望されていた機能の公式実装。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.208 確認（2026-07-14 リリース）
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 7/14「How Canada uses Claude」(Economic Index) / 7/13「Values across models and languages」
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/14 新規 issue 一覧
+- Qiita: Claude Code 週次アップデートまとめ 2026/07/11 週
+- Zenn: カンリー社内 Claude Code 勉強会資料公開
+- 会計×AI: マネーフォワード AI Cowork / freee vs MF AI 比較 2026 / 経理自動化ガイド 2026
+
+#### 🔴 即座に適用すべき事項
+
+**Claude Code v2.1.208（2026-07-14 リリース）— スクリーンリーダーモード追加**
+- アクセシビリティ向上: スクリーンリーダー向けのオプトインテキスト表示モードを追加。
+  - 有効化方法: `claude --ax-screen-reader` / `CLAUDE_AX_SCREEN_READER=1` / settings に `"axScreenReader": true`
+  - NVDA・JAWS 等のスクリーンリーダーとの互換性向上が目的。
+  - Research Hub Routine や自動実行には影響なし（UI 表示モード変更のみ）。
+- 🔴 直接適用事項は今回なし。Routine 環境への影響がないため、アップデート内容として記録のみ。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Anthropic Research「How Canada uses Claude」(Anthropic Economic Index、2026-07-14)**
+- カナダにおける Claude 活用状況を Economic Index（経済指数）で分析。業種別・用途別の利用パターンを把握できる。
+- 日本での Claude 活用トレンド（特に経理・会計領域）を類推する参考情報として有用。
+- 🟡 アクション: alignment.anthropic.com または anthropic.com/research で全文確認。Research Hub に記事化候補として記録。
+
+**2. Claude Code 週次アップデートまとめ（2026/07/11週）精読**
+- v2.1.202〜v2.1.207 のハイライト日本語版が Qiita に公開済み（@saitoko 氏）。
+- 3大ハイライト: ① In-app Browser on Desktop（ドキュメント/デザイン/サイトをサンドボックスブラウザで閲覧・操作）、② Background Agent 自動アップグレード、③ auto-update のメモリ削減（約 400MB 削減）。
+- 🟡 アクション: Qiita 記事で v2.1.202〜v2.1.207 の詳細確認。特に In-app Browser が Research Hub の Web 閲覧 Routine に応用できるか評価。
+
+**3. マネーフォワード AI Cowork 正式リリース確認（引き続き最優先）**
+- 7/14 時点でも正式リリースアナウンス未確認。「2026年7月より提供開始予定」表記が継続。
+- 会計各社（freee / MF / バクラク）が AI エージェントを本体標準機能として統合する流れが 2026年に加速。MF AI Cowork は AIが「同僚」として経理・労務・法務を自律処理する設計。
+- 🟡 アクション: biz.moneyforward.com で毎日確認継続。7月末まで残り17日。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-07-14）**
+- VS Code Linux セキュリティバグ（simonticciatihayes）: 再現手順あり
+- plugins/skills バグ（mmadersbacher, macOS）・（munirsquires, macOS）: 詳細再現手順あり
+- area:model / area:tui enhancement（複数）: コスト表示改善・TUI 改善への需要継続
+- 上記はすべて open。Research Hub Routines への直接影響は現時点で確認されず。
+
+**Anthropic 研究発表（2026-07-14 前後）**
+- 7/14: How Canada uses Claude — Findings from the Anthropic Economic Index
+- 7/13: Values across models and languages（多言語価値観一貫性研究）— Claude Sonnet 5・Haiku 4.5 等の多言語一貫性評価
+- 7/09: Claude plays robotics（ロボティクス制御実験）
+- 7/08: An off switch for dual-use knowledge in AI models（デュアルユース知識の危険利用防止）
+- Anthropic の研究方向: 安全性・有用性・価値観の整合が多角的に進んでいる。
+
+**Anthropic インフラパートナーシップ（規模感として記録）**
+- Google + Broadcom と複数ギガワット規模の次世代コンピュート拡大を発表（7/14付け）
+- Amazon とも最大 5GW の新コンピュート協定（7月）
+- Anthropic のインフラ規模が急拡大中 → Claude サービス安定性・能力向上の根拠
+
+**会計×AI トレンド（2026-07-14 時点）**
+- **マネーフォワード AI Cowork**: 7/14 時点でも正式リリースアナウンス未確認（継続ウォッチ）。
+- **経理 AI 導入率**: 約 24%（導入企業の 68.3% が業務時間短縮実感）。前日から変化なし。
+- **freee AI OCR**: 印刷レシート 90%超・手書き領収書 75%前後の精度（2026年アップデート継続）。
+- **freee vs MF 比較**: freee はマッチング精度、MF は連携範囲（M365 含む）が主な差別化軸として明確化。
+- **バクラク × freee API 連携動向**: freee APIポリシー改定の波紋あり。LayerX は複数の会計ソフト対応拡張を表明中。
+- **2026年経理DX定説**: 「AI-OCR（定型処理）+ 生成AI（判断・文書作成）」の二刀流。
+
+**Zenn / Qiita（2026-07-14 時点）**
+- カンリー社内 Claude Code 勉強会資料（Zenn）: hooks 設定スキーマ変更・SDD の考え方を解説
+- 「Claude Code を4ヶ月使ってわかった、おすすめコマンド・スキル 10 選」（Qiita, 6/26, Qiita Tech Festa 参加記事）
+- 「Claude Code、とりあえずこれ読んどけばOKなまとめ（2026年版）」（Qiita）: 学習リソース総まとめ
+
+#### references.md 更新提案
+- **v2.1.208 axScreenReader オプション**: アクセシビリティ設定として settings のオプション一覧に追記を提案（`"axScreenReader": true` / `CLAUDE_AX_SCREEN_READER=1`）。
+- **Anthropic コンピュートパートナーシップ（Google/Broadcom・Amazon）**: インフラ規模の急拡大。Claude サービス稳定性の根拠として reference 資料への追記を提案。
+※ 直接更新は行わない。Takの確認後に実施。
+
+#### 新規発見ソース候補
+なし（本日新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-15（翌日）。
+注目点:
+① **マネーフォワード AI Cowork 正式リリースアナウンス**: 7月末まで残り17日。毎日監視継続。
+② **Claude Fable 5 アクセス期限 7/19 接近**: 5日後。7/19 前後のコスト変化確認を事前準備。
+③ **TBP-003・TBP-004 昇格候補**: 6/22 提案から22日経過。Takへの確認促しを継続。
+④ **v2.1.208 以降の続報**: 7/14 リリースの翌日。v2.1.209 以降の変更をウォッチ。
+⑤ **Anthropic Economic Index（Canada）論文精読**: 日本の経理×AI トレンドを類推する参考情報として。
+
+---
 ## [2026-07-13] デイリーレポート
 
 ### 内部知見（機能A）
