@@ -1,3 +1,102 @@
+## [2026-07-15] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち23日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち。23日経過でリマインド。
+- **TBP-004候補**（2026-06-22 提案・確認待ち23日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち。23日経過でリマインド。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.210 isolation:worktree サブエージェント修正）**: v2.1.210 で `isolation: 'worktree'` サブエージェントがメインリポジトリの checkout に対して git 変更コマンドを実行できるバグを修正。TBP-001「最小権限」の原則において、worktree 分離設計の実装バグが想定より大きな影響を与えていた可能性。Research Hub の Workflow で worktree isolation を使うサブエージェントがある場合、v2.1.210 へのアップデートで修正済みであることを確認推奨。
+- **TBP-001 再評価トリガー（v2.1.210 ultracode 誤発火修正）**: ultracode キーワードによる opt-in が、webhook ペイロードや中継 PR コメント等の非ヒューマン入力でも発火していたバグを修正。Research Hub の Routine が PR コメント等を処理する場合、意図しない ultracode 起動が抑止されたことを確認推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.210 確認（2026-07-14 リリース）
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 7/15 時点最新記事確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/15 新規 issue 一覧
+- Zenn: Claude Code × Codex 最新モデル使い分けガイド（2026年7月版）
+- Qiita: Claude Code 週次アップデートまとめ（2026/07/11週）継続参照
+- 会計×AI: マネーフォワード AI Cowork / freee・MF・バクラク AI機能 2026年7月
+
+#### 🔴 即座に適用すべき事項
+
+**Claude Code v2.1.210（2026-07-14 リリース）— worktree 分離バグ修正 + ultracode 誤発火修正**
+- **isolation:worktree サブエージェントの git 操作修正（重要）**: worktree 分離設定のサブエージェントがメインリポジトリの checkout に対して git 変更コマンドを実行できるセキュリティバグを修正。意図しないメインブランチへの git 操作が防止された。
+- **ultracode 誤発火修正**: ultracode キーワード opt-in が webhook ペイロード・中継 PR コメント等の非ヒューマン入力でも発火していたバグを修正。Research Hub の Routines への直接影響は低いが、PR コメント処理系の処理の安全性が向上。
+- **ツールサマリー行にライブ経過時間カウンター追加**: 折りたたまれたツールサマリー行に経過時間が表示されるようになり、長時間実行のツール呼び出し中に「止まっている」ように見えなくなった。
+- **Write/NotebookEdit/Glob パス設定の警告**: `Write(path)`・`NotebookEdit(path)`・`Glob(path)` の権限ルールに起動時警告を追加（`Edit(path)` や `Read(path)` を使うよう誘導）。
+- 🔴 直接適用事項: worktree isolation を使う Workflow サブエージェントがある場合は v2.1.210 を確認。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Anthropic ブログ「Inviting hard questions」（2026-07-09）精読**
+- AIに関する難しい質問（誰がルールを決めるか、子どもへの影響、世界を危険にするか、科学者支援）に Anthropic が回答するブログ。
+- Tak の AI との向き合い方・思想形成の参考情報として有用。
+- 🟡 アクション: anthropic.com/news/hard-questions で全文確認。Research Hub に記事化候補として記録。
+
+**2. Alberta 州政府 × Claude Code 事例の深堀り（2026-07-06）**
+- Alberta 州政府が Claude Code（Opus + Sonnet）で 4.66億行のコードを20時間でスキャン、脆弱性を自動検出・修正。通常チームの数ヶ月相当の作業を1日で完了。
+- 大規模コードベース監査への Claude Code 実用性の公式事例として記録。Research Hub に記事化推奨。
+- 🟡 アクション: anthropic.com/news/alberta-government-claude-cybersecurity で全文確認。
+
+**3. マネーフォワード AI Cowork 正式リリースアナウンス（引き続き最優先）**
+- 7/15 時点でも「2026年7月より提供開始予定」表記が継続。正式リリースアナウンス未確認。7月末まで残り16日。
+- Tak の本業（経理部長）に直結。確認次第 auto-research-collect 枠で即時記事化推奨。
+- 🟡 アクション: biz.moneyforward.com で毎日確認継続。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-07-15）**
+- Issue #77930（lokkaflokka）: Claude Code Routines on web — スケジュール・webhook トリガータスクの改善要望。Research Hub の Routines 設計に直接関連する issue として継続監視推奨。
+- Issue #77929（CpLabLibs）: 詳細未確認。
+- 7/14 付け PR: plugin development validation・hookify rules・hook error handling・issue-automation telemetry の修正。
+
+**Anthropic ニュース（2026-07-15 時点）**
+- 7/09: 「Inviting hard questions」— AI の難問に回答
+- 7/06: Alberta 州政府 × Claude Code サイバーセキュリティ事例
+- 7/02: Fable 5 のサイバーセーフガードとジェイルブレークフレームワーク詳細
+- 7/01: Fable 5・Mythos 5 再展開（輸出規制解除後）。グローバルに利用可能に。
+- Anthropic × Amazon: 最大 5GW の新規コンピュート拡大協定。インフラ規模急拡大継続。
+- Fable 5 アクセス: 7/19 まで有料サブスクライバー向けに 50% レート制限ブースト付きで延長中。7/19 以降はクレジット制（$10/$50 per Mtok）に完全移行。
+
+**Zenn / Qiita（2026-07-15 時点）**
+- 「Claude Code × Codex 最新モデルの特徴と使い分け（2026年7月版）」（Zenn, nenene01）: Fable 5・Sonnet 5 のマルチエージェント活用ガイド。
+- Qiita 週次アップデートまとめ（2026/07/11週）: 前週（v2.1.202〜207）のハイライト日本語版。3大ハイライト: ① In-app Browser on Desktop、② Background Agent 自動アップグレード、③ auto-update メモリ削減 (~400MB)。
+
+**会計×AI トレンド（2026-07-15 時点）**
+- **マネーフォワード AI Cowork**: 7/15 時点でも正式リリースアナウンス未確認（継続ウォッチ）。
+- **経理 AI 導入率**: 約 24%（導入企業の 68.3% が業務時間短縮実感）。前日から変化なし。
+- **freee・MF MCP 対応**: 2026年3月26日以降、freee・マネーフォワード クラウドの全プランに MCP 連携が追加料金なしで提供中。freee MCP (OSS) は 270+ API に Claude Code から直接アクセス可能。
+- **バクラク**: 規定違反自動検出で差し戻し率 60% 削減事例継続。freee 会計 API 連携でワンクリック仕訳・証憑連携が可能に。
+- **会計 AI 2026年定説**: 「AI-OCR（定型処理）+ 生成AI（判断・文書作成）」の二刀流。月次決算を5営業日短縮、仕訳処理75%削減が業界標準報告値。
+
+#### references.md 更新提案
+- **v2.1.210 isolation:worktree サブエージェント修正**: worktree 分離設計セクションへの追記提案（「v2.1.210 以前は worktree isolation サブエージェントがメインリポジトリに git 変更を加えられるバグあり。v2.1.210 で修正済み」）。
+- **v2.1.210 ultracode 誤発火修正**: Workflow/ultracode 設計セクションへの追記提案（「ultracode キーワードは webhook・PR コメント等の非ヒューマン入力では発火しない（v2.1.210〜）」）。
+- **v2.1.210 Write/Glob/NotebookEdit(path) パス権限警告**: 権限設計セクションへの追記提案（「Write/Glob/NotebookEdit の path 設定は非推奨。Edit(path)/Read(path) を使うよう起動時警告が出る（v2.1.210〜）」）。
+※ 直接更新は行わない。Takの確認後に実施。
+
+#### 新規発見ソース候補
+なし（本日新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-16（翌日）。
+注目点:
+① **マネーフォワード AI Cowork 正式リリースアナウンス**: 7月末まで残り16日。毎日監視継続。
+② **Fable 5 アクセス期限 7/19 接近**: 残り4日。7/19 前後のコスト変化を事前確認。Max 契約未満は注意。
+③ **TBP-003・TBP-004 昇格候補**: 6/22 提案から23日経過。Takへの確認を促すリマインド継続。
+④ **v2.1.210 以降の続報**: 7/14 リリースの翌日。v2.1.211 以降の変更をウォッチ。
+⑤ **GitHub Issue #77930 (Routines on web)**: スケジュール・webhook トリガータスクの改善動向。Research Hub Routines 設計に関連。
+
+---
+
 ## [2026-07-14] デイリーレポート
 
 ### 内部知見（機能A）
