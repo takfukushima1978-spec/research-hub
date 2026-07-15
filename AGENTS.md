@@ -1,0 +1,236 @@
+# Research Hub
+
+## プロジェクト概要
+
+パーソナルAIリサーチ基盤。Web検索で収集した記事をSupabase DBに蓄積し、Webビューワーで閲覧する。
+Deep Research機能で記事の深掘り調査を実行し、結果をビューワーに表示する。
+朝6:57 JSTにDiscordへスマホプッシュ通知を送る。
+
+## アーキテクチャ
+
+```
+[投入パイプライン]
+  auto-research-collect    (3:03 JST) ─┐
+  auto-Codex-watch   (4:00 JST) ─┤  ← Codex 公式 + 学習マップ
+  ChatGPT GPTs ────────────────────────┼→ research-hub-relay (Cloudflare Worker) →┐
+  Gmail Import (外部スクリプト) ───────┘                                          ▼
+                                                          Edge Function (insert-article) → RPC → DB
+
+[Deep Research パイプライン]
+  Web UI 🔬ボタン → deep_research_requests (pending)
+  deep-research-runner (6:00 JST) → Web検索深掘り → Edge Function (deep-research) → RPC → DB (completed)
+
+[フィードバック → フォローアップ記事パイプライン]
+  Web UI 記事末尾の💬入力 → article_feedbacks (pending)
+  feedback-article-runner (7:30 JST) → フィードバック起点でWeb検索 → insert-article → DB (completed, follow_up_article_id リンク)
+
+[通知パイプライン]
+  auto-research-morning-email (6:57 JST) → Worker /notify/discord → Discord webhook → スマホ通知
+
+[学習マップ（スタンプラリー）]
+  docs/Codex-learning-map.md (SSOT)
+    ↓ scripts/seed-Codex-topics.mjs
+  research.claude_code_topics (進捗tracking)
+    ↑ auto-Codex-watch が未カバー優先で解説記事化
+
+[表示]
+  index.html (GitHub Pages) → Supabase REST API → research スキーマ → ブラウザ表示
+    ├ 記事ライブラリ（一覧/フィルタ/記事ビューワー）
+    └ 🎯 学習マップ スタンプラリー（ヘッダーボタンで切替。learning_topics を anon 遅延fetch→ジャンルカード+進捗バー+トピック→related_article_ids 経由で記事へ。クライアント集計・RPC不要）
+  thinking-map.html (GitHub Pages) → 思考学習 世界観マップ（B1階層ナビ型・静的、各トピックから articles Edge Function の記事ビューワーへ外部リンク。index からリンク。内容SSOT: docs/thinking-learning-worldview.md）
+```
+
+クラウド sandbox から Supabase に直接アクセスすると Cloudflare bot 検知で 403 になるため、
+すべての Routines は `research-hub-relay` Worker を経由する。詳細は `scheduled-tasks.md` を参照。
+
+## 技術スタック
+
+- **フロントエンド**: 静的HTML（index.html単体、GitHub Pages 配信: https://takfukushima1978-spec.github.io/research-hub/）
+- **バックエンド**: Supabase（PostgreSQL + Edge Functions）
+- **中継層**: Cloudflare Workers (`research-hub-relay`)
+- **通知**: Discord webhook
+- **DBスキーマ**: `research`（articles, tags, article_tags, categories, deep_research_requests, article_feedbacks 等）
+- **Edge Functions**: Deno（TypeScript）
+- **認証**: INTERNAL_TOKEN（X-Internal-Token / Authorization: Bearer 両対応）
+
+## Edge Functions
+
+| 関数名 | 用途 | 認証 |
+|---|---|---|
+| `insert-article` | 記事投入（v2.3: 品質ノルマ検証 + embedding重複検知 opt-in） | INTERNAL_TOKEN |
+| `deep-research` | Deep Research（request / list_pending / complete） | INTERNAL_TOKEN |
+| `articles` | 記事HTMLビューワー（読み取り専用） | なし |
+
+## Cloudflare Workers (research-hub-relay)
+
+| 項目 | 値 |
+|---|---|
+| URL | `https://research-hub-relay.tak-fukushima1978.workers.dev` |
+| ソース | このリポジトリの `worker/` |
+| デプロイ | `cd worker && npx wrangler deploy` |
+| Secret | `INTERNAL_TOKEN` / `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `DISCORD_WEBHOOK_URL`（`wrangler secret bulk` で JSON 経由登録） |
+| ログ確認 | `cd worker && npx wrangler tail` |
+
+エンドポイント:
+
+| メソッド | パス | 役割 |
+|---|---|---|
+| POST | `/functions/v1/insert-article` | Supabase Edge Function 中継 |
+| POST | `/functions/v1/deep-research` | Supabase Edge Function 中継 |
+| POST | `/rest/v1/rpc/<name>` | Supabase RPC 中継 (public スキーマ、Accept-Profile 付与なし) |
+| GET | `/rest/v1/articles?<query>` | research スキーマのテーブル取得 (Accept-Profile: research 付与) |
+| POST | `/notify/discord` | DISCORD_WEBHOOK_URL に body をそのまま転送 |
+
+クライアントは `X-Internal-Token` のみ送る。Worker が Supabase 向けに `Authorization: Bearer <anon>` と `apikey` を内部付与する。
+
+**RPC deny list（書き込み系 RPC の直叩き禁止、2026-05-27 強化）**:
+以下の書き込み系 RPC は Worker 経由での**直叩きを禁止**（403 を返す）。対応する Edge Function 経由でのみ呼び出し可能:
+
+| 禁止 RPC | 正規経路 |
+|---|---|
+| `insert_research_article` | `/functions/v1/insert-article` |
+| `add_manual_article` | `/functions/v1/insert-article` |
+| `create_deep_research_request` | `/functions/v1/deep-research` (`action: "request"`) |
+| `complete_deep_research` | `/functions/v1/deep-research` (`action: "complete"`) |
+
+経緯: 2026-05-27 にエージェントが `insert-article` Edge Function で品質ノルマ違反 (400) を食らった後、`insert_research_article` RPC を直叩きしてノルマを完全 bypass する抜け道を発見。Edge Function の品質ノルマ・X-Allow-Override 防御は Worker の deny list と組み合わせて初めて構造的に守られる。
+
+## RPC一覧
+
+| RPC名 | スキーマ | 用途 |
+|---|---|---|
+| `insert_research_article` | public | 記事投入（カテゴリ自動作成・slug重複対策付き） |
+| `create_deep_research_request` | public | Deep Researchリクエスト登録 |
+| `complete_deep_research` | public | Deep Research結果書き戻し |
+| `get_pending_deep_research` | public | 未処理リクエスト一覧 |
+| `get_article_research` | public | 記事のDeep Research結果取得（result_body含む） |
+| `toggle_article_flag` | public | 記事の既読/クリップフラグ切替 |
+| `add_manual_article` | public | 手動記事登録 |
+| `get_recent_article_digests` | public | 直近N日分のtitle/summary/tags/category取得（重複検知用、デフォルト14日） |
+| `get_preference_profile` | public | クリップ記事のタグ/ジャンル別重み（直近重め）を集計した好みプロファイル取得（topic 選定用、ADR-LG-009） |
+| `submit_article_feedback` | public | 記事へのフィードバック自由入力を登録（UI から呼ぶ、status=pending） |
+| `get_pending_feedbacks` | public | 未処理フィードバック + 起点記事文脈を取得（feedback-article-runner 用） |
+| `complete_article_feedback` | public | フィードバックを completed/skipped にマークし follow_up_article_id をリンク |
+| `find_similar_articles_by_embedding` | public | embeddingベース類似記事検索（pgvector cosine、opt-in） |
+| `update_article_embedding` | public | 記事のembeddingを書き戻す |
+| `get_uncovered_claude_code_topics` | public | Codex 学習マップの未カバートピック取得（auto-Codex-watch 用） |
+| `mark_topic_covered` | public | トピックを covered/deep にマークし article_count を更新 |
+| `get_claude_code_coverage_summary` | public | 領域別の coverage 進捗サマリ |
+| `upsert_claude_code_topic` | public | learning-map.md → DB 同期用 upsert（seed スクリプトから呼ぶ） |
+
+注: 全 RPC が `public` スキーマ。PostgREST 直叩きで呼ぶ場合、`Accept-Profile: research` を**付けてはいけない**（schema 不一致で `PGRST202: Could not find function` になる）。Edge Function 経由なら supabase client が適切に解決する。
+
+## 設定ファイル
+
+| ファイル | 場所 | 内容 |
+|---|---|---|
+| `.supabase-config` | **`C:\dev\.secrets\`（正本・git 射程外）** / fallback: tak-work/リサーチ/auto-research/ | SUPABASE_URL, INTERNAL_TOKEN, PROJECT_ID。2026-06-21 に git 射程外へ退避（[[secret-config-file-disappeared]] の恒久対策）。スクリプトは `.secrets` 最優先→ tak-work fallback で探索 |
+| `.discord-config` | **`C:\dev\.secrets\`（正本・git 射程外）** / fallback: tak-work/リサーチ/auto-research/ | DISCORD_WEBHOOK_URL（Worker secret 再登録用、git管理外） |
+| `openapi-research-hub.json` | このリポジトリ | ChatGPT GPTs用 OpenAPI Schema |
+| `05_gmail_to_supabase.py` | tak-work/リサーチ/auto-research/ (git管理外) | Gmail Import → insert-article 呼び出しスクリプト。`.Codex/settings.local.json` に allow 登録あり |
+| `worker/wrangler.toml` | このリポジトリ | research-hub-relay の Cloudflare Workers 設定 |
+| `prompts/*-CONSOLE.md` | このリポジトリ | Anthropic Console 貼り付け用プロンプトテンプレ (プレースホルダ含む) |
+| `prompts/CONSOLE-READY-*.md` | このリポジトリ (.gitignore) | 上記テンプレに実値を埋め込んだローカル専用ファイル。絶対に commit しない |
+
+## スケジュールタスク（Routines）
+
+詳細は `scheduled-tasks.md` を参照。トリガー ID とプロンプト同期日も同ファイルで管理する。
+
+| 名前 | trigger ID | cron (JST) | 内容 |
+|---|---|---|---|
+| `auto-research-collect` | trig_01M35mr4nxRZZVWjFrtRdZyf | 3:03 | Web検索（曜日別軸+公式ニュース最優先） → Worker経由でDB投入 + 重要記事のDR自動キューイング |
+| `auto-Codex-watch` | trig_015mNBjdX8Uyq9av2FSRTa2T | 4:00 | Codex 公式の新規発信を記事化。不足分は学習マップから未カバートピックを解説記事化（合計3件保証） |
+| `deep-research-runner` | trig_01C2e5bSQA4xqznQ3oY3QgQU | 6:00 | pendingなDRを最大3件処理 → 深掘りWeb検索 → completed書き戻し |
+| `feedback-article-runner` | trig_01MYmCzYp5uGNEncchErp2vX | 7:30 | pending な記事フィードバックを最大3件処理 → フィードバック起点でWeb検索 → 追加詳細記事を投入 |
+| `auto-research-morning-email` | trig_01849zsAtA2CXcHwXoVwyKhv | 6:57 | 本日記事をDBから取得 → Worker /notify/discord → Tak のスマホDiscord通知 (embed形式) |
+| `daily-research` | trig_01Kzbo6hYAe2nqo52FdxfsmA | 8:00 | My-Profile-and-Memoryリポジトリ。Research Hub とは別系統 |
+
+全 Routine の環境設定は「**Cloudflare Workers_My Reserch**」を共有。Allowed domains に `research-hub-relay.tak-fukushima1978.workers.dev` を登録済み。
+
+## ChatGPT GPTs連携
+
+- GPTs名: Research Hub Writer
+- Actions: `insertArticle`（記事投入）、`deepResearch`（Deep Research）
+- 認証: API Key (Bearer) — INTERNAL_TOKENと同じ値
+- スキーマ: `openapi-research-hub.json`
+- ※ ChatGPT GPTs は data center IP からのアクセスでも Cloudflare bot 検知に弾かれにくい (User-Agent が ChatGPT 公式で許可されている)。Worker 中継は使わず Supabase Edge Function 直叩きで OK
+
+## 記事品質ノルマ（insert-article v2.2 〜）
+
+auto-research-collect の連日重複・薄っぺら問題対策として `insert-article` で以下を強制する:
+
+| 項目 | 下限 | 環境変数で上書き |
+|---|---|---|
+| `body_text` 文字数 | 1500 | `MIN_BODY_TEXT_LENGTH` |
+| `source_urls` 件数 | 3 | `MIN_SOURCE_URLS` |
+| `tag_names` 件数 | 4 | `MIN_TAG_NAMES` |
+
+ノルマ未達時は 400 を返し、`details` に不足項目を列挙する。
+手動投入で一時的にスキップしたい場合は payload に `quality_override: true` を付けつつ、
+**かつ HTTP リクエストヘッダー `X-Allow-Override: yes` を併せて送る**必要がある（2026-05-26 強化）。
+Worker (`research-hub-relay`) は転送ヘッダーを最小限に絞っており `X-Allow-Override` を**転送しない**ため、
+Routine やクラウド sandbox 経由では構造的に override 不可。手動 curl で test-article.json 等を投入する際は
+`-H "X-Allow-Override: yes"` を追加すること。
+
+経緯: 2026-05-26 の auto-Codex-watch 初回実行で、エージェントがプロンプト指示
+（`quality_override は使わない`）を無視して `quality_override:true` をペイロードに含め、
+タグ数 0〜1 の記事 4 本を素通りさせた事故 → ペイロード単独では override 効かない構造に変更。
+
+スケジュールタスク側の対応プロンプトは `prompts/auto-research-collect-CONSOLE.md` を参照（リポジトリ版は手動同期、Console 上は固定文字列でコピーされる仕様）。
+収集前に `get_recent_article_digests` を呼んで重複テーマを除外し、JST曜日別の軸ローテーションでネタ偏りを防ぐ。
+
+## 公式ニュース最優先ルール (auto-research-collect)
+
+主要AIラボ・プラットフォーマー・規制機関の公式ソース (Anthropic / OpenAI / Google DeepMind / Meta / NVIDIA / EU AI Act / NIST 等) で
+過去 24〜48 時間以内に新規発表があれば、当日の曜日軸とは別枠で **必ず** 記事化する。
+既存記事と重複する場合は、技術詳細・競合比較・反対意見など別アングルで再記事化する。
+詳細は `prompts/auto-research-collect-CONSOLE.md` Step 1.5 を参照。
+
+## 好みフィードバック・ループ (auto-research-collect)
+
+Tak がビューワーでクリップした記事 (`articles.is_clipped`) を好み信号として topic 選定に反映する（設計: tak-lifelog ADR-LG-009）。
+
+- 収集前に `get_preference_profile` RPC でタグ/ジャンル別重み（半減期30日の recency weighting）を取得
+- topic を **好み / バランス（曜日軸）/ 探索** の3系統で配分。コールドスタート時（clips<5）は好み枠0
+- ガードレール: 単一L1ジャンル占有率 40% 上限・探索枠は必ず1以上・各記事の由来系統を Step 8 サマリに記録
+- RPC 取得失敗時は好み枠0の従来動作にフォールバック（収集は止めない）
+
+詳細は `prompts/auto-research-collect-CONSOLE.md` Step 1.7 を参照。依存 migration: `20260610000002_preference_profile.sql`。
+
+## 記事フィードバック → フォローアップ記事自動生成
+
+ビューワーの記事末尾に自由入力フィードバック欄（💬）を設け、Tak の「もっと知りたい」要望を起点に翌朝追加記事を自動生成する。
+
+- UI（index.html）: 記事詳細末尾の textarea → `submit_article_feedback` RPC → `research.article_feedbacks` (status=pending)。送信済み記事には「💬 送信済み」バッジ表示
+- runner（`feedback-article-runner` 7:30 JST）: `get_pending_feedbacks` で最大3件取得 → フィードバック角度で Web 検索 → 起点記事の続編として8セクション記事を生成 → `insert-article`（品質ノルマ適用）→ `complete_article_feedback` で `follow_up_article_id` をリンク
+- ガードレール: 1セッション最大3件・再生成最大2回でskip・1件失敗で止めない（auto-research-collect と同型）
+- 依存 migration: `20260611000001_article_feedbacks.sql`。プロンプト: `prompts/feedback-article-runner-CONSOLE.md`
+
+## 自動 Deep Research
+
+`auto-research-collect` は重要記事 (公式メジャーリリース / 業界インパクト大 / 業務直結) を投入した直後に
+`deep-research` Edge Function の `action: "request"` を呼んで Deep Research を自動キューイングする。
+priority は 1〜3 で、公式メジャーリリースは 3 を指定。
+
+pending な request は翌朝 6:00 JST の `deep-research-runner` が拾って深掘り処理する（最大3件/日）。
+
+※ 2026-05-23 観測: auto-research-collect が `action=request` した直後に DR が `completed` 状態になる現象あり。Phase 2 で要調査（memory `dr-self-completion-mystery.md` 参照）。
+
+## embedding ベース重複検知 (opt-in)
+
+`articles.embedding vector(1536)` カラムと `find_similar_articles_by_embedding` RPC を用意済み。
+auto-research-collect が投入時に `embedding` を payload に含めると、insert-article が cosine 類似度を計算し
+閾値 (デフォルト 0.85) 以上の既存記事があれば 409 で重複拒否する。embedding 生成は呼び出し側の責務
+(OpenAI text-embedding-3-small / Voyage AI voyage-3 等)。embedding を送らない既存フローはそのまま動作。
+
+## 開発メモ
+
+- Edge FunctionのINTERNAL_TOKENはSupabase Dashboard > Edge Functions > Manage Secretsで管理
+- ChatGPT GPTsは同一ドメインで複数Actionを作れない（1スキーマに統合が必要）
+- ChatGPT GPTsのOpenAPIはoneOfに非対応（単一objectスキーマで代替）
+- Supabase Free tierはアイドル時にスリープ → 初回アクセスで502タイムアウトの可能性あり
+- **Anthropic Routines のクラウド sandbox は outbound allowlist 方式**。任意ホストへの接続は Routine 個別の環境設定 → ネットワークアクセス → Custom → Allowed domains で追加する。グローバル `Codex.ai/settings/capabilities` の追加は反映バグあり
+- **Supabase Edge Function 前段の Cloudflare bot 検知**でデータセンター IP（Anthropic Routines / GitHub Actions 等）は 403 → Worker 中継で回避済み
+- **Routines の Gmail コネクター**は `gmail_create_draft` のみ提供、`gmail_send_draft` は環境内で利用不可。自動メール送信したい場合は Discord/Slack/Telegram の webhook 型を選ぶ
+- **Console プロンプトとリポジトリの prompts/ は手動同期**。リポジトリ更新後は scheduled-tasks.md の「最終同期日」を更新するルール
+- **PowerShell stdin pipe で wrangler secret put すると改行混入**。必ず `wrangler secret bulk` で JSON ファイル経由を使う

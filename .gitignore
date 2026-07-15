@@ -18,6 +18,9 @@ credentials.json
 # Console 貼り付け用の secrets 埋め込み済みプロンプト（ローカル専用、絶対に commit しない）
 prompts/CONSOLE-READY-*.md
 
+# Deep Research 開発時のスクラッチファイル（テスト出力・使い捨て）
+scripts/tmp/
+
 # Cloudflare Workers のビルド成果物・依存
 worker/.wrangler/
 worker/node_modules/
