@@ -1,3 +1,106 @@
+## [2026-07-16] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち24日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち。24日経過でリマインド。
+- **TBP-004候補**（2026-06-22 提案・確認待ち24日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち。24日経過でリマインド。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.211 PreToolUse hook バグ修正）**: auto mode が PreToolUse hook の「ask」決定を上書きしてしまう（unsandboxed Bash に対して）バグが修正。TBP-001「最小権限」設計において、hook による承認フローが期待通り機能しない状態があったことを確認。v2.1.211 以降では修正済み。Research Hub で PreToolUse hook を設定している場合は動作確認推奨。
+- **TBP-001 再評価トリガー（Claude for Teachers に Claude Code + Cowork 含まれる）**: 米国 K-12 教育者向けに Claude Code + Cowork を含む無料プレミアムアクセスが提供開始。新しい層（教育者）への Claude Code 普及事例。TBP-001「外部ツール導入審査」の観点で、教育機関での権限設計・活用事例として参照価値あり。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.211（7/15）、v2.1.212（7/16）確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Claude's new constitution / Claude for Teachers / Claude Science / How Australia Uses Claude
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/16 新規 issue 確認（#78275, #78276）
+- Zenn / Qiita: 7/16 トレンド記事・Claude Code Zenn 執筆環境構築記事
+- 会計×AI: マネーフォワード AI Cowork / freee MCP 累計利用状況 / バクラク OCR 精度
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.211（2026-07-15 リリース）— セキュリティ修正含む重要アップデート**
+- **権限プレビュースプーフィング修正（🔴 セキュリティ）**: チャットチャネルに中継された権限確認プレビューが、Bidirectional-override・ゼロ幅文字・見た目が似たクォート文字を無害化しないバグを修正。ツール入力が承認メッセージを視覚的に改ざんできる脆弱性が塞がれた。
+- **PreToolUse hook の ask 決定が auto mode に上書きされるバグ修正**: unsandboxed Bash に対して auto mode が hook の「ask」判断を無視していた。TBP-001 の最小権限設計に直結するバグ修正。
+- **並列セッション同時ログアウトバグ修正**: 共有クレデンシャルストアを使う複数の Claude Code セッションが、スリープ復帰後に全セッション同時ログアウトする問題を修正。
+- **plugin MCP サーバー再接続バグ修正**: アイドル後のウェブセッション復帰時に plugin MCP サーバーが再接続されないバグを修正。Research Hub の Routine 実行後のセッション復帰に関連する可能性あり。
+- **`--forward-subagent-text` フラグ新設**: `CLAUDE_CODE_FORWARD_SUBAGENT_TEXT` 環境変数でサブエージェントのテキストと thinking を stream-json 出力に含めることが可能に。Workflow サブエージェントのデバッグ・ログ収集に活用可能。
+- 🔴 直接適用事項: v2.1.211 を確認。Research Hub の hook 設定・MCP サーバー設定の動作を再検証推奨。
+
+**2. Fable 5 アクセス期限 7/19（3日後）— クレジット制移行**
+- 7/20 以降、Fable 5 は プリペイドクレジット制（$10/M input tokens / $50/M output tokens）に完全移行。
+- Max プラン加入者は Max の枠内（週次制限の 50%）で 7/19 まで引き続き利用可能。
+- 7/20 以降は Settings → Usage でクレジットを購入する必要あり（自動チャージ設定可）。
+- Anthropic は「十分なコンピュートが確保できたらサブスクリプションに戻す」としているが日程未定。
+- 🔴 アクション: Tak の Claude プランを確認し、7/19 以降のコスト変化を事前把握。Research Hub の Routine が auto モードで Fable 5 を使っている場合はコスト増に注意。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Claude's new constitution（Anthropic 公式、2026-07-16 頃）**
+- Anthropic が Claude の価値観・行動規範を定めた「新しい constitution」を CC0 1.0（パブリックドメイン）で全文公開。Claude の思想的バックボーンを理解する一次資料として最重要。
+- Tak の「AI との向き合い方・思想形成」にも直結する内容。My-Profile-and-Memory にメモとして保存する価値あり。
+- 🟡 アクション: anthropic.com/news/claude-new-constitution を全文精読。Research Hub に記事化候補として記録。
+
+**2. Claude for Teachers（Anthropic、2026-07-14 前後）**
+- 米国 K-12 教育者（教員資格確認済み）に Claude Code + Cowork を含む無料プレミアムアクセスを提供。
+- Claude が「days-long エージェント作業を持続できる」特性を教育分野に本格展開した事例。AI 浸透の社会的インパクトを把握する観点で参考情報として価値あり。
+- 🟡 アクション: anthropic.com/news/claude-for-teachers で詳細確認。Research Hub に参考記事として記録。
+
+**3. Claude Science（Anthropic、2026-07 リリース）**
+- 科学者向け AI ワークベンチ。研究者が頻繁に使うツール・パッケージを統合し、監査可能なアーティファクトを生成、柔軟な計算リソースアクセスを提供。Pro/Max/Team/Enterprise で beta 公開。
+- AI を科学研究インフラに組み込む Anthropic の戦略的方向性として注目。Research Hub の Deep Research 機能の参考にもなりうる。
+- 🟡 アクション: anthropic.com/news/claude-science-ai-workbench で詳細確認。AI for Science プロジェクト（9月〜12月）の応募要件も確認。
+
+#### 🟢 参考情報
+
+**Claude Code v2.1.212（2026-07-16 リリース）**
+- 本日リリース。詳細情報限定。引き続き公式チェンジログを確認。
+
+**GitHub Issues 新着（2026-07-16）**
+- Issue #78276（arijitroy003）: area:model バグ（再現手順必要）
+- Issue #78275（dsharma）: area:cowork + area:skills バグ（詳細再現手順あり）
+- Research Hub Routines への直接影響は現時点で確認されず。
+
+**How Australia Uses Claude（Anthropic Economic Index）**
+- カナダに続いてオーストラリア版も公開（7/16 前後）。業種別・用途別の Claude 活用パターンを分析。日本市場でのトレンドを類推する参考情報として有用。
+- 🟢 アクション: Research Hub に記事化候補として記録。
+
+**Zenn / Qiita（2026-07-16）**
+- 「Claude Code と Zenn 執筆環境を一から育てた記録」（shimo4228）: Claude Code を使った Zenn/Qiita/Hashnode 同時投稿ワークフロー自動化実践例。
+- 「Claude Codeですべての日常業務を爆速化しよう！」（minorun365, Qiita）: 実務活用ガイド継続トレンド。
+- 7/16 Qiita トレンド（ennagara128）: 「YouTube集客テクニックを Claude Code で多角的に調査」が上位入り。
+
+**会計×AI（2026-07-16 時点）**
+- **マネーフォワード AI Cowork**: 依然「2026年7月より提供開始予定」のみ。7月末まで残り15日。正式リリースアナウンス未確認継続。
+- **freee MCP 累計 250 万回 API 呼び出し達成**（3月公開以来）: freee × Claude Code 連携の実採用が想定より速いペースで拡大。経理部門での Claude Code 活用が本格化している証左。
+- **バクラク OCR 99%+精度継続**: 手書き混じり請求書でも 99% 超を公称。バクラク × freee API 連携でワンクリック仕訳が安定稼働中。
+
+#### references.md 更新提案
+- **v2.1.211 PreToolUse hook 修正**: 権限・hook 設計セクションへの追記を提案（「auto mode が PreToolUse hook の ask 決定を上書きするバグは v2.1.211 で修正済み。hook による承認フロー設計は v2.1.211 以降に前提を置くこと」）。
+- **v2.1.211 権限プレビュースプーフィング修正**: セキュリティセクションへの追記を提案（「チャットチャネルへの権限確認リレー時の視覚的改ざん脆弱性は v2.1.211 で修正済み」）。
+- **Claude's new constitution（CC0 1.0）**: Claude の思想的バックボーンの一次資料として references への追加を提案（`anthropic.com/news/claude-new-constitution`）。
+※ 直接更新は行わない。Takの確認後に実施。
+
+#### 新規発見ソース候補
+なし（本日新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-17（翌日）。
+注目点:
+① **Fable 5 クレジット制移行（7/20）の前日確認**: 7/19 が最終日。Tak の Claude プラン・Routine の auto モード設定を確認。
+② **マネーフォワード AI Cowork 正式リリースアナウンス**: 7月末まで残り15日。毎日監視継続。
+③ **TBP-003・TBP-004 昇格候補**: 6/22 提案から24日経過。Takへの確認リマインド継続。
+④ **Claude's new constitution 精読**: CC0 公開の Claude 思想文書。My-Profile-and-Memory への記録候補。
+⑤ **v2.1.212 詳細**: 本日リリースの変更内容確認。
+
+---
 ## [2026-07-15] デイリーレポート
 
 ### 内部知見（機能A）
