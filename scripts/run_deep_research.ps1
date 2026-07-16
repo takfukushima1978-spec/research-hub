@@ -1,6 +1,12 @@
 # Deep Research Executor - Local run
 # Executed by Windows Task Scheduler on weekdays at 3 AM
 
+# Task Scheduler は -NoProfile で起動するため、対話シェル（$PROFILE）で設定している
+# CLAUDE_CONFIG_DIR を継承しない。未設定のまま `claude -p` を呼ぶと既定の ~/.claude
+# （C:\Users\user\.claude・rules/CLAUDE.md が陳腐化スナップショット）にフォールバックする
+# （night-ops.ps1 と同一の問題・2026-07-16 R120グループ3で横展開確認）。
+$env:CLAUDE_CONFIG_DIR = "C:\dev\.claude"
+
 $ErrorActionPreference = "Continue"
 $LogPath = Join-Path $PSScriptRoot "deep_research.log"
 $PromptPath = Join-Path $PSScriptRoot "deep_research_prompt.txt"
