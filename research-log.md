@@ -1,3 +1,103 @@
+## [2026-07-17] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- research-hub/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち25日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち。25日経過でリマインド。
+- **TBP-004候補**（2026-06-22 提案・確認待ち25日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち。25日経過でリマインド。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.212 セッション全体サブエージェント上限追加）**: セッション全体でのサブエージェント起動数上限（デフォルト200、`CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION`）が追加された。TBP-001「最小権限」設計においてサブエージェント多用型 Workflow が制限に到達する可能性。Research Hub の各 Routine の合計サブエージェント数を確認推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.212（7/16〜17）詳細確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Ode with Anthropic（7/15）確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/17 新規 issues（#78671〜#78678）確認
+- Zenn / Qiita: 2026-07-17 Claude Code 記事トレンド確認
+- 会計×AI: マネーフォワード AI Cowork / freee MCP / バクラク 2026年7月最新状況
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.212（2026-07-16〜17 リリース）— セッション制限・/fork 変更**
+- **/fork コマンド変更**: 会話をバックグラウンドセッション（claude agents の独自行）にコピーするように変更。以前 /fork が起動していたセッション内サブエージェントは **/subtask** に改名。Research Hub が /fork を使っている場合、/subtask への移行が必要。
+- **WebSearch セッション全体上限追加（🔴 Routines 注意）**: デフォルト200件/セッション。`CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` で設定可能。auto-research-collect などの多数検索 Routine が上限に達する可能性あり。上限到達時の挙動を確認推奨。
+- **サブエージェント起動数セッション上限追加**: デフォルト200件/セッション。`CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION` で設定可能。/clear でリセット。large Workflow では要注意。
+- **MCP 自動バックグラウンド移行**: 2分超の MCP ツール呼び出しが自動でバックグラウンド移行。`CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS` で閾値設定・無効化可能。長時間の MCP 呼び出しを含む Routine の挙動に影響あり。
+- **claude auto-mode reset コマンド追加**: デフォルト auto-mode 設定を復元する新コマンド（--yes でプロンプトスキップ）。
+- **バグ修正: /release-notes のコンテキスト肥大化**: 「Show all」が全チェンジログをモデルのコンテキストに注入するバグを修正。長セッションのコンテキスト管理が改善。
+- 🔴 直接適用: auto-research-collect など多数検索/サブエージェント多用 Routine の1セッション内使用量を確認。200超えなら環境変数で上限引き上げを検討。
+
+**2. Fable 5 クレジット制移行（7/20 = 3日後）— 最終リマインド**
+- 7/20 以降、Fable 5 はプリペイドクレジット制（$10/M input / $50/M output）へ完全移行。
+- Max プラン加入者は 7/19 まで Max 枠内（週次制限の50%）で利用可能。
+- 🔴 アクション: 7/19（明後日）までに Tak の Claude プラン確認。Research Hub Routine の auto モード設定を確認し、Fable 5 使用量を把握。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Ode with Anthropic（2026-07-15 正式発表）— エンタープライズ AI 実装会社の新業態**
+- Anthropic・Blackstone・Hellman & Friedman が設立した $1.5B のエンタープライズ AI 実装会社。100名の forward-deployed AI エンジニアが企業内に常駐し実装支援。
+- Fractional AI（2026年5月買収）を基盤に設立。Chris Taylor CEO / Eddie Siegel CTO。Goldman Sachs・General Atlantic・Sequoia 等も参加。
+- 「モデルではなく実装こそが次のトリリオンドル市場」というアプローチ。Claude Code 普及の新チャネルとして注目。Tak の会社でのAI導入シナリオを考える上での参考情報として価値あり。
+- 🟡 アクション: techcrunch.com/2026/07/15/anthropic-blackstone の記事精読。Research Hub に記事化候補として記録。
+
+**2. 会計×AI: freee・マネーフォワード・バクラクの AI 機能比較（2026年7月最新）**
+- **マネーフォワード AI Cowork**: 7月リリース予定。AI がバックオフィス業務を自動処理。Claude Agent SDK + MCP 採用の本格派。7月末まで残り14日。正式アナウンス未確認。
+- **freee MCP**: 2026年3月公開以来累計 250万回超の API 呼び出し達成（昨日確認）。Claude Code との連携が想定より速いペースで拡大。経理部門での Claude Code 実採用が本格化。
+- **バクラク AI OCR**: 規定違反の自動検出で差し戻し率 60%減。99%超の OCR 精度継続。
+- 🟡 アクション: マネーフォワード AI Cowork の正式リリースアナウンスを監視継続（毎日）。
+
+**3. Claude Code npm インストール Deprecated → ネイティブインストーラー推奨への移行**
+- 2026年7月現在、公式ドキュメントで npm 経由インストールが Deprecated 扱いに。ネイティブインストーラー推奨に変更。
+- Research Hub の Routine 環境が npm 版 Claude Code を使用している場合は更新推奨。
+- 🟡 アクション: Research Hub Routine が使用している Claude Code のインストール方法を確認。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-07-17）**
+- Issue #78678: cowork area バグ（macOS、regression タグ）
+- Issue #78677: model バグ
+- Issue #78676: Claude Code 動作に関する質問
+- Issue #78675: bash area バグ
+- Issue #78674: MCP area バグ
+- Issue #78673: cowork + MCP バグ（Linux）
+- Issue #78671: desktop + UI enhancement（Windows）
+- Research Hub Routines への直接影響は現時点で確認されず。
+
+**Zenn / Qiita（2026-07-17 トレンド）**
+- Zenn の claude-code タグ記事が 4,700件超に成長。日本語 Claude Code 情報の最大集積地として地位確立。
+- 「Claude Code を"優秀な新卒部下"として使い倒す」（yoshiaki0217, Zenn）: 個人開発爆速化ワークフロー解説。
+- カンリー社内 Claude Code 勉強会資料公開（Zenn）: hooks の matcher 設定フォーマットの継続進化に言及。
+
+**Anthropic AI Safety キャンペーン「Inviting hard questions」継続**
+- 7/9 公開の 90 秒フィルム「There's hope in hard questions」の反響継続中。AIの仕事・安全・科学への影響に関する公開回答へのコミットメントを表明。
+
+#### references.md 更新提案
+- **v2.1.212 セッション制限環境変数**: `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`（WebSearch 上限）・`CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION`（サブエージェント上限）・`CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS`（MCP 自動バックグラウンド閾値）の3つをリファレンスに追記提案。Routines 設計の注意事項として。
+- **npm インストール Deprecated 情報**: Claude Code のインストール方法セクションに「npm 経由は Deprecated、ネイティブインストーラー推奨」を追記提案。
+- 昨日提案分（PreToolUse hook 修正・権限プレビュースプーフィング修正・Claude's new constitution）は継続中。
+※ 直接更新は行わない。Tak の確認後に実施。
+
+#### 新規発見ソース候補
+なし（本日新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-18（翌日）。
+注目点:
+① **Fable 5 クレジット制移行（7/20）前日確認（7/19）**: 7/19 が Max プランでの最終利用日。Routine の auto モード設定を当日確認。
+② **マネーフォワード AI Cowork 正式リリースアナウンス**: 7月末まで残り14日。正式アナウンス待ち継続。
+③ **TBP-003・TBP-004 昇格候補**: 6/22 提案から25日経過。Takへの確認リマインド継続（26日目）。
+④ **v2.1.212 Routines への影響確認**: WebSearch/サブエージェント上限（各200）が auto-research-collect 等の実行量に到達するか確認。
+⑤ **Claude's new constitution（CC0 1.0）精読**: 引き続き My-Profile-and-Memory への記録を推奨。
+
+---
 ## [2026-07-16] デイリーレポート
 
 ### 内部知見（機能A）
