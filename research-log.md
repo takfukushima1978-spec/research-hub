@@ -1,3 +1,96 @@
+## [2026-07-18] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → decisions/ フォルダ未存在（アクセス可能リポジトリ内でも未作成）のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち26日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。
+- **TBP-004候補**（2026-06-22 提案・確認待ち26日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.214 権限チェック厳格化）**: Bash権限チェックの厳格化（ファイルディレクタリダイレクト、10,000文字以上コマンド、zsh変数修飾子に対し許可プロンプトが求められるようになった）。TBP-001「最小権限で開始」設計において、従来 auto-approve されていたコマンドパターンが突然停止するリスク。Routinesのプロンプトやallowlistの見直し推奨。
+- **TBP-001 再評価トリガー（`help`・`man` コマンドのオートアプルーブ廃止）**: v2.1.214でhelpとmanコマンドが許可確認を要するようになった。Routineで help/man を使っている場合は停止する可能性。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.214（7/18）詳細確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 7/18 新着確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/18 新規 issues（#78897〜#78901）確認
+- Zenn / Qiita: 2026-07-18 Claude Code 記事トレンド確認
+- 会計×AI: マネーフォワード AI Cowork 正式リリース確認、freee・バクラク 2026年7月最新状況
+
+#### 🔴 即座に適用すべき事項
+
+**1. Fable 5 Max プラン無料アクセス 明日（7/19）期限切れ — 最終確認**
+- **7月19日 23:59 PT（7月20日 15:59 JST）に Fable 5 のサブスクリプション内無料アクセスが終了**。以降はクレジット制（$10/M input / $50/M output）へ完全移行。
+- Anthropic は OpenAI の新モデル競争対応で2度延長したが、今回が最終期限。
+- 🔴 アクション: 今日中に Tak の Claude プランと Research Hub Routines の auto モード設定を確認。Fable 5 を使用している Routine があれば Sonnet 5 または Opus 4.8 への切り替えを計画する。
+
+**2. Claude Code v2.1.214（2026-07-18 本日リリース）— セキュリティ強化・Bash権限変更**
+- **Bash 権限チェック厳格化（🔴 Routines 注意）**:
+  - ファイルディレクタリリダイレクト操作に許可プロンプトが追加
+  - 10,000文字以上の Bash コマンドに許可プロンプトが追加
+  - zsh 変数修飾子の使用に許可プロンプトが追加
+  - `help` と `man` コマンドのオートアプルーブが廃止
+  - → auto モードの Routine でこれらのパターンが含まれると突然停止するリスク。allowlist の見直し推奨。
+- **EndConversation ツール追加**: 虐待ユーザーやジェイルブレイク試行への対応ツール。Routine への直接影響は低いが、ジェイルブレイク耐性の強化という観点で注目。
+- **long-running tool call の進捗ハートビート追加**: 長時間ツール呼び出し中の進捗確認が可能に。deep-research-runner など長時間実行する Routine の安定性向上に寄与。
+- **Windows PowerShell 5.1 / 企業 Proxy 環境の修正多数**: Windows ユーザー向け修正（UTF-16LE書き込み問題、ストリーミング接続問題、pkill -f パターンマッチ問題）。
+- **メモリファイルのフロントマターに ISO `modified` タイムスタンプ追加**: メモリファイルの更新日時追跡が自動化。My-Profile-and-Memory のメモリ管理が向上。
+- **設定ファイルサイズ上限チェック（2 MiB）**: CLAUDE.md 等が 2 MiB を超えるとエラー。Research Hub の CLAUDE.md は現状問題なし（念のため確認推奨）。
+- **GrowthBook フィーチャーフラグの null 値処理クラッシュ修正**: フィーチャーフラグが null の場合に起きていたクラッシュを修正。
+
+**3. GitHub issues #78897〜#78901（7/18 新規）— セキュリティ・API 関連**
+- #78897〜#78901 が本日新規オープン。security / api / model / platform:macos / platform:windows 関連。
+- #78897 は security + duplicate タグ（既知問題の再報告）。#78898〜#78899 は api:anthropic + platform:windows のバグ。
+- 🔴 直接適用: Windows Routine を運用している場合は API 接続安定性に注意。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. マネーフォワード AI Cowork 7月正式リリース — バックオフィスAIエージェント**
+- 2026年4月発表、7月に正式リリース開始（先行受付は4月から）。
+- 経理・労務・法務のバックオフィス業務を AI が自律的に処理。自然言語チャット（「今月の経理業務をまとめて」）で業務代行。
+- マネーフォワード クラウドとのネイティブ連携。2030年までに AI 関連 ARR 150 億円超を目標。
+- 🟡 アクション: biz.moneyforward.com/ai-cowork/ の詳細ページを確認し、Tak の会社（マネーフォワード クラウド導入済みなら）先行受付・トライアル状況を確認推奨。
+
+**2. Claude Code × Codex モデル使い分けガイド（2026年7月版 / Zenn）**
+- Zenn「Claude Code × Codex 最新モデルの特徴と使い分け（2026年7月版）」が公開。
+- Claude 側: Fable 5（最上位）→ Opus 4.8 → Sonnet 5（主力）の世代交代を整理。
+- Fable 5 の課金移行タイミング（7/19）に合わせたモデル切り替え判断の参考情報として価値あり。
+- 🟡 アクション: Research Hub の Routines で使用モデルを Fable 5 → Sonnet 5 へ切り替える判断材料に。
+
+**3. Qiita 週次アップデートまとめ（7/11週）— Artifacts・/review 体系刷新**
+- Qiita「Claude Code 週次アップデートまとめ（2026/07/11週）」公開（著者: @saitoko）。
+- ハイライト: Artifacts機能の Pro/Max 解放、/reviewコマンド体系の刷新（/review → /code-review + /simplify 分離）、/doctorのCLAUDE.md簡素化提案（3件）。
+- /review 体系の刷新は Research Hub の CLAUDE.md でのレビューフロー記述に影響する可能性。
+- 🟡 アクション: Qiita 記事を精読し、Research Hub のルーティンプロンプト内で使っているレビュー系コマンドがあれば更新検討。
+
+#### 🟢 参考情報
+
+- **経理業務の AI 導入率 24%（2026年調査）**: 導入企業の 68.3% が「業務時間の明確な短縮」を実感。クラウド会計ソフト各社の AI 仕訳精度が実用水準に到達との評価。
+- **Microsoft Project Perception（7/18 発表）**: Anthropic・OpenAI・Microsoft 自社モデルを活用したマルチモデルAIセキュリティツール。Mythos 5（Microsoft 社内版）の廉価代替として位置づけ。
+- **freee MCP 累積 API 呼び出し 250万回超（前回確認値）**: 経理部門での Claude Code 実採用が進行中。7月の最新数値は未確認。
+- **Claude Code GitHub Stars 131K**: Augmentcode 記事「why developers are skipping the IDE」。Claude Code が IDE を置き換えるトレンドの考察。
+- **会計×AI 業界動向**: 2026年、会計ソフト各社が「AI エージェント」を本体機能として標準搭載し始めた段階。AI は仕訳候補・要約・ドラフト生成を担い、人が最終承認する設計が主流。
+
+#### references.md 更新提案
+- **EndConversation ツールの追加**（v2.1.214）: harness-design-guide/references.md に「ジェイルブレイク試行への対応ツール」として追記を検討。現在の TBP-001 範囲外だが、Routine セキュリティ設計の文脈で参照できる。
+- **Bash 権限チェック厳格化**（v2.1.214）: allowlist 設計に関する記述（TBP-001 周辺）に「10,000文字超コマンド・zsh変数修飾子・help/manが新たに許可確認対象になった」旨を追記推奨。ただし Tak の確認後に実施。
+
+#### 新規発見ソース候補
+- **releasebot.io/updates/anthropic/claude-code**: Anthropic Claude Code の更新を自動追跡するリリースボットサービス。⭐⭐⭐ 評価候補（公式ではないが更新追跡に便利）。trusted-sources.md の「発見待ち・評価中」への追記を提案。
+- **kaikei-ai.jp**: 「Kaikei AI Daily」— freee AI 機能レビュー等の会計×AI 専門メディア。⭐⭐⭐ 評価候補。会計系ソース強化に有望。
+
+#### 次回リサーチ推奨日
+2026-07-19（明日）— Fable 5 期限切れ翌日（モデル移行状況の確認）、および週末の Claude Code 公式発信確認。
+
+---
+
 ## [2026-07-17] デイリーレポート
 
 ### 内部知見（機能A）
