@@ -4,7 +4,8 @@
 > 仕様詳細は `CLAUDE.md`、Routine 詳細は `scheduled-tasks.md`、
 > 横断的な学びは global memory (`C:\dev\.claude\projects\c--dev-research-hub\memory\`) を参照。
 
-最終更新: 2026-06-20
+最終更新: 2026-07-19
+最新 HANDOFF: `memory/HANDOFF-2026-07-19.md`
 
 ---
 
@@ -32,6 +33,11 @@
 - 不調が出なければ Phase 2 (UI スタンプラリー + Discord 進捗バー) に着手
 
 ## 📋 残タスク (Phase 2)
+
+1. **untracked `.agents/` の扱い決定**（2026-07-19 検出）
+   - `.agents/skills/add-routine/SKILL.md` = `.claude/skills/add-routine` の Codex 用機械変換コピー（7/8 作成・AGENTS.md 追加 commit bac0a73 と同時期）
+   - 誤置換あり（`auto-claude-code-watch`→`auto-Codex-watch`・`claude.ai/code/routines`→`Codex.ai/code/routines`）
+   - 選択肢: 誤置換を修正して commit ／ gitignore ／ 削除
 
 2. **Discord 通知に学習マップ進捗バー埋め込み**
    - `auto-research-morning-discord` の embed に「🎯 X/36 (Y%)」表示
@@ -96,6 +102,7 @@
 
 直近のみ。**それ以前の全履歴は [docs/session-history.md](docs/session-history.md) に退避**（さらに古い経緯は `git log --oneline`）。
 
+- **2026-07-19**: session-start GAP 検証＋ハーネス修正。①briefing の Critical「night-ops 凍結」は**偽陽性**と特定（7/16 無言死は同日回復済み・後続 run 正常完了）②真因＝health-audit 無言死検知に「回復済み」状態が無く48h窓で3朝連続 WARN → **回復済み/未回復の区別を実装**（回復済み=24h窓・文言明記。ops-hub backport d38d673・selftest 9/9）③untracked `.agents/`（Codex 用スキルコピー・誤置換あり）を検出 → 残タスク1に登録
 - **2026-06-25**: 保守3点。①秘密設定を git 射程外 `C:\dev\.secrets\` へ退避（前回継続・[[secret-config-file-disappeared]] 恒久対策、4スクリプトを fallback 探索化）②診断テスト記事 DIAGNOSTIC_* を**計3件**一括削除（navigator 記載は1件だったが独立検証で3件発覚→シグネチャ一括削除に。migration `20260621000001`）③**学習マップ スタンプラリーUI** を index.html に実装（8ジャンル127件・アコーディオン+進捗バー+トピック→記事リンク・anon遅延fetch・クライアント集計）
 - **2026-06-20**: glossary ジャンル新設（8ジャンル目）→ **17→60トピックに一括増補（網羅~100%）**。非エンジニア向け基礎用語・Claude Codeコマンド（承認注意点を R77 4層に紐づけ）。派生で tak-orchestrator R84（permission 挙動の版差ドリフト検証）起票
 - **2026-06-18〜20**: 基礎記事の充実を **7ジャンル 67/67 完走**（headless 自律3バッチ）
