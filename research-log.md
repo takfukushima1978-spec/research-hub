@@ -1,3 +1,115 @@
+## [2026-07-19] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち27日目）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。
+- **TBP-004候補**（2026-06-22 提案・確認待ち27日目）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.215 hooks exit code 2 ブロック不具合修正）**: hooks が exit code 2 を返してもブロックしない（ドキュメント記載通りに動作しない）バグが v2.1.215 で修正。TBP-001 の「最小権限で開始」設計において、hook によるブロックフローが想定通りに機能していなかった。Research Hub の Routines で exit code 2 を使う hook を設定している場合は v2.1.215 適用後の動作確認を推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.215（7/19）詳細確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: UST Partnership / Reflect with Claude 確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/19 新規 issues（#79185〜#79192）確認
+- Zenn / Qiita: 2026-07-19 Claude Code 記事トレンド確認
+- 会計×AI: マネーフォワード AI Cowork / freee MCP / バクラク 2026年7月最新状況
+
+#### 🔴 即座に適用すべき事項
+
+**1. 🔴 前日レポート（7/18）訂正: Fable 5 Max/Team Premium プランへの影響**
+- 7/18 レポートで「以降はクレジット制（$10/M input / $50/M output）へ完全移行」と記載したが、**Max/Team Premium プランの取り扱いに誤りがあった。正確な情報は以下の通り：**
+  - **Max/Team Premium**: Fable 5 は引き続きサブスクリプション内で利用可能（週次利用枠の50%レート制限あり）。クレジット制には移行しない。
+  - **Pro/Team Standard**: PT 2026-07-19 23:59:59（JST 2026-07-20 15:59:59）以降、一回限りの $100 クレジット付与後、従量課金（$10/M input tokens, $50/M output tokens）に移行。
+- Tak が Max/Team Premium プランに加入している場合、Fable 5 をサブスクリプション内で引き続き使用可能（50%レート制限あり）。Pro プランの場合は本日深夜 PT が移行タイミング。
+
+**2. Claude Code v2.1.215（2026-07-19 リリース）— バグ修正中心**
+- **--settings 経由プラグインが読み込まれないバグ修正**: `--settings` フラグで指定した設定ファイル経由のプラグインが正常に読み込まれなかった問題を修正。設定ファイルを複数管理している場合は確認推奨。
+- **OAuth トークンローテーション後にフィーチャーフラグが古い状態で固定されるバグ修正**: OAuth トークン更新後もフィーチャーフラグが更新前の状態を保持し続ける問題を修正。長期セッションの Routines での信頼性向上。
+- **/ultrareview がマージベースのないリポジトリで拒否するバグ修正**: 初回コミット直後等 git history がないリポジトリでも /ultrareview が使用可能に。
+- **claude update / claude doctor が無言でハングするバグ修正**: アップデート・診断コマンドが応答なく停止するバグを修正。メンテナンス作業の信頼性向上。
+- **メモリファイルのフロントマター値がインライン # で無言切り捨てされるバグ修正**: `.claude/memory/` ファイルで `# コメント` 以降がフロントマター値として切り捨てられていた問題を修正。My-Profile-and-Memory のメモリファイル管理に直接関連。
+- **セッションコスト/トークンテレメトリの二重カウントバグ修正**: コスト・トークン消費量が実際より多く報告されていた問題を修正。Research Hub の Routine コスト管理の精度向上。
+- **誤った「ネットワークを確認してください」警告バグ修正**: 実際には問題がないのに「check your network」警告が表示されていた問題を修正。誤警告によるノイズが解消。
+- **hooks が exit code 2 を返してもブロックしないバグ修正（🔴 TBP-001 直結）**: exit code 2 で hook がブロックするという公式ドキュメント記載の仕様が機能していなかった。TBP-001 の allowlist/hook 設計に直結するバグ。v2.1.215 以降は期待通りに動作する。
+
+**3. GitHub Issues 新着（2026-07-19）— データロスバグ 2件**
+- **Issue #79190（area:core, data-loss, bug）**: コア機能でデータロスを引き起こすバグ。詳細確認中。Research Hub Routine でのデータ消失リスクとして監視対象。
+- **Issue #79185（area:desktop, data-loss, macOS）**: デスクトップアプリでのデータロス（macOS 限定）。
+- **Issue #79191（area:security, macOS）**: macOS 環境のセキュリティ関連バグ。詳細確認中。
+- **Issue #79192（area:chrome, area:cowork, area:desktop, macOS）**: chrome/cowork/desktop が絡む macOS バグ。
+- **Issue #79188（area:model, duplicate）**: モデル挙動のバグ（既知問題の重複報告）。
+- **Issue #79186（area:TUI, enhancement）**: TUI の機能要望。
+- **Issue #79187（invalid）**: 無効として閉じられた issue。
+- Research Hub Routines への直接影響: #79190（core data-loss）が最も関連度高い。次回リリースでの修正内容を監視推奨。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. UST Partnership（Anthropic、2026-07-19 発表）— 世界 20,000人以上のエンジニアへ AI 研修**
+- Anthropic と UST（グローバル IT サービス企業）がパートナーシップ契約。UST の世界 20,000 人以上のエンジニア向けに Anthropic AI 技術・Claude Code 研修を提供。
+- 大規模組織での Claude Code 展開・教育設計のケーススタディとして参考価値あり。
+- 🟡 アクション: Research Hub に記事化候補として記録。Tak の会社・業界でのエンジニア AI 研修設計の参考情報として活用。
+
+**2. Reflect with Claude（Beta）— 使用状況ダッシュボード + 4D AI Fluency Framework**
+- Anthropic が「Reflect with Claude」ベータ版を公開。Claude の使用状況（会話数・ツール使用・時間帯分布等）を可視化するダッシュボード。
+- 「4D AI Fluency Framework」（Discover / Develop / Deploy / Differentiate）も同時公開。AI 活用成熟度を段階的に評価・改善するフレームワーク。
+- 🟡 アクション: Tak 自身の Claude Code 使用状況を把握するためにダッシュボードを確認。Research Hub の Routines の効果測定・コスト管理にも活用できるか検討。
+
+**3. マネーフォワード AI Cowork 正式リリース監視継続**
+- 7/19 現在も「2026年7月より提供開始予定」のまま。7月末まで残り約12日。正式アナウンス未確認継続。
+- 4月発表から3ヶ月以上経過。遅延の可能性も視野に入れ始める段階。
+- 🟡 アクション: corp.moneyforward.com/news で正式リリース確認継続。7月末に未リリースなら8月以降での記事化タイミングを再検討。
+
+#### 🟢 参考情報
+
+**Anthropic 動向（2026年7月）**
+- **UST Partnership（2026-07-19）**: 世界 20,000人以上のエンジニアへの AI 研修。Claude Code 大規模普及施策の一環。
+- **Reflect with Claude（Beta）**: 使用状況ダッシュボード・4D AI Fluency Framework 公開。AI活用可視化と改善サイクル支援ツール。
+- **Alberta Partnership・Ode with Anthropic（既報継続）**: カナダ・アルバータ州政府との AI パートナーシップ・$1.5B エンタープライズ AI 実装会社が継続展開中。
+
+**Zenn / Qiita 動向（2026-07-19）**
+- Qiita トレンド「Claude Code で技術面接の壁打ち相手を作ってみませんか」が上位にランクイン。Claude Code × インタビュー準備という新しい活用法として注目。
+- Zenn の claude-code タグ記事が引き続き増加傾向。日本語コミュニティでの知見蓄積が加速。
+
+**会計×AI（2026-07-19 時点）**
+- **マネーフォワード AI Cowork**: 依然「2026年7月より提供開始予定」（正式リリース未確認）。7月末まで残り約12日。
+- **freee MCP**: 約330の MCP API が公開中（2026年6月22日 AI エージェント連携発表以来継続拡大）。Breeze との統合も進行中。
+- **バクラク**: OCR 精度 99%+ 継続。経費精算・請求書処理の AI 化が実務水準で定着フェーズに。
+
+#### references.md 更新提案
+
+継続未確認項目（前回 7/18 から継続）:
+1. **EndConversation ツール**（v2.1.214）: ジェイルブレイク対応ツールとして追記検討
+2. **Bash 権限チェック厳格化**（v2.1.214）: 10,000文字超・zsh変数修飾子・help/man が許可確認対象になった旨を TBP-001 周辺に追記
+3. **セッション制限環境変数**（v2.1.212）: `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`・`CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION`・`CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS`
+4. **npm インストール Deprecated**: ネイティブインストーラー推奨への変更
+
+**新規追加提案（2026-07-19）**:
+5. **hooks exit code 2 ブロック修正**（v2.1.215）: hook によるブロックフローが期待通りに機能することを確認。TBP-001 の allowlist/hook 設計セクションへの参照追記提案。
+6. **Fable 5 Max/Pro プラン差分の正確な記述**（2026-07-19 確定）: Max/Team Premium はサブスクリプション内50%レート制限継続、Pro/Team Standard はワンタイム $100 クレジット→従量課金（$10/M input, $50/M output）。モデル関連セクションへの正確な記述追記提案。
+※ 直接更新は行わない。Tak の確認後に実施。
+
+#### 新規発見ソース候補
+なし（本日新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-07-20（翌日）。
+注目点:
+① **Fable 5 Pro/Team Standard クレジット制移行後の確認**: PT 23:59:59（JST 7/20 15:59:59）移行後の実際の動作・課金状況確認。
+② **マネーフォワード AI Cowork 正式リリース**: 7月末まで残り約12日。毎日確認継続。
+③ **Issue #79190（core data-loss）修正リリース確認**: データロスバグの修正パッチを監視。
+④ **TBP-003・TBP-004 昇格候補**: 6/22 提案から27日経過。Takへの確認リマインド継続（28日目）。
+⑤ **Reflect with Claude ダッシュボード確認**: 使用状況の可視化で Research Hub Routines のコスト・効果を把握。
+
+---
 ## [2026-07-18] デイリーレポート
 
 ### 内部知見（機能A）
