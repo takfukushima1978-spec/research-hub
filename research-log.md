@@ -1,3 +1,110 @@
+## [2026-07-22] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**30日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。1ヶ月経過（要アクション判断）。
+- **TBP-004候補**（2026-06-22 提案・確認待ち**30日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。1ヶ月経過（要アクション判断）。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（Claude Desktop macOS MCP filesystem bug #80094）**: 7/19〜21のClaudeDesktop自動更新後、macOS上でfilesystem MCPサーバーの全tool call（tools/call）が「Tool execution failed」で即時失敗する不具合が報告（#80094・#80002）。MCPツールが「tools/listは成功・tools/callは失敗」という形でサイレントに機能不全になるリスクが現実化。TBP-001「外部ツール導入審査」にOS/バージョン依存リスクを確認するステップの重要性を再確認。
+- **TBP-001 再評価トリガー（agent-memory-2026-07-22 beta header 変更）**: Managed Agents memory API で `managed-agents-2026-04-01` が `agent-memory-2026-07-22` に置き換わった（同一リクエストで両方送ると 400 エラー）。MCP・Managed Agents導入時の審査フロー（TBP-001 Step 1: 審査）に「依存 beta header のバージョン確認」を追加することを検討推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ / What's new（⭐⭐⭐⭐⭐）: 2026-W29（7/13-17）・7/21以降の更新確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 2026-07-22 最新記事（Anthropic Economic Index connector）確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/22 新規 issues（#80313〜#80320）、#80094・#80002（macOS MCP bug）確認
+- Anthropic SDK リリースノート: Python 0.116.0 / TypeScript 0.110.0 確認
+- Zenn / Qiita: 2026-07-22 付け関連記事確認
+- 会計×AI: マネーフォワード AI Cowork / freee / バクラク 2026年7月最新状況
+- AWS / Claude Apps Gateway: 公式発表・解説記事確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. `agent-memory-2026-07-22` beta header 変更 — Managed Agents memory API 重大変更**
+- Managed Agents の memory store エンドポイント（GET/POST/DELETE `/v1/memory_stores/...`）が `managed-agents-2026-04-01` から `agent-memory-2026-07-22` に移行。**両ヘッダーを同時送信すると 400 エラー**。
+- 挙動変更点: `order_by`/`order` パラメータが無視される（サーバー定義順に固定）・`depth` は 0/1/省略のみ受付（他の値は 400）・`path_prefix` はパスセグメント完全一致かつ末尾 `/` 必須。
+- SDK 対応済み: Python 0.116.0 / TypeScript 0.110.0 / Go 1.56.0 等で自動切替。
+- 🔴 アクション: Managed Agents memory を利用している Research Hub コンポーネントや将来実装で、SDK バージョンと beta header の確認が必要。古い `managed-agents-2026-04-01` を直叩きしているコードは要修正。
+
+**2. Claude Desktop macOS MCP filesystem server 完全破損（#80094 / #80002）**
+- 7/19〜21 のClaudeDesktop自動更新（Desktop 1.24012.0 / 1.22209.3、macOS 26.5.2）後、`@modelcontextprotocol/server-filesystem` が tools/list 成功・tools/call で即時「Tool execution failed」になる不具合。
+- Research Hub の Routine はクラウドsandbox で動くため直接影響なし。ただし **Tak がローカル Mac でClaudeDesktopを使う際に注意**が必要。
+- 🔴 アクション: Takのローカル作業でfilesystem MCP が必要な場合は修正版（Desktop 更新）を待つか、一時的に Claude Code CLIを使う。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Anthropic Economic Index connector（2026-07-22 正式リリース）**
+- claude.ai の connectors メニューから「Anthropic Economic Index」を有効化（インストール不要）。「会計職でAIが最もよく使われるタスクは？」「日本のClaude利用パターンは？」等を直接Claudeに質問できる。
+- Takの会計業界×AI分析・Routineのトピック選定（好みフィードバックループ）に活用できる可能性。
+- 🟡 アクション: claude.ai で有効化し、「経理部門・公認会計士がClaudeを最も活用しているタスク上位10件」を確認する。auto-research-collect のトピック探索軸に取り込めるか検討。
+
+**2. Claude Apps Gateway for AWS（2026-07-08 リリース）**
+- 自己ホスト型の単一コンテナ（PostgreSQL バックエンド）で Claude Code / Claude Desktop の SSO・支出上限・ポリシー管理・利用 tracking を一元化するゲートウェイ。Amazon Bedrock または Claude Platform on AWS を経由して推論を処理。
+- Research Hub の Routine は Anthropic Routines を使うため直接関係は薄いが、将来チームで Claude Code を使う場合や、個人でも Bedrock 経由にコスト最適化する際の選択肢として重要。
+- 🟡 アクション: code.claude.com/docs/en/claude-apps-gateway を確認。個人ユースケースへの適用可否を整理。
+
+**3. マネーフォワード AI Cowork 正式リリース確認（7月末まで残り9日）**
+- 「2026年7月より提供開始予定」表記が継続。7/22時点でも正式リリースアナウンス未確認。
+- 🟡 アクション: corp.moneyforward.com/news でアナウンス確認継続。8月に入った場合は「7月未達」として記録。
+
+#### 🟢 参考情報
+
+**GitHub Issues 新着（2026-07-22）**
+- #80313〜#80320 が本日新規オープン（8件）。#80319・#80318はbugタグ付き。詳細タイトル未取得。
+- 継続中の重要 bug: #80094（macOS MCP filesystem）・#80002（macOS filesystem tools/call未dispatch）
+
+**Anthropic × Amazon 5GW コンピュート拡張（直近発表）**
+- Anthropic が $100B 超を AWS 技術にコミット。最大 5GW のコンピュートを確保（Graviton・Trainium2〜4）。Project Rainier（現在 Trainium2 100万チップ以上）に続く大規模拡張。Claude のトレーニング・推論能力の中長期的向上が期待される。Anthropic の $965B バリュエーション Series H（65億ドル調達）後の計算インフラ強化フェーズ。
+
+**Qiita 記事（2026-07-22 付）**
+- 「Claude / Anthropic 関連ニュースまとめ（2026-07-22）」（homhom44）: AWS Claude Apps Gateway を「Claude CodeとClaudeDesktopを会社で使うための管理の入口」として解説。
+
+**会計×AI（2026年7月最新）**
+- Claude Code + Codex を使った仕訳科目自動提案・領収書データ抽出・異常値検知・キャッシュフロー予測の具体例記事が複数公開（genai-ai.co.jp / Uravation）。固定請求書で90%以上の自動抽出精度。
+- 経理部門の AI 導入率は約 24%（2026年時点）。導入企業の 68.3% が「業務時間の明確な短縮」を実感。中小企業では月間 20〜40 時間削減が現実的水準。
+- マネーフォワード経理担当向け解説（2026-07-13 更新）: 請求書処理・仕訳・帳票作成の繰り返し作業に AI 導入のユースケースを整理。
+
+**Claude Code What's new（2026-W29 フォローアップ）**
+- Auto mode が Amazon Bedrock・Google Cloud プラットフォームでの opt-in 不要に（既報）。
+- MCP tool call が 2 分超で自動バックグラウンド移行（既報）。
+- `claude auto-mode reset` コマンド追加（既報）。
+- セッション制限環境変数（`CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`・`CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION` 各デフォルト 200）（既報）。
+- ツールサマリー行にリアルタイム経過時間カウンター追加（長時間tool callが「止まっている」ように見えなくなる）。
+
+#### references.md 更新提案
+
+継続・新規項目（実施は Tak 確認後）:
+1. **`agent-memory-2026-07-22` beta header（🆕 2026-07-22）**: Managed Agents memory store エンドポイントの重大変更。`managed-agents-2026-04-01` から置き換わった旨と挙動変更（order固定・depth制限・path_prefix完全一致）を TBP-001 周辺または Managed Agents 関連セクションに追記推奨。
+2. **Claude Apps Gateway for AWS（🆕 2026-07-08）**: 自己ホスト型Claude Code/Desktop管理ゲートウェイ。SSO・支出上限・ポリシー管理。enterprise 向け新運用パターンとして記録推奨。
+3. **EndConversation ツール**（v2.1.214）: 継続確認待ち
+4. **Bash 権限チェック厳格化**（v2.1.214）: 継続確認待ち
+5. **セッション制限環境変数**（v2.1.212）: 継続確認待ち
+6. **npm インストール Deprecated**: 継続確認待ち
+7. **hooks exit code 2 ブロック修正**（v2.1.215）: 継続確認待ち
+
+#### 新規発見ソース候補
+
+- **devops.com（Claude Code エンタープライズ記事）**: Claude Apps Gateway の詳細解説。エンタープライズ視点の情報が充実（評価候補: ⭐⭐⭐）
+- **aws.plainenglish.io**: AWS in Plain English の Claude Apps Gateway 記事。構成解説が分かりやすい（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-07-23（翌日）
+注目点:
+① マネーフォワード AI Cowork 正式リリースアナウンス（7月末まで残り9日）
+② macOS MCP filesystem bug (#80094) 修正版リリース確認
+③ TBP-003・TBP-004（確認待ち30日超）に対する Tak のアクション
+
+---
+
 ## [2026-07-21] デイリーレポート
 
 ### 内部知見（機能A）
