@@ -1,3 +1,104 @@
+## [2026-07-23] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: フォルダ未存在のためスキップ（機能A・C は機能Bのみ実行）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**31日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。1ヶ月超経過（要アクション判断）。
+- **TBP-004候補**（2026-06-22 提案・確認待ち**31日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。1ヶ月超経過（要アクション判断）。
+
+#### 再検討トリガー該当
+（tak-best-practices/ 未存在のためスキップ）
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.218（7/22）・v2.1.217（7/21）・v2.1.212（7/17）確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 2026-07-23 最新記事確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 7/23 新規 issues（#80704〜#80710）確認
+- Zenn / Qiita: 2026-07 付け関連記事確認
+- 会計×AI: freee MCP / マネーフォワード AI Cowork / バクラク 2026年7月最新状況
+- Claude Fable 5 / Mythos 5: リリース情報・機能詳細確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.218（7/22）: `/code-review` がバックグラウンドサブエージェントに変更**
+- `/code-review` コマンドがバックグラウンドサブエージェントとして実行されるように変更。レビュー作業がメイン会話を占有しなくなり、スタックしたスラッシュコマンドがレビューターゲットとして保持されるようになった。
+- その他同バージョンの修正: Windows パス（`\u` プレフィックスが CJK 文字に変換されるバグ）修正・左矢印キーで会話が消えるバグ修正・スクリーンリーダー改善。
+
+**2. Claude Code v2.1.212（7/17）: WebSearch + サブエージェントスポーン上限の追加**
+- WebSearch ツール呼び出し上限がセッションあたりデフォルト 200 回に制限（`CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` 環境変数で変更可能）。
+- サブエージェントスポーン上限もセッションあたりデフォルト 200 に制限。
+- 🔴 アクション: auto-research-collect / auto-claude-code-watch などの Routine で WebSearch を大量使用している場合、上限に近づいていないか確認。超過が懸念される場合は環境変数での引き上げを検討。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Skills `context: fork` オプション（2026-07-11週）**
+- スキルを「メイン会話コンテキストとは分離されたサブエージェント」として実行する `context: fork` オプションが追加。リソース消費の大きいタスクでメインコンテキストを汚染しない設計が可能に。
+- Research Hub のハーネス設計での活用検討価値あり（deep-research-runner など）。
+
+**2. /doctor の CLAUDE.md 簡素化チェック（2026-07-11週）**
+- `/doctor` が肥大化した CLAUDE.md のシンプル化提案を行うようになった。Research Hub・My-Profile-and-Memory の CLAUDE.md に対して実行し、改善点を確認することを推奨。
+
+**3. freee 公式 MCP サーバー連携検討**
+- freee が公式 MCP サーバーを提供中（2026-03 〜 継続展開）。Claude Code から請求書作成・帳簿操作を自然言語で操作可能。
+- Tak の経理業務×Claude Code の具体的な連携候補。
+
+#### 🟢 参考情報
+
+**Claude Fable 5 & Mythos 5 グローバル展開（2026-07-01）**
+- Fable 5 は API/Bedrock/Vertex/Foundry で 6/9 から利用可能。7/1 より claude.ai・Claude Code・Claude Cowork でグローバル展開開始。
+- Fable 5 の価格: 入力 $10/Mトークン・出力 $50/Mトークン（Claude Mythos Preview の半額以下）。
+- Fable 5 はエージェントハーネス（Claude Code / Managed Agents）で数日単位の自律稼働が可能。Research Hub のルーティン強化の検討材料。
+
+**Anthropic ニュース（7月）**
+- Claude for Teachers（7/14）: 教育分野向けクロード提供開始。
+- カナダ AI 研究に $1,000万ドル拠出（7/9）
+- Public First Action に $2,000万ドル寄付（7/21）
+- AI for Science 希少疾患研究助成金公募（7/20）
+- Economic Futures Research Fund の研究アジェンダ発表（7/22）
+- Google・Broadcom と複数ギガワット規模の次世代コンピュート拡張パートナーシップ（7月）
+
+**会計×AI 動向（2026年7月）**
+- 経理部門の AI 導入率は約 24% だが、導入企業の 68.3% が「業務時間の明確な短縮」を実感。
+- 中小企業の経理業務は生成 AI + クラウド会計ソフトで月間 20〜40 時間の削減が現実的な段階に到達。
+- PEPPOL 普及で請求書フォーマット標準化が進み、AI-OCR + ERP 自動連携の導入障壁が低下。
+- バクラク: 規定違反自動検出で差し戻し率 60% 減の事例あり。
+- マネーフォワード AI Cowork: バックオフィス業務自動化を本格展開中。
+
+**Claude Code 7/11週: /commit-push-pr 機能強化**
+- `/commit-push-pr` が `origin` 以外の設定済みプッシュリモートへの git push を自動許可するように変更。
+
+**Claude Code 7/11週: Bedrock/Vertex/Foundry で auto モードがデフォルト化**
+- セルフホスト型プラットフォームで auto モードが標準選択となり、Opus 4.8 がデフォルトモデルに。
+
+#### references.md 更新提案
+
+1. **Claude Fable 5 / Mythos 5 モデル ID 追記**: `claude-fable-5` / `claude-mythos-5` が最新最上位モデルとして API 利用可能。references.md の「関連モデル」へ追記推奨。
+2. **WebSearch セッション上限の記載追加**: `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`（デフォルト 200）が v2.1.212 で新設。Routine 設計時の注意事項として追記を検討。
+3. **最終確認日更新**: references.md の `*最終確認: 2026-03-29*` → `2026-07-23` に更新推奨。
+
+#### 新規発見ソース候補
+
+- **havoptic.com/tools/claude-code**: Claude Code の各バージョンリリース要約サービス。releasebot.io の補完ソースとして有用（評価候補: ⭐⭐⭐）
+- **gradually.ai/en/changelogs/claude-code/**: Claude Code チェンジログのまとめサービス（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-07-30（1週間後）
+注目点:
+① Claude Code v2.1.220 前後のアップデート確認
+② Fable 5 Agent 活用事例の蓄積状況確認
+③ freee MCP サーバー利用事例の追跡
+④ WebSearch セッション上限（200回）が Routine の実運用に影響していないか確認
+⑤ TBP-003・TBP-004 候補（31日超経過）の Tak 判断を促す
+
+---
+
 ## [2026-07-22] デイリーレポート
 
 ### 内部知見（機能A）
