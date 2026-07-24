@@ -1,3 +1,103 @@
+## [2026-07-24] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**32日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。1ヶ月超経過（要アクション判断）。
+- **TBP-004候補**（2026-06-22 提案・確認待ち**32日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。1ヶ月超経過（要アクション判断）。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（Claude Opus 5 effort toggle）**: Opus 5 は「effort ladder」（low / medium / high / max）を明示的に指定できる設計。TBP-001「外部ツール導入審査」の「能力評価」ステップに、モデルの effort tier 設定を確認する観点を追記することを検討推奨（必要以上に高 effort を使うとコスト増大リスク）。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.219（7/24）確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Claude Opus 5・Sonnet 5 System Card 確認
+- anthropics/claude-code GitHub（⭐⭐⭐⭐⭐）: v2.1.219 リリースノート確認
+- GitHub Copilot Changelog（github.blog/changelog）: Opus 5 追加（7/24）
+- Zenn / Qiita: homhom44「Claude/Anthropic 関連ニュースまとめ（2026-07-25）」確認
+- 会計×AI: freee / マネーフォワード AI Cowork / バクラク 2026年7月最新状況
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Opus 5 正式リリース（2026-07-24）— 価格 $5/$25、1Mコンテキスト**
+- `claude-opus-5` が本日リリース。価格は $5/入力 M トークン・$25/出力 M トークン（Opus 4.8 と同等）。Fable 5 の半額。1M トークンコンテキスト・最大出力 128k トークン。
+- Thinking（extended thinking）がデフォルト ON。effort ladder（low / medium / high / max）で推論量を制御可能。
+- Claude Code v2.1.219 で `claude-opus-5` がデフォルト Opus モデルとして追加。claude.ai Max / Pro、API、Bedrock、Vertex、Foundry、GitHub Copilot でも利用可能。
+- Box 社ベンチマーク: Opus 4.8 比 +8% overall（データ分析 +11%、デューデリジェンス +17%）。Legal partner で max reasoning 時に平均 26% トークン削減。
+- 🔴 アクション: Research Hub の Routine が Opus 系モデルを使用している場合、`claude-opus-5` への切り替えを検討。特に deep-research-runner / feedback-article-runner での推論品質向上が見込める。
+
+**2. Claude Sonnet 5 正式展開（2026-07-24〜）— 最エージェント的 Sonnet、$2/$10**
+- Claude Sonnet 5（`claude-sonnet-5`）が本日より Claude Code / claude.ai で正式展開開始。Opus 4.8 に近い性能をより低コストで実現。
+- 価格: $2/入力 M・$10/出力 M（8月31日まで）→ 9月以降 $3/$15。
+- Sonnet 4.6 比でエージェント性能（推論・ツール使用・コーディング・知識作業）が大幅向上。Routine のエージェント処理に最適。
+- 安全性: Sonnet 4.6 より望ましくない動作の発生率が低く、エージェントコンテキストでの安全性が向上。
+- 🔴 アクション: auto-research-collect / auto-claude-code-watch 等の Routine が Sonnet 系を利用している場合、`claude-sonnet-5` への切り替えを検討（精度向上 + 8月末までコスト据え置き）。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Claude Code v2.1.219: `DirectoryAdded` hook の活用（2026-07-24）**
+- `/add-dir` または SDK の `register_repo_root` で新しい作業ディレクトリを mid-session に追加した際に発火する `DirectoryAdded` hook が新設。Research Hub の Routine でディレクトリ切り替えを伴うワークフローに活用できる可能性。
+- 🟡 アクション: `.claude/settings.json` の hooks に `DirectoryAdded` を設定し、ディレクトリ変更時の自動チェック・ログ記録に活用できるか検討。
+
+**2. Claude Code v2.1.219: `sandbox.network.strictAllowlist` 設定（2026-07-24）**
+- サンドボックスコマンドで非 allowlist ホストへのアクセスをプロンプトなしに拒否する設定が追加。Routine のセキュリティ強化に活用可能。
+- 🟡 アクション: Research Hub Routine の環境設定で `sandbox.network.strictAllowlist: true` を設定し、Worker ドメイン以外へのアクセスを構造的にブロックする設計を検討。
+
+**3. Opus 5 effort ladder を Routine の段階的推論制御に活用**
+- deep-research-runner: `effort: max` で最高精度の深掘り調査
+- auto-research-collect: `effort: medium` でコストを抑えながら品質確保
+- feedback-article-runner: `effort: high` で記事品質を確保
+- 🟡 アクション: 各 Routine の Console プロンプトに effort 指定を追記することを検討。`prompts/deep-research-runner-CONSOLE.md` に `effort: max` を明記。
+
+#### 🟢 参考情報
+
+**Anthropic ブログ: Redeploying Fable 5（7月中旬）**
+- Fable 5 のサイバーセーフガードとジェイルブレイクフレームワークの詳細が公開。フロンティアモデルのサイバー脆弱性への対応方針が整理された。
+
+**Qiita（homhom44）: Claude/Anthropic ニュースまとめ（2026-07-25）**
+- MCP 仕様の更新動向・Claude Cookbook リソース追加に関する情報が掲載（詳細は次回確認推奨）。
+
+**会計×AI（2026年7月時点）**
+- マネーフォワード AI Cowork: 「2026年7月提供開始予定」だが、7/24 時点での正式リリースアナウンス未確認。月末までに確認継続。
+- freee: AI エージェント「freee AI（β版）」の各プロダクト組み込みが進行中（会計・人事労務・請求書・工数・販売の5サービス横断）。
+- バクラク × freee 連携: AI-OCR 自動読み取り＋自動仕訳登録が実現。規定違反自動検出で差し戻し率 60% 減の事例継続。
+
+**GitHub Copilot: Claude Opus 5 追加（2026-07-24）**
+- GitHub Copilot でも `claude-opus-5` が利用可能になった。Copilot を使うエンジニアにとって Opus 5 の恩恵がすぐに受けられる。
+
+#### references.md 更新提案
+
+1. **`claude-sonnet-5` 追記（🆕 2026-07-24）**: `claude-sonnet-5`、価格 $2/$10（〜8/31）→ $3/$15、最もエージェント的な Sonnet、Opus 4.8 相当の性能を低コストで実現。
+2. **`claude-opus-5` 追記（🆕 2026-07-24）**: `claude-opus-5`、価格 $5/$25、1M コンテキスト、デフォルト Opus（Claude Code v2.1.219〜）、effort ladder（low/medium/high/max）、thinking デフォルト ON。
+3. **`DirectoryAdded` hook 追記（🆕 v2.1.219）**: 新しい作業ディレクトリ登録時（/add-dir / register_repo_root）に発火。hooks 設計のリファレンスに追記推奨。
+4. **`sandbox.network.strictAllowlist` 追記（🆕 v2.1.219）**: allowlist 外ホストをプロンプトなし拒否。セキュリティ設定として追記推奨。
+5. **最終確認日更新**: references.md の確認日を `2026-07-24` に更新推奨。
+
+#### 新規発見ソース候補
+
+- **fortune.com（Claude Opus 5 記事）**: Anthropic 新モデルの effort toggle 機能解説。企業ユースケース視点の分析（評価候補: ⭐⭐⭐）
+- **github.blog/changelog**: GitHub Copilot の Claude モデル追加など一次情報。（評価候補: ⭐⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+
+2026-07-31（1週間後）
+注目点:
+① Claude Sonnet 5 / Opus 5 の実運用事例・ベンチマーク追加情報確認
+② マネーフォワード AI Cowork 正式リリースアナウンス（7月末デッドライン）
+③ Claude Code v2.1.220 前後のアップデート確認
+④ Qiita 2026-07-25 記事の MCP 仕様更新詳細確認
+⑤ TBP-003・TBP-004 候補（32日超経過）の Tak 判断を促す
+⑥ Opus 5 effort ladder の Routine 適用 → Console プロンプト更新検討
+
+---
+
 ## [2026-07-23] デイリーレポート
 
 ### 内部知見（機能A）
