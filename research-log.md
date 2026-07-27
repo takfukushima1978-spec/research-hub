@@ -1,3 +1,106 @@
+## [2026-07-27] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**35日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。⚠️ 35日超経過・要アクション。
+- **TBP-004候補**（2026-06-22 提案・確認待ち**35日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。⚠️ 35日超経過・要アクション。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（Week 30: サブエージェント並列上限デフォルト20設定）**: Claude Code v2.1.x（Week 30, 7/20）でサブエージェントの同時実行数上限がデフォルト20に設定され、サブエージェントがネストしたサブエージェントを生成しないよう変更。TBP-001「審査→最小権限→段階拡張」のエージェント設計において、Research Hub の Workflow/Routine がサブエージェントを多用する場合のリソース上限設計を確認する機会。
+- **TBP-001 再評価トリガー（sandbox.filesystem.disabled 新設）**: Week 30 で `sandbox.filesystem.disabled` 設定が追加（ファイルシステム隔離をスキップしつつネットワーク egress 制御は維持）。TBP-001 の sandbox 設計方針に関連する新しい制御オプション。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: Week 30（7/20〜）・Week 31（7/27〜）の最新状況確認
+- anthropics/claude-code GitHub（⭐⭐⭐⭐⭐）: 7/27 新規 issues（#81767〜#81775）確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Claude Fable 5 / Mythos 5・Opus 5 情報を深掘り確認
+- Qiita（⭐⭐⭐）: 「Claude / Anthropic 関連ニュースまとめ（2026-07-27）」(homhom44) 確認
+- 会計×AI: freee「AIおまかせ明細取得」・バクラク連携・マネーフォワード AI Cowork 最終確認
+
+#### 🔴 即座に適用すべき事項
+**新規の🔴事項なし。** 継続フォローが必要な最重要対応事項:
+- Claude Sonnet 5 / Opus 5 / Fable 5 の Routine モデル切り替え検討（Tak確認後）
+- TBP-003・TBP-004 候補（35日超）— Tak の判断を強く推奨
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Claude Code Week 30（2026-07-20）— サブエージェント制御・sandbox 設計の変更**
+- 主な変更点:
+  - **サブエージェント同時実行上限 デフォルト20**: `--max-concurrent-subagents` 設定でカスタム可能
+  - **サブエージェントがネストしたサブエージェントを生成しないよう変更**: Workflow 多段構成に影響する可能性あり
+  - **`--max-budget-usd` がバックグラウンドサブエージェントを停止しないバグを修正**
+  - **`sandbox.filesystem.disabled` 新設**: ファイルシステム隔離スキップ + ネットワーク egress 制御を維持するオプション
+  - **長時間セッションでのメッセージ正規化コスト二乗増加による遅延を修正**: マルチターン長セッション使用時の体感速度が改善
+  - **OAuth トークン期限切れ後の "HTTP 401" 分類エラーで auto モードがコマンドを拒否するバグ修正**
+  - **`AskUserQuestion` の自由テキスト回答の動作修正**
+- 🟡 アクション: Research Hub の Routine/Workflow がサブエージェントを使う箇所について、デフォルト上限20との整合性を確認。ネストしたサブエージェント生成が意図している場合は設定見直しが必要。
+
+**2. Claude Fable 5 が Claude Code で利用可能（2026-07-01〜）— Routine モデル選択の再検討**
+- Fable 5 は Anthropic がこれまでに一般公開した中で最も高性能なモデル（ソフトウェアエンジニアリング・知識業務・ビジョン・科学研究などほぼ全ベンチマークで SOTA）
+- 6/9 リリース → 6/12〜6/30 US 輸出規制により一時全世界アクセス停止 → 6/30 規制解除 → 7/1 グローバル再リリース
+- Claude Code・Claude Platform・claude.ai・Claude Cowork で利用可能
+- **モデル ID: `claude-fable-5`**（claude-api スキル参照）
+- Mythos 5（同モデルベース・一部制限緩和版）は Project Glasswing 経由で米政府系ユーザー向けに提供中
+- 🟡 アクション: auto-research-collect / auto-claude-code-watch などの Routine が Fable 5 を選択可能か確認。コスト・パフォーマンスのトレードオフ検討後に Tak 確認を経てから変更。
+
+**3. マネーフォワード AI Cowork — 7/31 最終デッドライン（残り4日）**
+- 7/27 時点でも「2026年7月より提供開始予定」表記のまま。正式リリースアナウンス未確認。
+- biz.moneyforward.com/ai-cowork/ を引き続き監視。7/31（木）に最終確認を行い、未リリースの場合は「7月未達・8月以降再確認」として記録。
+- 🟡 アクション: 7/31 の daily-research セッションで最終確認。
+
+#### 🟢 参考情報
+
+**Anthropic ブログ（7/27 時点）**
+- **Claude Fable 5 / Mythos 5 の輸出規制と再配備の経緯（重要背景）**:
+  - 6/12: Amazon 研究者がサイバーセキュリティ脆弱性悪用コードを出力させるジェイルブレイク手法を発見 → 米国輸出規制適用 → Anthropic は全ユーザーへのアクセスを一時停止
+  - 6/30: 輸出規制解除 → 7/1 よりグローバル再展開
+  - Anthropic・Amazon・Microsoft・Google 等の Glasswing パートナー各社が AI モデルのジェイルブレイク検出・修正の共有フレームワークを策定（業界横断的な安全対策の新動向）
+  - 詳細: anthropic.com/news/redeploying-fable-5 / anthropic.com/news/fable-safeguards-jailbreak-framework
+- **"Inviting hard questions"（7/9）**: Anthropic が AI に関する最も困難な質問を公募し、公開で回答する取り組みを発表（anthropic.com/news/hard-questions）
+
+**GitHub Issues 新着（2026-07-27）**
+- #81767〜#81775: 7/27 に新規オープン（合計9件）。内容の詳細は確認中。先週からの連続的な新規 issue 投稿が続いており（先週 #81413〜#81422）、コミュニティの活発な利用状況を示す。
+
+**AMD × Anthropic GPU 供給発表**
+- Qiita の 7/27 まとめ記事によると、AMD が Anthropic への GPU 供給を発表。NVIDIA 独占体制からの多様化が進む AI インフラ動向として注目。
+
+**会計×AI（2026-07-27 時点）**
+- **freee「AIおまかせ明細取得」**: PDF ファイルなどから仕訳の元データとなる明細を AI で自動作成。高精度モード（生成AI β版）と合わせた二段構えの AI-OCR 強化（2026年上半期展開）。
+- **freee 公式 MCP**: 2026年3月 OSS 公開後、リモート MCP 対応・freee サイン対応が進み、約330本の freee API が MCP ツールとして利用可能。Claude Code から freee 会計に直接アクセスできる環境が整備済み。
+- **バクラク × freee 統合（2026年7月版）**: スマートフォン撮影 → バクラク AI-OCR 読取 → 承認 → freee 自動仕訳登録フローが完成。規定違反自動検出で差し戻し率 60% 削減継続。
+- **Claude Code × 会計実践記事（genai-ai.co.jp）**: Claude Code と仕訳提案・異常値検知・キャッシュフロー予測を組み合わせた具体例記事が継続公開中。
+
+#### references.md 更新提案
+- 昨日（7/26）提案の7項目が引き続き Tak 確認待ち（提案番号 1〜7）。
+- **新規追加提案（2026-07-27）**:
+  8. **`claude-fable-5` モデル ID 追記**: Claude Code で利用可能な最新フラッグシップモデル。7/1 グローバルリリース済み。claude-api スキルの models セクションに `claude-fable-5` を追加。
+  9. **Week 30: サブエージェント同時実行上限デフォルト20**: エージェント設計セクションへ追記（「サブエージェントの同時実行上限がデフォルト20。ネストしたサブエージェント生成はデフォルト無効（v2.1.x Week 30〜）」）。
+  10. **`sandbox.filesystem.disabled` 設定追記**: sandbox 設計セクションへ追記（「ファイルシステム隔離をスキップしつつネットワーク egress 制御を維持する設定オプション（Week 30〜）」）。
+
+#### 新規発見ソース候補
+- **homhom44 (Qiita)**: 「Claude / Anthropic 関連ニュースまとめ」を毎日更新（`qiita.com/homhom44/`）。Anthropic の公式 news + GitHub issue 動向 + AMD 等サプライチェーン情報まで網羅。評価候補: ⭐⭐⭐⭐
+- **anthropic.com/transparency**: Anthropic の透明性ハブ。Fable 5 の安全対策・ジェイルブレイクフレームワーク等の詳細開示先。評価候補: ⭐⭐⭐⭐⭐
+
+#### 次回リサーチ推奨日
+
+2026-07-31（今週木曜日）
+注目点:
+① **マネーフォワード AI Cowork 正式リリース最終確認**（7/31 が7月末デッドライン — 未達なら「8月以降再確認」で記録）
+② **TBP-003・TBP-004 候補（35日超）— Tak の判断を強く促す（36日目以降も毎日リマインド）**
+③ **Claude Sonnet 5 / Opus 5 / Fable 5 の Routine Console プロンプト反映**（Tak確認後）
+④ **Week 30 サブエージェント上限の Research Hub Routine への影響確認**
+⑤ **GitHub Issue #81767〜#81775 の内容詳細確認**
+⑥ **AMD × Anthropic GPU 供給発表の業界インパクト継続追跡**
+
+---
+
 ## [2026-07-26] デイリーレポート
 
 ### 内部知見（機能A）
