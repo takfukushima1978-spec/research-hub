@@ -1,3 +1,85 @@
+## [2026-07-28] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**36日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。⚠️ 36日超経過・要アクション。
+- **TBP-004候補**（2026-06-22 提案・確認待ち**36日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。⚠️ 36日超経過・要アクション。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（MCP 2026-07-28 spec 破壊的変更）**: MCP の最新仕様（RC、本日最終リリース）でプロトコルがステートレスアーキテクチャへ移行。セッション削除・OAuth RFC 9207 変更・Roots/Sampling/Logging 非推奨。TBP-001「審査→最小権限→段階拡張」の MCP サーバー設計観点で、既存 MCP 利用箇所（xmcp / freee MCP 等）の仕様準拠確認が必要。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式 What's New（⭐⭐⭐⭐⭐）: Week 31 の情報（7/27〜）確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Claude Opus 5 / Fable 5 再展開 / SpaceX compute deal 確認
+- anthropics/claude-code GitHub（⭐⭐⭐⭐⭐）: 7/28 新規 issues（#82116〜#82123）確認
+- Qiita homhom44（⭐⭐⭐）: 2026-07-28 Anthropic 関連ニュースまとめ確認
+- MCP 公式ブログ（blog.modelcontextprotocol.io）: 2026-07-28 spec RC 詳細確認
+- 会計×AI: マネーフォワード AI Cowork・freee AIアシスタント最新動向確認
+
+#### 🔴 即座に適用すべき事項
+**1. MCP 2026-07-28 仕様 最終リリース（破壊的変更）**
+- **概要**: 本日（7/28）MCP 仕様の最終版がリリース。ステートレスアーキテクチャへ移行し、プロトコル・セッションおよび `Mcp-Session-Id` ヘッダーが削除。OAuth は RFC 9207 に準拠するよう変更。Roots / Sampling / Logging が非推奨に。Multi Round-Trip Requests（MRTR）が新規追加。
+- **Research Hub への影響**: Research Hub は現在 MCP を直接使用していないが、xmcp / freee MCP 等を利用している場合は SDK のバージョンアップと移行計画が必要。
+- **参照**: [MCP Blog 2026-07-28 RC](https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/) / [Stacktree 移行ガイド](https://stacktr.ee/blog/mcp-2026-spec-changes)
+
+#### 🟡 近いうちに試したいこと（上位3件）
+1. **Claude Opus 5 の Routine モデル切り替え検討**（2026-07-24 リリース）
+   - 努力設定（low / medium / high）機能により、コスト vs 能力のバランスを動的に制御可能
+   - コーディング・知識業務で SOTA。Frontier-Bench / GDPval-AA で最高スコア
+   - 安全性強化（欺瞞的行動・不可逆エラー低下）。Opus 4.8 と同価格
+   - Routine の auto-research-collect / deep-research-runner への適用を検討
+   - 参照: [Anthropic Opus 5](https://www.anthropic.com/news/claude-opus-5)
+
+2. **Claude Code Week 31 新機能の活用**
+   - Artifact へのライブ MCP コネクターデータ（閲覧時にリアルタイムデータ取得・アクション実行）
+   - スクリーンリーダーモード（視覚的 TUI を線形テキストに切り替え）
+   - パブリック共有リンク / Team・Enterprise 向けエディターロール追加
+   - Claude Tag セッションからの Artifact 作成が可能に
+   - 参照: [Claude Code What's New](https://code.claude.com/docs/en/whats-new)
+
+3. **マネーフォワード AI Cowork の業務活用検討**（2026年7月提供開始）
+   - AI が「同僚」として経理・労務・法務のバックオフィス業務を自律処理
+   - オーケストレーターが自然言語の意図を解釈し最適エージェントへ振り分け
+   - ガバナンス機能（権限管理・AI 監査ログ・人間確認プロセス）付き
+   - Tak 本業（経理部長・組織内会計士）に直結。試用検討を推奨
+   - 参照: [マネーフォワード AI Cowork](https://biz.moneyforward.com/ai-cowork/)
+
+#### 🟢 参考情報
+- **Fable 5 再展開完了**（2026-07-01〜）: 米政府輸出規制（6/12〜6/30）解除後、新サイバーセキュリティセーフガードと業界ジェイルブレイクフレームワークを付与して再展開。Pro/Max/Team で週次利用上限に組み込まれ、7/7 以降は利用クレジット方式に移行。参照: [Redeploying Fable 5](https://www.anthropic.com/news/redeploying-fable-5)
+- **Anthropic × SpaceX compute 契約**: Colossus 1 データセンターの全コンピューティング容量を利用（300MW、約22万 NVIDIA GPU）。Claude Pro / Max 向けキャパシティ改善。軌道上 AI コンピューティングの共同開発にも言及。
+- **AMD × Anthropic**: AMD が Anthropic に Instinct MI450 GPU を 2 ギガワット分供給する計画を発表（前日 Qiita 記事で確認）
+- **Anthropic Series H**: $65B 調達、評価額 $965B（ほぼ$1T に到達）
+- **freee AIアシスタント + カスタムオーダー**（2026-06-16 発表）: 高精度 OCR（生成AI β版）・自動仕訳精度向上・AI アドバイス機能の拡充。freee-mcp の OSS 版も公開済み（3月）
+
+#### references.md 更新提案
+- **MCP 2026-07-28 spec の破壊的変更を反映すべき**: harness-design-guide/references.md の MCP 関連記載（セッション管理・OAuth・Roots/Sampling/Logging 等）が旧仕様に基づいている場合、2026-07-28 spec へのアップデートを提案。特に以下の変更が重要:
+  1. ステートレスアーキテクチャ（ラウンドロビン LB 対応可能）
+  2. セッション削除（`initialize` ハンドシェイク不要）
+  3. MRTR（サンプリング・引き出し処理の代替）
+  ※ Tak 確認後に更新。直接変更は行わない。
+
+#### 新規発見ソース候補
+- **[MCP 公式ブログ](https://blog.modelcontextprotocol.io)** ⭐⭐⭐⭐ — MCP 仕様変更の一次情報源。trusted-sources.md への追記を提案。
+
+#### 次回リサーチ推奨日
+2026-08-04（1週間後）
+注目点:
+① MCP 2026-07-28 spec 最終版の SDK 各言語対応状況（TypeScript / Python）
+② Claude Opus 5 の Routine 適用実験結果確認
+③ Week 32 Claude Code changelog
+④ マネーフォワード AI Cowork の正式提供開始・機能詳細
+⑤ TBP-003・TBP-004 候補（37日目）Tak確認アクション
+
+---
+
 ## [2026-07-27] デイリーレポート
 
 ### 内部知見（機能A）
