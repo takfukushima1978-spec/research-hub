@@ -1,3 +1,79 @@
+## [2026-07-30] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**38日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。⚠️ 38日超経過・要アクション。
+- **TBP-004候補**（2026-06-22 提案・確認待ち**38日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。⚠️ 38日超経過・要アクション。
+
+#### 再検討トリガー該当
+- **TBP-001 新トリガー（freee-mcp OSS公開）**: freee が Apache 2.0 ライセンスで `freee-mcp` を OSS 公開（270本以上のAPIをLLMツールとして提供）。Claude Code × freee 連携が本格的に視野に入った。TBP-001「審査→最小権限→段階拡張」の3ステップを freee-mcp に適用すべきタイミング。書き込み系 API（post/put/patch/delete）のdeny設定が特に重要（xmcp・過去 freee MCP 導入の知見が直接適用可能）。
+- **TBP-001 継続（MCP 2026 spec TypeScript/Python SDK 対応）**: 昨日（7/29）報告の MCP spec 最終版。SDK 対応確認は引き続き Tak 確認待ち。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式 What's New（⭐⭐⭐⭐⭐）: 最新 v2.1.220（7/25）・Week 31 機能確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 7月発表（Fable 5再展開・Bernanke LTBT就任・経済影響研究基金・稀少疾患・カナダ投資）確認
+- anthropics/claude-code GitHub（⭐⭐⭐⭐⭐）: 7/30 新規 issues（#82676〜#82683）確認
+- Zenn / Qiita（⭐⭐⭐）: 7月末時点の Claude Code 記事傾向確認
+- 会計×AI: マネーフォワード AI Cowork・freee 最新動向・国税庁 KSK2 確認
+
+#### 🔴 即座に適用すべき事項
+**国税庁 KSK2（次世代国税総合管理システム）2026年9月移行予定**
+- 2026年9月から次世代 KSK（KSK2）への移行が予定されており、AI による税務調査が大幅に強化される。相続税申告の AI 分析はすでに 2025年7月から本格導入済み（過去不正パターンとの照合・リスクスコアリング）。
+- Tak の本業（経理部長・組織内会計士）に直結する変化。**KSK2 稼働後は、AI が申告書全件をリアルタイム分析し「見逃しゼロ時代」へ移行**する可能性が高い。
+- 🔴 アクション: 9月の KSK2 移行前に、社内の税務申告プロセス・内部統制体制を「AI 税務調査時代」仕様で見直す準備を検討。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Artifacts の MCP コネクター呼び出し機能を Research Hub に活用**
+- 公開 Artifact がビューワーの MCP コネクター経由でライブデータ取得・アクション実行が可能になった（Week 31）。各コネクター呼び出しは承認後に実行。
+- Team/Enterprise 向け editor roles（共有編集）・公開共有リンクも同時追加。
+- 🟡 アクション: Research Hub の index.html を Artifact として活用する際に、この MCP コネクター呼び出し機能との統合設計を検討。閲覧者の MCP 接続に応じたリアルタイム記事表示が実現できる可能性。
+
+**2. freee-mcp の TBP-001 審査（外部ツール導入審査の実施）**
+- freee が Apache 2.0 OSS として `freee-mcp` を公開。270本以上の API を LLM ツールとして呼び出し可能。
+- Claude Code から freee の仕訳・請求書・経費精算などを直接操作できる可能性があり、Tak の経理業務に直結する。
+- 🟡 アクション: TBP-001 に従い、external-audit スキルで 4 軸チェック（セキュリティ/プライバシー/信頼性/コスト）を実施してから導入判断を行う。書き込み系 API のdeny設定は必須。
+
+**3. マネーフォワード AI Cowork — 7/31（木）が7月末最終確認デッドライン**
+- 7/30 時点でも「2026年7月より提供開始予定」表記が継続。正式リリースアナウンス未確認。
+- 🟡 アクション: **明日 7/31 の daily-research セッションで最終確認**。未リリースの場合は「7月未達・8月以降再確認」として記録する。
+
+#### 🟢 参考情報
+- **Claude Code v2.1.220（7/25）が現在の最新**: 7/30 時点で新規 changelog エントリなし。v2.1.219 の主要機能（Claude Opus 5 デフォルト化・DirectoryAdded hook・sandbox.network.strictAllowlist・ネストサブエージェント深さ3）が現行最新機能セット。
+- **GitHub Issues 新着（7/30）**: #82676〜#82683 が本日新規オープン（8件）。#82676 は enhancement（新機能要求）。詳細内容は確認中。
+- **Anthropic 7月の主要トピック**: Fable 5 再展開（7/1）・Ben Bernanke → LTBT 就任（7/9）・Rare Disease AI Research Grants（7/20）・Public First Action $20M 寄付（7/21）・Economic Futures Research Fund $200M（AI 経済影響研究）・カナダ AI 研究 $10M CAD。
+- **Zenn/Qiita 7月末のClaude Code記事傾向**: 「正直に言うお前のClaude Codeの使い方は間違っている」（Qiita）・週次まとめ（v2.1.202〜207）・Artifacts機能 Pro/Max 解放・/review コマンド刷新・/doctor の CLAUDE.md 簡素化提案が注目記事。
+- **freee 会計 2026 AI アップデート**: 「AIおまかせ明細取得」β版（Suica 利用明細PDF→明細自動抽出）が提供開始。会社ルールに沿った自動記帳→証憑紐付けへ進化中。
+- **国税 AI 強化（続報）**: 相続税申告の AI 分析（2025年7月〜）に続き、KSK2（2026年9月）で法人税・所得税なども全件 AI 分析対象へ拡大する見込み。
+
+#### references.md 更新提案
+- 昨日（7/29）提案分（MCP spec 2026 ステートレスアーキテクチャ対応）が引き続き Tak 確認待ち。
+- 7/24〜7/26 提案の10項目も未確認。優先確認事項: `claude-opus-5`・`claude-sonnet-5` の claude-api スキル追記、Fable 5 モデル ID 追記。
+
+#### 新規発見ソース候補
+- **releasebot.io/updates/anthropic/claude-code**: Claude Code 更新の自動追跡サイト（前回提案の継続）。評価候補: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-07-31（木・7月末最終日）
+注目点:
+① **マネーフォワード AI Cowork 正式リリース最終確認**（7/31 が7月末デッドライン — 未達なら「8月以降再確認」で記録）
+② **TBP-003・TBP-004 候補（39日目）— Tak の判断を最優先事項として促す**
+③ **freee-mcp 導入審査（TBP-001 適用）— Tak の意向確認**
+④ **Claude Code v2.1.221+ 新リリース確認**
+⑤ **国税庁 KSK2（9月稼働）に向けた社内対応検討を Tak にリマインド**
+⑥ **Anthropic IPO 関連動向（投資家向けミーティング結果）**
+
+---
+
+
 ## [2026-07-29] デイリーレポート
 
 ### 内部知見（機能A）
