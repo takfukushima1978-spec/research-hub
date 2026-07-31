@@ -1,3 +1,87 @@
+## [2026-07-31] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**39日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。⚠️ 39日超経過・要アクション。**7/31 時点でも未判断。Tak への強力アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち**39日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。⚠️ 39日超経過・要アクション。**7/31 時点でも未判断。**
+
+#### 再検討トリガー該当
+- **TBP-001 新トリガー（Anthropic Claude for Financial Services 大幅拡張）**: Anthropic が金融サービス向け Claude を大幅拡張。S&P Capital IQ・Daloopa・Morningstar・PitchBook の4社コネクター追加、Excel add-in（beta・研究プレビュー）、比較企業分析・DCFモデル・デューデリジェンス等6つの新 Agent Skills。Tak の本業（経理部長・組織内会計士）に直結。TBP-001「審査→最小権限→段階拡張」を適用してから導入判断を行う必要あり。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.220（7/25）が最新確認。v2.1.221 以降は 7/31 時点で未確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 7/27 オープンウェイト立場声明・Financial Services 拡張確認
+- anthropics/claude-code GitHub（⭐⭐⭐⭐⭐）: 7/31 新規 issues（#82980〜#82988）確認
+- Releasebot.io / Gradually.ai: Claude Code 7月リリース一覧確認
+- マネーフォワード AI Cowork（biz.moneyforward.com/ai-cowork/）: 7/31 最終確認
+- 会計×AI: keihi.com・leapal.jp・ai-revolution.co.jp 最新記事確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. Anthropic Claude for Financial Services 大幅拡張（7月）**
+- **Excel add-in（beta・研究プレビュー）**: Excel サイドバーで Claude が直接 Excel ブックを読み取り・分析・修正・新規作成可能。経理実務への直接統合チャンス。
+- **新コネクター4社**: S&P Capital IQ・Daloopa・Morningstar・PitchBook。リアルタイム市場データ・ポートフォリオ分析が Claude から直接利用可能。
+- **6つの新 Agent Skills**: 比較企業分析・DCF モデル・デューデリジェンスデータパック・企業プロファイル・決算分析・カバレッジ開始レポート（業界分析・企業深掘り・バリュエーション）
+- Finance Agent benchmark（Vals AI）で Sonnet 4.5 が 55.3% accuracy（SOTA）
+- 🔴 アクション: TBP-001 審査プロセス（external-audit スキルで4軸チェック）を経てから Excel add-in の試用を判断。書き込み系 Excel 操作のリスクを確認。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Claude for Financial Services — Excel add-in の経理実務評価**
+- Excel サイドバー統合で月次決算・試算表・CF計算書の自動分析が実現できる可能性。
+- Tak の経理実務（経費精算・月次決算・財務分析）へのインパクトを評価する価値あり。
+- 🟡 アクション: beta 申し込み（anthropic.com/news/advancing-claude-for-financial-services から）→ TBP-001 審査後に試用開始。
+
+**2. マネーフォワード AI Cowork — 7月末デッドライン結果記録**
+- 7/31 最終確認: 正式リリースアナウンス**未確認**。公式サイト（biz.moneyforward.com/ai-cowork/）も「提供開始予定」表記継続。プレスリリース（prtimes.jp）も「2026年7月より提供開始予定」のまま更新なし。
+- **判定: 7月未達。8月以降に再確認。**（ただし Claude Agent SDK のオーケストレーターに採用とのこと — 実装は段階的に進んでいる可能性あり）
+- 🟡 アクション: 8/1 以降の公式発表を監視。次回 daily-research で正式リリース確認。
+
+**3. Anthropic オープンウェイト立場声明（7/27）の業界影響把握**
+- Anthropic が「オープンウェイトモデルをカテゴリとして禁止すべきではない」という立場を明確化（Dario Amodei、7/27）。
+- 「危険な能力を持たないオープンウェイトモデルは公共財」「権威主義政府が米国を超えるAIを構築するリスクが最大の懸念」という枠組み。
+- 対 China AI 政策論争（Meta Llama / DeepSeek 等）への Anthropic の立ち位置として重要。
+- 🟡 アクション: 参照: [Our position on open-weights models](https://www.anthropic.com/news/position-open-weights-models)。AI ガバナンス動向として記録。
+
+#### 🟢 参考情報
+- **Claude Code GitHub Issues 新着（7/31）**: #82980〜#82988 が本日新規オープン（#82982・#82984・#82985 はバグラベル付き）。#82988 が最新。7/30 の #82676〜#82683 から約300件増加しており、コミュニティの活発な利用状況が継続。
+- **Claude Code 最新版**: v2.1.220（7/25）が確認できる最新。v2.1.221 以降については releasebot.io でも 7/31 時点で未確認（もしリリース済みであれば次回確認）。
+- **会計×AI 2026年7月末の実態**: 日本企業の経理AI導入率 24.3%・AI-OCR 精度 95〜99%・経費処理工数 75% 削減が標準事例として定着。「人が判断・AIが作業」フレームが確立フェーズ。leapal.jp の税理士視点記事（KSK2 対応含む）が詳しい。
+- **Anthropic × PwC 拡張パートナーシップ**: PwC が Claude を活用してクライアントのテクノロジー構築・ディール実行・エンタープライズ変革を推進。大手会計事務所との連携が本格化。
+
+#### references.md 更新提案
+- 引き続き Tak 確認待ちの未対応提案一覧:
+  - `claude-sonnet-5`・`claude-opus-5`・`claude-fable-5` の claude-api スキル追記（7/24〜7/27 提案）
+  - `DirectoryAdded` hook・`sandbox.network.strictAllowlist` 追記（7/24 提案）
+  - v2.1.221 hook exit code 2 + コスト二重計上修正の追記（7/26 提案）
+  - MCP 2026-07-28 spec ステートレスアーキテクチャ対応（7/28 提案）
+  - Week 30 サブエージェント同時実行上限デフォルト20（7/27 提案）
+- **新規追加提案（2026-07-31）**:
+  - Anthropic Claude for Financial Services の Finance Agent benchmark 結果（Sonnet 4.5 = 55.3%、SOTA）を claude-api スキルの性能比較セクションへ追記。
+
+#### 新規発見ソース候補
+- **[Anthropic Financial Services ウェビナー](https://www.anthropic.com/webinars/claude-for-financial-services-putting-agents-to-work)**: 金融サービス × Claude の実践ウェビナー（"Putting agents to work"）。会計・金融実務向け Claude 活用の参考資料として有用。評価候補: ⭐⭐⭐⭐
+- **[leapal.jp AI会計税務ブログ](https://leapal.jp/blog/legal-reform/ai-accounting-tax-latest-trends-2026/)**: 税理士視点の 2026年最新 AI 会計・税務動向（KSK2 対応含む）。Tak 本業直結領域の専門的解説。評価候補: ⭐⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-08-04（月・8月第1週）
+注目点:
+① **マネーフォワード AI Cowork 正式リリース確認**（7月未達 → 8月移行。公式アナウンスを待つ）
+② **TBP-003・TBP-004 候補（40日目〜）— Tak への最優先アクション要請が継続**
+③ **Claude Code v2.1.221〜 8月最初のリリース確認**
+④ **Claude for Financial Services Excel add-in beta 申し込み・TBP-001 審査着手検討**
+⑤ **Anthropic IPO 動向（$965B 評価額 → $1T 到達の続報）**
+⑥ **MCP 2026-07-28 spec の TypeScript / Python SDK 対応確認（8月初旬）**
+
+---
 ## [2026-07-30] デイリーレポート
 
 ### 内部知見（機能A）
