@@ -1,3 +1,89 @@
+## [2026-08-01] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**40日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。⚠️ **40日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち**40日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。⚠️ **40日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 新トリガー（Claude for Small Business — QuickBooks/PayPal 統合）**: Anthropic が Claude for Small Business を発表。QuickBooks, PayPal, HubSpot, Canva, DocuSign, Google Workspace, Microsoft 365 との統合パッケージ。Tak の本業（経理部長・組織内会計士）に直結する QuickBooks/PayPal 統合が特に注目。TBP-001「審査→最小権限→段階拡張」を適用してから導入判断を行う必要あり。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式 What's New（⭐⭐⭐⭐⭐）: v2.1.220（7/25）が最新確認。8/1 時点で新規 changelog 未確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Google+Broadcom 5GW 契約・Claude for Small Business・$30B 年商 run-rate 確認
+- anthropics/claude-code GitHub（⭐⭐⭐⭐⭐）: 8/1 新規 issues（#83191〜#83199）確認
+- Qiita（⭐⭐⭐）: 2026-08-01 Claude/Anthropic ニュースまとめ記事確認（homhom44）
+- 会計×AI: keihi.com・ai-revolution.co.jp・Bill One AI 機能確認
+- マネーフォワード AI Cowork（biz.moneyforward.com/ai-cowork/）: 8/1 最終確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Sonnet 5 API 価格が 2026年8月31日で値上がり**
+- 現在のプロモーション価格: $2 input / $10 output per MTok（2026年8月31日まで）
+- 9月1日から通常価格: $3 / $15 per MTok（入力50%・出力50%値上がり）
+- Tak の Routines（auto-research-collect 等）が Claude API を直接呼ぶ場合、コスト計算を8月中に見直す必要あり。
+- 🔴 アクション: 8月中に Routine のコスト試算を行い、9月移行後のトークン消費量を把握する。
+
+**2. Claude Code 週次使用量50%増プロモーション終了日（2026年8月19日）が近い**
+- Pro/Max/Team plan の Claude Code ユーザー向けに週次使用量が自動的に50%増加中。
+- 8月19日（火）に終了予定。
+- 🔴 アクション: 8/19 以降の Routine 実行制限を想定して、長時間セッションの Routine（deep-research-runner 等）が制限に引っかかるか確認する。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Anthropic × Google+Broadcom 5GW TPU 契約の業界インパクト把握**
+- Anthropic が Google・Broadcom と次世代 TPU 5ギガワット規模の契約を締結（2027年以降供給）。Amazon 5GW + SpaceX GPU も追加契約済み。
+- Anthropic の run-rate 年商が $30B 超（2025年末の $9B から急増）、$1M+/年 支出の企業顧客が2ヶ月未満で倍増し1,000社超。
+- Claude API の長期的なキャパシティ拡大・コスト低減が見込まれ、Routines の設計余裕が広がる可能性。
+- 🟡 アクション: $30B run-rate 規模の API 需要が示す安定性を踏まえ、Routine の将来設計（並行処理・Deep Research 拡大等）の中期プランを検討。
+
+**2. Claude for Small Business — QuickBooks 統合の経理実務評価**
+- QuickBooks integration: 給与計画・月次決算・キャッシュフロー・税務準備・照合作業が Claude から直接実行可能。
+- Tak の経理実務（月次決算・試算表・CF計算書）への直接統合チャンス。ただし書き込み系（payroll planning / reconciliation）の権限管理は慎重に。
+- 🟡 アクション: TBP-001 に従い external-audit スキルで 4 軸チェック（セキュリティ/プライバシー/信頼性/コスト）を実施。特に QuickBooks への書き込み系 API は deny リストで初期制限を徹底する。
+
+**3. マネーフォワード AI Cowork — 8月移行後の正式リリース監視**
+- 8/1 時点でも「提供予定」表記継続。7月リリース予告を超過（7月未達確定）。
+- Business Insider Japan 記事（2026年4月）では「2026年7月より提供開始予定」との表記。
+- 🟡 アクション: 次回（8/4 月次）で正式リリースアナウンス有無を再確認。「8月中の正式リリース」を次の観察デッドラインとして設定。
+
+#### 🟢 参考情報
+- **Claude Code GitHub Issues 新着（8/1）**: #83191〜#83199 が本日新規オープン（#83198 はバグラベル付き）。7/31 の #82988 から約200件増加しており、7月〜8月の移行期でも活発な利用状況が継続。
+- **Claude Code 最新版**: v2.1.220（7/25）が確認できる最新。8/1 時点で v2.1.221 以降は未確認。
+- **会計×AI 2026年8月の実態**: 「AIエージェント型SaaS」フェーズへ移行中。Bill One（Sansan） 2026年夏に「AI自動起票」機能を予定（請求書→勘定科目・金額・税率を自動入力）。freee「まほう経費精算」（2026年2月）が先行稼働。AI 経理導入率 24.3%・効率向上実感 75.6%。
+- **Qiita 2026-08-01 Claude/Anthropic ニュースまとめ**: Google の Anthropic への投資・MCP アップデートが注目トピック。
+
+#### references.md 更新提案
+- **新規追加提案（2026-08-01）**:
+  - Claude Sonnet 5 API プロモーション価格（$2/$10 per MTok）の**終了期限：2026年8月31日**を claude-api スキルへ追記（9月以降 $3/$15 に移行）。
+  - Claude for Small Business 統合リスト（QuickBooks / PayPal / HubSpot / Canva / DocuSign / Google Workspace / Microsoft 365）を claude-api スキルの Business/Enterprise 連携セクションへ追記提案。
+- 引き続き Tak 確認待ちの未対応提案（7/24〜7/31 提案の計7項目）も継続。
+
+#### 新規発見ソース候補
+- **[Claude for Small Business ランディングページ](https://www.anthropic.com/news/claude-for-small-business)**: 中小企業向け統合パッケージの詳細。QuickBooks・PayPal 連携の具体的ワークフローが記載。Tak の経理実務直結。評価候補: ⭐⭐⭐⭐
+- **[releasebot.io/updates/anthropic/claude-code](https://releasebot.io/updates/anthropic/claude-code)**: Claude Code 更新自動追跡サイト。v2.1.220 まで確認済み。次回以降の v2.1.221+ 追跡に有用。評価候補: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-08-04（月・8月第2週開始）
+注目点:
+① **Claude Sonnet 5 API プロモーション期限（8/31）まで30日**: API コスト見直しを8月中に実施
+② **Claude Code 週次使用量50%増プロモーション終了（8/19）まで18日**: 長時間 Routine への影響確認
+③ **TBP-003・TBP-004 候補（43日目〜）— Tak への最優先アクション要請が継続**
+④ **マネーフォワード AI Cowork 正式リリース確認**（8月中のデッドライン監視）
+⑤ **Claude Code v2.1.221+ 8月最初の新リリース確認**
+⑥ **Claude for Small Business QuickBooks 統合 → TBP-001 審査着手**
+
+---
+
+
 ## [2026-07-31] デイリーレポート
 
 ### 内部知見（機能A）
