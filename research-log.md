@@ -1,3 +1,92 @@
+## [2026-08-02] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち**41日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Takの確認待ち継続。⚠️ **41日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち**41日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Takの確認待ち継続。⚠️ **41日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 新トリガー（Anthropic Claude Partner Network Services Track）**: Anthropic が Claude Partner Network に $100M を投資し「Services Track」「Partner Hub」を整備（2026-06-03 発表）。40,000社以上が応募、10,000名超が Claude Certified Architect に認定済み。Tak が外部コンサルタント・SI との協働を検討する際は TBP-001「審査→最小権限→段階拡張」を適用すること。特に Applied AI Engineers が常駐する新しい外部業者には書き込み権限の段階拡張ルールを適用。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.220（7/25）が依然最新。8/2 時点で v2.1.221+ 未確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Claude Partner Network $100M・Services Track・AI for Science grants 期限・Fable 5 プロモクレジット期限確認
+- releasebot.io / claudefa.st（⭐⭐⭐）: Claude Code 7月末最新確認（v2.1.220 まで）
+- keihi.com / ai-revolution.co.jp（⭐⭐⭐）: 2026年8月版 会計AI最新動向
+- マネーフォワード AI Cowork 関連記事（biz.moneyforward.com 等）: 8/2 時点で正式リリース未確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. Fable 5 $100 プロモーションクレジット申請期限：本日（8/2）が最終日**
+- Claude Fable 5 ユーザー向けの $100 プロモーションクレジット（9月17日まで有効）の申請締切が **本日 2026-08-02**。
+- Tak の Claude Code Max / Team Premium plan で Fable 5 を利用している場合、未申請なら今日中に申請が必要。
+- 🔴 アクション: claude.ai の billing ページで Fable 5 $100 プロモクレジットを確認・申請。
+
+**2. Anthropic AI for Science rare disease research grants：申請締切 本日（8/2）**
+- 稀少遺伝性疾患の研究者向け AI for Science グラント（6ヶ月間 $50,000 相当の Claude クレジット）の申請が **本日 8/2 締切**。
+- Tak 自身の業務には直接関係しないが、医療×AI 研究の最前線として把握。
+- 🔴 アクション: 直接関係なし。情報として記録。
+
+**3. Claude Sonnet 5 API プロモーション価格（8/31 終了）まで29日**（8/1 報告からの継続）
+- 9/1 から $3/$15 per MTok に値上がり。Routines の API コスト試算を8月中に実施。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Anthropic Claude Partner Network / Services Track — 外部協力者評価への活用**
+- 40,000社超が応募・10,000名超が Claude Certified Architect に認定。Anthropic 公式の Partner Hub でパートナーの認定状況・実績が確認可能。
+- Tak が外部コンサルタントや SI との協働を検討する際、Claude Certified Architect 認定の有無を評価基準の一つにできる。
+- 🟡 アクション: partnerhub.anthropic.com で認定パートナー検索機能を確認。TBP-001 審査プロセスと組み合わせた「信頼できる外部協力者」評価フローの設計を検討。
+
+**2. マネーフォワード AI Cowork — 8月リリース確認継続**
+- 8/2 時点でも正式リリースアナウンス未確認。公式サイト・PR Times ともに「2026年7月より提供開始予定」表記が残存。
+- 判定: **7月未達確定。8月中の正式リリースを引き続き観察。**
+- 🟡 アクション: 次回（8/4 月次）で Business Insider Japan・MF 公式ブログを再確認。
+
+**3. Claude Code /fork background sessions + /resume スマート化 — Routines 設計への応用**
+- v2.1.219〜220 確認済みの機能: `/fork` が会話を新しいバックグラウンドセッションにコピー、`/resume` と `/background` の流れがスマート化、セッション全体の WebSearch・subagent spawns 上限（デフォルト200）、Always allow ルールのリポジトリルート保存。
+- Routines（auto-research-collect 等）のプロンプト設計でサブエージェントの暴走防止（200上限）を意識する必要あり。
+- 🟡 アクション: deep-research-runner・feedback-article-runner の subagent 設計が200上限に収まるか検証。
+
+#### 🟢 参考情報
+- **Claude Code 最新版**: v2.1.220（7/25）が依然最新。8/2 時点で v2.1.221+ は releasebot.io・claudefa.st でも未確認。日曜（8/2）のため新リリースは月曜（8/3〜4）以降に注目。
+- **会計×AI 2026年8月の実態**: 「ツール操作型SaaS」→「AIエージェント型SaaS」への移行フェーズ。freee「AIおまかせ明細取得」β（Suica 明細 PDF → 明細自動抽出）稼働中。Bill One AI 自動起票（請求書→勘定科目・金額・税率を自動入力）が summer 2026 予定。クラウド会計 AI の仕訳自動提案精度が実用水準に到達し、中小企業で月20〜40時間削減が現実的な段階。
+- **Anthropic Enterprise AI Services Company**（Blackstone, Hellman & Friedman, Goldman Sachs 等、2026年5月4日発表）: 中堅企業向けに Applied AI Engineers が常駐して Claude 導入を支援する新会社設立。General Atlantic, Leonard Green, Apollo, GIC, Sequoia が資金参加。大企業向け Claude 導入支援の新モデルとして注目。
+- **Claude Code GitHub Issues（8/2 時点）**: 前回（8/1）報告の #83199 以降の新規 issue は日曜のため少数。週明け（8/4）以降の動向に注目。
+- **Claude Code 週次使用量50%増プロモーション終了（8/19）まで17日**（8/1 報告からの継続）: 長時間 Routine への影響確認を8/19前に実施。
+
+#### references.md 更新提案
+- **今回新規（2026-08-02）**: なし（新規提案事項なし）
+- **継続Tak確認待ち項目**（8/1報告時点の提案7項目継続）:
+  - Claude Sonnet 5 API プロモーション価格終了（$2/$10 → $3/$15、8/31）のclaude-api スキル追記
+  - Claude for Small Business 統合リスト（QuickBooks 等）の claude-api スキル追記
+  - claude-sonnet-5・claude-opus-5・claude-fable-5 のモデル ID 追記（7/24〜7/27 提案）
+  - DirectoryAdded hook・sandbox.network.strictAllowlist 追記（7/24 提案）
+  - MCP 2026-07-28 spec ステートレスアーキテクチャ対応（7/28 提案）
+
+#### 新規発見ソース候補
+- **[Anthropic Partner Hub](https://partnerhub.anthropic.com/)**: Claude 認定パートナー検索ポータル。外部 SI・コンサルタント評価に活用可能。評価候補: ⭐⭐⭐⭐
+- **[Anthropic AI Weekly / aiweekly.co](https://aiweekly.co/ai-news-today/anthropic-news)**: Anthropic 最新ニュースの一覧トラッカー。評価候補: ⭐⭐⭐
+
+#### 次回リサーチ推奨日
+2026-08-04（月・週明け第1稼働日）
+注目点:
+① **Claude Code v2.1.221+ 週明け最初のリリース確認**（日曜はリリース少、月曜以降に注目）
+② **Claude Code 週次使用量50%増プロモーション終了（8/19）まで15日** — 長時間 Routine の影響確認
+③ **TBP-003・TBP-004 候補（43日目〜）— Tak への最優先アクション要請継続**
+④ **マネーフォワード AI Cowork 8月リリース確認**（7月未達 → 8月引き継ぎ）
+⑤ **Claude Sonnet 5 API プロモーション価格終了（8/31）まで27日** — Routines コスト試算を8月中に
+⑥ **Claude Partner Network Services Track — 外部協力者評価フローへの活用設計**
+
+---
+
 ## [2026-08-01] デイリーレポート
 
 ### 内部知見（機能A）
