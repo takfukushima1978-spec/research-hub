@@ -1,3 +1,85 @@
+## [2026-08-03] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **42日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **42日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **42日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **42日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 新トリガー（freee-mcp 公式 OSS 公開）**: freee が 2026年3月に `freee-mcp` を OSS 公開。Claude と freee 会計 API を直接接続する MCP サーバー。Tak が freee 連携を検討する場合は TBP-001「審査→最小権限→段階拡張」の適用が必要。書き込み系（仕訳登録・振込実行等）は全 deny からスタートを推奨。
+- **TBP-001 参考情報（MCP 400M milestone）**: MCP の月次 SDK ダウンロードが 4 億回超（前年比 4 倍）に到達。業界標準化が進む中、外部 MCP サーバーの数が急増。TBP-001 の「審査フロー」の重要性がさらに増している。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.220（7/25）が依然最新。8/3 時点で v2.1.221+ 未確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: MCP 400M milestone、サイバーセキュリティ評価結果（7/30）、オープンウェイツ方針（7/27）を確認
+- releasebot.io / claudeupdates.dev（⭐⭐⭐）: v2.1.219〜v2.1.220 確認（Opus 5 デフォルト化）
+- keihi.com / ai-revolution.co.jp / uravation.com（⭐⭐⭐）: 会計 AI 2026年最新動向
+- prtimes.jp / corp.moneyforward.com（⭐⭐⭐）: マネーフォワード AI Cowork 状況確認
+- corp.freee.co.jp / warokai.com（⭐⭐⭐）: freee AI アシスタント・freee-mcp 確認
+- flatt.tech / CVE advisory（⭐⭐⭐⭐）: claude-code-action CVE-2026-21852 詳細確認
+- Qiita / Zenn（⭐⭐⭐）: 日本語 Claude Code 記事確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. claude-code-action 供給チェーン攻撃 CVE-2026-21852（パッチ済み・要バージョン確認）**
+- GMO Flatt Security が発見。悪意ある GitHub Issue 経由でプロンプトインジェクションし、claude-code-action を使うリポジトリのサプライチェーンを乗っ取れる脆弱性。
+- claude-code-action v1.0.94 でパッチ済み（GitHub Apps からのワークフロートリガーをブロック、コマンドバリデーション強化）。
+- research-hub / My-Profile-and-Memory で claude-code-action を使用している場合は v1.0.94 以上であることを確認。
+- 🔴 アクション: 両リポジトリの `.github/workflows/` 内の claude-code-action バージョンを確認。
+
+**2. Claude Sonnet 5 API プロモーション価格（8/31 終了）まで 28 日**（継続）
+- 9/1 から $3/$15 per MTok に値上がり。Routines の API コスト試算を 8 月中に実施。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. freee-mcp — Claude との freee 直接連携実験**
+- freee が 2026年3月に OSS 公開した MCP サーバー（`freee-mcp`）。Claude から自然言語で freee の仕訳・請求・勤怠等を操作可能。
+- 🟡 アクション: TBP-001 の審査フローに従い `external-audit` スキルで 4 軸チェックを実施後、読み取り系のみ allowlist 設定で試験導入を検討。
+
+**2. MCP 2026-07-28 spec 対応の確認**
+- Anthropic が MCP 2026-07-28 仕様をリリース。Claude が新仕様をサポート済み。既存 MCP サーバーの互換性確認が推奨。
+- 🟡 アクション: research-hub-relay Worker と Supabase Edge Function が新 MCP 仕様の影響を受けないか確認。
+
+**3. 会計 AI エージェント型 SaaS の業務適用調査**
+- 「ツール操作型 SaaS」→「AI エージェント型 SaaS（自律的複数ステップ実行）」への転換が 2026 年の最大テーマ。経費精算工数 75% 削減・月次締め 2 営業日前倒し等の事例が複数報告。経理部門の AI 導入率は約 24.3%、導入企業の 75.6% が効率改善を実感。
+- 🟡 アクション: 経理部長として「どの業務を AI エージェントに委ねるか」の優先度マトリクス作成を検討。
+
+#### 🟢 参考情報
+
+- **Anthropic オープンウェイツ方針（7/27）**: Anthropic がオープンウェイツモデルに関する立場を公表。業界動向として把握。
+- **Anthropic サイバーセキュリティ評価（7/30）**: AI の攻撃的サイバー能力評価結果を公開。防御的 AI 活用の指針として参照。
+- **マネーフォワード AI Cowork**: 8/3 時点でも「提供開始予定」表記残存、正式 GA 未確認。継続監視中（7 月未達確定、8 月中の GA に期待）。
+- **freee AI アシスタント & freee カスタムオーダー（6/16 正式リリース）**: 会計・HR・請求等 7 領域で AI 統合。freee ユーザーにとっては大きなアップデート。
+- **Claude Code Qiita 週次まとめ（8/2 週）**: v2.1.213〜v2.1.220 変更点まとめ記事。Claude Opus 5 のデフォルト化が最大ハイライト。
+
+#### references.md 更新提案
+以下の更新を提案（実施は Tak 確認後）:
+1. **MCP 2026-07-28 spec**: MCP の最新仕様バージョン（2026-07-28）の追記を推奨。references.md の MCP 関連セクションに追加。
+2. **Claude Opus 5 デフォルト化**: v2.1.219 で Claude Opus 5 が Claude Code のデフォルトモデルになった情報を references.md のモデル一覧に反映。
+3. **最終確認日更新**: references.md の最終確認日を 2026-08-03 へ更新が望ましい。
+
+#### 新規発見ソース候補
+- **flatt.tech/research**: セキュリティ研究機関。claude-code-action の CVE 発見元として信頼性高い。Claude Code セキュリティ情報源として有望（評価候補: ⭐⭐⭐⭐）
+- **claudeupdates.dev**: Claude Code 更新の自動追跡サイト（releasebot.io と並ぶ選択肢）（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-08-10（1週間後）
+注目点:
+① マネーフォワード AI Cowork の正式 GA 発表確認
+② claude-code-action CVE バージョン確認（両リポジトリの .github/workflows/）
+③ Claude Code v2.1.221+ 新機能の有無確認
+④ freee-mcp 試験導入の審査開始判断
+
+---
+
 ## [2026-08-02] デイリーレポート
 
 ### 内部知見（機能A）
