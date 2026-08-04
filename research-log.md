@@ -1,3 +1,95 @@
+## [2026-08-04] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **43日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **43日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **43日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **43日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 参考情報（Claude Pro/Max 使用量上限引き上げ）**: AnthropicがSpaceX Colossus 1データセンターとの提携で300MW超・GPU 22万台以上を確保。Claude Pro/Max ユーザーの使用量制限が引き上げられる見込み。Routines のリソース設計余裕が広がる可能性。TBP-001「審査→最小権限→段階拡張」の前提となる「許容コスト上限」を再設定する好機。
+- **TBP-001 参考情報（MF Cloud 会計 MCP 対応）**: マネーフォワード クラウド会計が 2025年10月より Claude 等の MCPクライアントからの接続に対応済み（遅れて確認）。freee-mcp（3月公開）と同様に TBP-001「審査→最小権限→段階拡張」の適用が必要。書き込み系（仕訳登録・支払処理）は全 deny からスタートを推奨。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.221（8/3〜4 リリース）確認 ← **本日新着**
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: SpaceX Colossus 1 提携・使用量引き上げ・Series H 確認
+- releasebot.io / X @ClaudeCodeLog（⭐⭐⭐）: v2.1.221 リリース詳細確認
+- dev.classmethod.jp（⭐⭐⭐）: v2.1.220→221 主要変更点レポート確認
+- Qiita 2026-08-04（⭐⭐⭐）: Claude Code 開発者向け Anthropic ニュースまとめ（homhom44）確認
+- keihi.com / keiei-digital.com / fastaccounting.jp（⭐⭐⭐）: 会計 AI エージェント 2026年最新動向
+- biz.moneyforward.com / cloud.watch.impress.co.jp（⭐⭐⭐）: MF AI Cowork 最新状況確認
+- freee 公式 / kaikei-ai.jp（⭐⭐⭐）: freee AI 機能レビュー 2026
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.221 — Bash tool zsh セキュリティバイパス修正（適用済み・要アップデート確認）**
+- zsh が `[[ ]]` 正規表現条件内でコマンドを隠して実行できる Bash tool のパーミッションチェックバイパスが修正された。
+- 影響: zsh ユーザーが Bash tool で意図しないコマンドを実行させられるリスクがあった。
+- v2.1.221 でパッチ済み。Claude Code を使用している環境が v2.1.221 以上であることを確認。
+- 🔴 アクション: `claude --version` でバージョン確認。v2.1.220 以下であれば `npm update -g @anthropic-ai/claude-code` で更新。
+
+**2. Claude Sonnet 5 API プロモーション価格終了（8/31）まで 27 日**（継続）
+- 9/1 から $3/$15 per MTok に値上がり。Routines の API コスト試算を 8 月中に実施。
+
+**3. Claude Code 週次使用量 50% 増プロモーション終了（8/19）まで 15 日**（継続）
+- 8/19 以降、長時間 Routine（deep-research-runner 等）が制限に引っかかるか 8/19 前に確認。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Claude Code v2.1.221 — Focus view の Routines UI 確認**
+- 新機能 Focus view（Ctrl+Alt+F）: ツール活動をターン単位で折りたたみ可能な要約に隠し、実行中ツールのライブインジケーターを表示。長いエージェント実行時の可読性が大幅に向上。
+- Routines のターン出力が長大になりがちな auto-research-collect や deep-research-runner で効果を発揮する可能性。
+- 🟡 アクション: 次回手動実行時に Focus view を有効にして使用感を確認。
+
+**2. sandbox credential masking（mode: "mask"）— Routines へのセキュリティ強化**
+- v2.1.221 新機能: sandbox credential ファイルに `mode: "mask"` を設定することで、Linux/WSL 環境のサンドボックス化コマンドは sentinel コピーを参照し、実際の値は sandbox proxy 経由でのみアクセス可能になる。
+- research-hub の Routines が INTERNAL_TOKEN や Supabase 認証情報を扱う場合、この masking 機能を設定することでセキュリティを強化できる。
+- 🟡 アクション: `.claude/settings.json` の sandbox credential 設定を確認し、対応可能なら `mode: "mask"` を試験適用。
+
+**3. マネーフォワード クラウド会計 MCP 連携の試験評価**
+- MF クラウド会計が 2025年10月より MCP 接続対応済み（今回初確認）。MCPクライアント（Claude Code 等）から仕訳・経費等を直接参照可能。
+- freee-mcp（3月 OSS 公開）と同様に、MF MCP 接続の評価が急務。
+- 🟡 アクション: TBP-001 の審査フローに従い `external-audit` スキルで 4 軸チェック後、読み取り系のみの試験接続を検討。
+
+#### 🟢 参考情報
+- **Anthropic SpaceX Colossus 1 提携**: 300MW 超・GPU 22万台以上の追加容量を近日中に確保。Claude Pro/Max の使用量制限引き上げへ。Amazon 5GW / Google+Broadcom 5GW / Microsoft+NVIDIA $30B Azure に続く5番目の大型インフラ契約。
+- **Anthropic Series H: $65B調達・$965B評価額**: run-rate 年商 $30B 超（2025年末 $9B から急増）。Claude の長期的な API 安定性・コスト低減が見込まれる。
+- **Fable 5.1 の噂**: 複数メディアで言及されているが Anthropic 公式発表はなし。公式リリース待ち。
+- **MF AI Cowork（8/4 時点）**: 「2026年7月より提供開始予定」から GA アナウンス未確認。7月未達から8月に引き継ぎ継続監視中。
+- **freee AI 機能 2026 レビュー**: 自動仕訳・AIアドバイス・モバイル Suica 明細 PDF 自動抽出（3/26〜）稼働中。CPA 視点の機能検証レポートが kaikei-ai.jp に登場。
+- **経理 AI エージェント 2026 最新**: 「完全自律型 AI エージェント経費精算（不正検知・自動承認・仕訳）」が普及フェーズへ。中小企業での月間 20〜40 時間削減が現実的な段階。
+- **claude-api skill prompt-audit サブコマンド（v2.1.221）**: 旧モデル向けパターンで書かれたプロンプトや tool description を監査するサブコマンドが追加。既存 Routine プロンプトの最適化に活用できる可能性。
+
+#### references.md 更新提案
+以下の更新を提案（実施は Tak 確認後）:
+1. **v2.1.221 sandbox masking（mode: "mask"）**: harness-design-guide スキルの sandbox 設定セクションに `mode: "mask"` の説明を追記。Linux/WSL 環境でのセキュリティ強化手法として記録。
+2. **MF クラウド会計 MCP 対応（2025年10月〜）**: references.md の MCP 関連セクションまたは claude-api スキルの会計 SaaS 連携セクションに追記。freee-mcp（3月）と並ぶ選択肢として記録。
+3. **Anthropic 大規模コンピュート調達（累計 15GW 超）**: references.md の Anthropic インフラセクション（あれば）に追記。API 長期安定性の根拠として。
+
+#### 新規発見ソース候補
+- **[havoptic.com/tools/claude-code](https://www.havoptic.com/claude-code)**: Claude Code の全リリースをサマリ化するトラッカー。v2.1.221 の解説が確認できた。releasebot.io と並ぶリリース追跡ソースとして有望（評価候補: ⭐⭐⭐）
+- **[kaikei-ai.jp](https://www.kaikei-ai.jp/)**: CPA 視点での会計 AI 機能検証レポートを掲載。会計×AI の実践情報として信頼性が高い（評価候補: ⭐⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-08-11（1週間後・月曜）
+注目点:
+① **マネーフォワード AI Cowork 正式 GA アナウンス確認**（7月未達→8月引き継ぎ）
+② **Claude Code v2.1.222+ 新機能の有無確認**
+③ **TBP-003・004 候補（50日目〜）— Tak への継続アクション要請**
+④ **Claude Code 週次使用量 50% 増プロモーション終了（8/19）後の影響確認**
+⑤ **Claude Sonnet 5 API プロモーション価格終了（8/31）まで 20 日** — コスト試算状況確認
+⑥ **MF クラウド会計 MCP 連携 external-audit 実施判断**
+
+---
+
+
 ## [2026-08-03] デイリーレポート
 
 ### 内部知見（機能A）
