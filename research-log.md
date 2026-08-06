@@ -1,3 +1,127 @@
+## [2026-08-06] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- research-hub/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: フォルダなし（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **45日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **45日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **45日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **45日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.223 Bash パーミッションバイパス修正）**: 細工されたコマンドがパーミッションチェックから自身の一部を隠蔽できた問題が修正。TBP-001「最小権限設計の実効性はバージョン毎に確認する」の根拠事例として追記提案。
+- **TBP-001 再評価トリガー（v2.1.223 不可視Unicode バイパス修正）**: タブ・不可視Unicodeでパディングされたコマンドが承認ダイアログでコマンドの一部を隠せた問題を修正。承認UIの信頼性に関する注記（「UIで表示されたコマンドが全内容でない可能性」）を TBP-001 に追記提案。
+- **TBP-001 再評価トリガー（v2.1.223 workflow サンドボックス脱出修正）**: ワークフロースクリプトが `dynamic import()` を使ってサンドボックス外のコードを実行できた問題を修正。TBP-001「Workflow 設計の境界設計」に dynamic import 禁止を明示する提案。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.223（2026-08-05〜06）確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 8月最新ニュース（inference hooks / Ode with Anthropic / White House テスト）
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: #84621〜#84628 新着確認
+- gradually.ai / releasebot.io / havoptic.com / claudefa.st（Claude Code トラッカー）
+- 会計×AI: ai-revolution.co.jp / kaikei-ai.jp / aipicks.jp 2026年8月最新版確認
+- マネーフォワード AI Cowork 公式（biz.moneyforward.com/ai-cowork/）
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.223（2026-08-05〜06 リリース）— 3件のセキュリティ修正**
+
+- **Bash パーミッションバイパス修正（重要）**: 細工されたコマンドがパーミッションチェックからコマンドの一部を隠蔽できた脆弱性を修正。
+- **不可視 Unicode パーミッションバイパス修正（重要）**: タブや不可視 Unicode でパディングされたコマンドが承認ダイアログでコマンド内容を隠蔽できた問題を修正。
+- **workflow サンドボックス脱出修正（重要）**: ワークフロースクリプトが `dynamic import()` を使ってサンドボックス外のコードを実行できた問題を修正。
+- その他の修正: `--settings` CLIフラグ経由のプラグイン読み込みバグ（v2.1.181以降のリグレッション）修正、OAuth トークンローテーション後のfeature flag陳腐化修正、期限切れログインによる誤ったモデルエラー表示を修正。
+- 新機能: バックグラウンドエージェントが Claude Code 更新後に自動アップグレード（遅延ゼロで attach 可能）、クラウドセッションに `/teleport <session-id>` ヒント表示（ローカルで継続可能）。
+- 🔴 アクション: `claude --version` で v2.1.223 以上を確認。未更新なら `npm update -g @anthropic-ai/claude-code` で更新。Research Hub Routine のワークフロー設計が `dynamic import()` を使っていないか確認。
+
+**2. マルチモデル障害（2026-08-05）の継続状況確認**
+- 昨日（8/5）報告のClaude Mythos 5・Fable 5・Opus 5・Sonnet 5 の同時エラー増加が継続しているか、本日の Routine 実行に影響が出ていないか確認が必要。
+- 🔴 アクション: 本日（8/6）の auto-research-collect（3:03 JST）・auto-claude-code-watch（4:00 JST）の実行ログを確認。エラーがあれば Anthropic status page (status.anthropic.com) を参照。
+
+**3. Sonnet 5 プロモーション価格終了まで25日（8/31）**（継続）
+- 🔴 アクション: 8月中に Routine の API コスト試算を完了させる。
+
+**4. Claude Code 50% 使用量ブースト終了まで13日（8/19）**（継続）
+- 🔴 アクション: 8/19 までに大型タスク・調査作業を集中実行する計画を実行。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Claude Enterprise Inference Hooks（2026-08-05 beta ローンチ）**
+- Anthropic が Claude Enterprise 向けに「inference hooks」を beta 公開。全プロンプト・ツール呼び出しをモデル到達前に組織の DLP サーバーで検査し、allow/deny を返す機能。
+- Netskope・Palo Alto Networks・Zscaler・Proofpoint と統合済み。webhook-based プロトコルで自前実装も可能。
+- 対象: Claude Enterprise の chat・Claude Code・Claude Cowork 等すべての面。
+- Tak の経理部長職での会計データ・内部情報の漏洩防止設計に直接関連。
+- 🟡 アクション: Research Hub が Enterprise へ発展する際の設計要件として inference hooks を TBP-001 の「段階拡張」フェーズに追加提案。参照: https://claude.com/blog/claude-enterprise-inference-hooks
+
+**2. /teleport でクラウドセッションをローカルに継続（v2.1.223）**
+- クラウドセッション（Routines 等）で `/teleport <session-id>` コマンドがヒントとして表示されるようになった。
+- Routine が途中でスタックした場合、ローカルの Claude Code で続きを引き継いで操作できる。
+- 🟡 アクション: 次回 Routine 実行時にヒントが表示されるか確認し、長時間セッションの引き継ぎフローとして活用を検討。
+
+**3. GitHub owner wildcard で marketplace 設定を効率化（v2.1.223）**
+- `strictKnownMarketplaces`・`blockedMarketplaces` の managed settings に `"owner/*"` 形式のワイルドカードが追加。
+- GitHub org 配下のマーケットプレイスリポジトリを一括許可/ブロック可能。
+- 🟡 アクション: `takfukushima1978-spec/*` ワイルドカードで managed settings を設定する際に活用を検討。
+
+#### 🟢 参考情報
+
+**マネーフォワード AI Cowork（8/6 時点）**
+- 8/6 時点でも正式 GA アナウンス未確認（公式サイト: 「提供予定」表記継続）。7月未達 → 8月引き継ぎで監視継続。
+- 比較調査では国産本命 4 製品（freee AI エージェント・マネーフォワード AI エージェント・バクラク AI エージェント・TOKIUM）が「AI エージェント標準搭載」フェーズへ移行中（2026年）。
+
+**GitHub Issues 新着（8/6）**
+- #84621〜#84628 が本日新規オープン（バグ報告を含む）。8/5 報告の障害と相関している可能性あり。詳細は anthropics/claude-code/issues で確認推奨。
+
+**Ode with Anthropic — $1.5B AI 実装合弁会社が正式ローンチ**
+- Anthropic・Blackstone・Hellman & Friedman が 100 名以上のエンジニアを擁する AI 実装合弁会社「Ode with Anthropic」を正式ローンチ（5月発表の $1.5B JV が稼働開始）。中堅〜大企業向けの Claude 実装支援。
+
+**White House 自発的 AI ハッキングテストプログラム**
+- Meta・OpenAI・Anthropic・Google が米政府の自発的 AI モデルのハッキング能力テストプログラムへの参加を要請。AI の軍事・サイバーセキュリティ応用に対する規制強化の布石として把握。
+
+**会計×AI 2026年8月の実態（最新調査）**
+- 国産会計 SaaS は「AI エージェント型（複数ステップ自律実行）」が標準フェーズへ。作業時間 50〜90% 削減事例が報告されており、経理 AI 導入は「試行段階」→「本格導入段階」へ移行中。
+- freee vs マネーフォワードの棲み分け: freee=「経理初心者向け」、マネーフォワード=「経理プロ向け効率化」が 2026年時点でも維持。
+
+#### references.md 更新提案
+**提案（自動更新しない — Tak 確認後に実施）:**
+- **v2.1.223 セキュリティ修正 3 件**: TBP-001 の「最小権限設計の実効性確認」に下記を追加提案:
+  1. Bash 細工コマンドによるパーミッション隠蔽（修正済み: v2.1.223）
+  2. 不可視 Unicode によるダイアログ偽装（修正済み: v2.1.223）
+  3. dynamic import() によるサンドボックス脱出（修正済み: v2.1.223）
+- **Inference Hooks（Enterprise DLP）**: harness-design-guide/references.md の「Enterprise 向けセキュリティ設計」セクション（未設置なら新設）に追記提案。webhook-based DLP 統合の参照アーキテクチャとして記録。
+
+#### 新規発見ソース候補
+- **[claude.com/blog/claude-enterprise-inference-hooks](https://claude.com/blog/claude-enterprise-inference-hooks)**: Inference Hooks の公式解説。Enterprise DLP 設計の一次情報として有用（評価候補: ⭐⭐⭐⭐⭐）
+- **[aitoolsreview.co.uk/insights/claude-enterprise-inference-hooks](https://aitoolsreview.co.uk/insights/claude-enterprise-inference-hooks)**: Inference Hooks の解説（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-08-08（週末明け月曜）
+注目点:
+① **マルチモデル障害解消確認**: 8/5 のエラー増加が完全に解消したか Anthropic status page で確認
+② **本日 Routine 実行結果確認**: 3:03 / 4:00 の Routine が正常完了したかログ確認
+③ **マネーフォワード AI Cowork 正式 GA アナウンス**: 8 月中の正式リリース待ち（7 月未達から引き継ぎ）
+④ **TBP-003・TBP-004 候補（47 日目〜）— Tak への継続アクション要請**
+⑤ **Sonnet 5 プロモーション終了（8/31）まで23日** — コスト試算完了確認
+⑥ **Claude Code 50% 使用量ブースト終了（8/19）まで11日** — 大型タスク集中実行確認
+
+---
+
+### クロスリファレンス（機能C）
+
+#### TBP/ADR 再評価トリガー
+- **TBP-001 再評価（v2.1.223 セキュリティ 3 連続修正）**: 昨日（v2.1.222）に続き、本日（v2.1.223）もセキュリティ修正 3 件が含まれた。「Claude Code の最小権限設計が特定バージョンで破綻する」という事例が連続していることは、TBP-001 の「バージョン更新時の権限設定レビュー」を必須ルーティンとして強化する根拠になる。
+- **TBP-001 新審査軸候補（inference hooks）**: Enterprise 向け DLP をモデル到達前に挟む Inference Hooks が公式化された。TBP-001「段階拡張」の先にある「Enterprise 化」フェーズの設計パターンとして新審査軸を追加提案（Tak 確認後）。
+
+#### references.md 更新判定
+**本日は更新不要**: Anthropic 公式 best-practices 文書の新規変更は確認されていない。上記の提案は Tak の確認待ち。
+
+---
 ## [2026-08-05] デイリーレポート
 
 ### 内部知見（機能A）
