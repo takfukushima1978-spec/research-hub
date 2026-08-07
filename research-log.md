@@ -1,3 +1,100 @@
+## [2026-08-07] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- research-hub/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: フォルダなし（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **46日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **46日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **46日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **46日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.224 プロジェクトパス衝突セキュリティ修正）**: 200文字超のプロジェクトパスが同一サニタイズプレフィックスを持つ別プロジェクトのセッションディレクトリへ解決できた問題を修正。マルチプロジェクト環境でのセッション隔離に関するリスク事例として TBP-001「最小権限設計の実効性はバージョン毎に確認する」に追記提案。
+- **TBP-001 再評価トリガー（v2.1.224 sandboxファイルシステムdenyバイパス修正）**: サンドボックスのfilesystem deny エントリを末尾スラッシュ付きで書き込むと無言でバイパスできた問題を修正。TBP-001「ワークフロー・サンドボックスの境界設計」セクションへの追記提案。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.224（2026-08-07）確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: 8月最新ニュース（Fable 5 safeguards / Google-Broadcom / CGAO就任）
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: #84933〜#84940 新着確認
+- Releasebot.io / Havoptic.com / DevelopersIO（claude-code 8月まとめ）
+- 会計×AI: kaikei-ai.jp / prtimes.jp（freee）/ ai-revolution.co.jp / ai-market.jp 2026年8月版確認
+- Zenn / Qiita: Claude Code 週次まとめ（8/2週）・開発者ニュース（8/4, 8/6）
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.224（2026-08-07）— セキュリティ修正2件**
+
+- **プロジェクトパス衝突修正（重要）**: 200文字超の長いプロジェクトパスが、同じサニタイズプレフィックスを持つ別プロジェクトのセッションディレクトリへ解決できた脆弱性を修正。複数リポジトリを扱うRountines環境では潜在的にセッション情報が混在するリスクがあった。
+- **sandbox filesystem denyバイパス修正（重要）**: サンドボックスのファイルシステム deny エントリを末尾スラッシュ付きで記述すると無言でバイパスできた問題を修正。
+- 🔴 アクション: `claude --version` で v2.1.224 以上を確認。未更新なら `npm update -g @anthropic-ai/claude-code` で更新。
+
+**2. Sonnet 5 プロモーション価格終了まで24日（8/31）**（継続）
+- 🔴 アクション: 8月中に Routine の API コスト試算を完了させる。
+
+**3. Claude Code 50% 使用量ブースト終了まで12日（8/19）**（継続）
+- 🔴 アクション: 8/19 までに大型タスク・調査作業を集中実行。残り12日で計画的に消化。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Claude Code Self-Hosted Runner（v2.1.224 公開ベータ）**
+- `claude self-hosted-runner` コマンドで自分のマシン・コンテナを Claude Code セッションの実行環境に変換可能（Team/Enterprise プランの公開ベータ）。
+- Fixed モード（常時起動、複数セッション分散）/ On-demand モード（セッション到着時に起動・完了後停止）の2種。セッションは独立チェックアウトで隔離。
+- **Research Hub への影響**: 現在 Anthropic Routines のクラウド sandbox を利用しているが、Self-Hosted Runner を使えばローカル環境でRoutinesと同等の実行基盤を構築可能。Cloudflare bot 検知問題も回避できる可能性あり。要調査。
+- 公式ドキュメント: https://code.claude.com/docs/en/self-hosted-environments
+- 🟡 アクション: Team/Enterprise プランか確認後、ローカルランナー構築の PoC を検討。
+
+**2. Archive Plugin Source（v2.1.224）— GitもNPMも不要なプラグイン配布**
+- HTTPS 経由の ZIP ファイルからプラグインをインストール可能に。オプションで SHA-256 ピニングによる整合性検証あり。
+- Research Hub やその他プロジェクトで独自プラグインを配布する際、npm パッケージ化なしで配布可能。
+- 🟡 アクション: 既存のカスタムスキルや設定を ZIP 形式のプラグインとして配布する設計を検討。
+
+**3. Cross-Session Messaging（v2.1.224）**
+- `ListAgents` で同一マシン上の他 Claude Code セッションを発見し、`SendMessage` で相互通信可能に（macOS/Linux）。
+- Research Hub の Routine が複数同時実行される場合にセッション間の調整が可能になる将来設計。
+- `crossSessionInbound`・`dialogExpiry` 設定: バイパス権限セッションへのメッセージを承認待ちに保留できる。セキュリティ上重要な設定。
+- 🟡 アクション: 複数Routineの並列実行設計（例: deep-research-runner と feedback-article-runner の連携）でのユースケースを検討。
+
+#### 🟢 参考情報
+
+**freee AIエージェント群（2026年8月）**
+- freee「freee顧問先管理 AIエージェント」: 記帳・ルール整備・月次チェック・申告書チェックの4エージェント。freee Advisor Day 2026（8/28〜）で発表、9/15から有償提供。申告書チェックエージェントは現在無償提供中（freeeアドバイザー制度 シンプル/プライムプラン向け）。
+- **freee Agent Hub**: 認定アドバイザー向けに資料回収から決算申告まで自動化。freee-mcp（OSS）も提供中（ローカル型）。
+- 日本の会計部門AI導入率: 約24.3%（2026年調査）。AI活用者の75.6%が業務効率改善を実感。経理での主要AI用途: 文書チェック(47.8%)、紙デジタル化(44.3%)、要約(39.1%)。
+- PEPPOL標準化によりAI-OCRや構造化インポートが加速。AI生成仕訳候補＋人間最終承認の「人間が判断、AIが実行」モデルが2026年主流。
+
+**Anthropic公式ニュース（8/4〜8/7）**
+- Fable 5 生物学的セーフガード強化（8/6）: デュアルユースの懸念に対応し、フォールバック率を大幅削減。米情報機関の2026年脅威評価に対応。
+- Google・Broadcom とのギガワット規模の次世代コンピュート拡張パートナーシップ締結。Anthropic のスケーリング戦略の一環。
+- Mariano-Florentino Cuéllar（Tino）が Chief Global Affairs Officer に就任（8/4）。
+
+**GitHub Issues（8/7 新着）**
+- #84933〜#84940 が 8/7 新規オープン（バグ報告含む）。v2.1.224 リリース直後のフィードバックと見られる。詳細は github.com/anthropics/claude-code/issues で確認推奨。
+
+**Zenn/Qiita 注目記事（8月）**
+- 「Claude Code 週次アップデートまとめ（2026/08/02週）」: v2.1.213〜v2.1.220 をまとめ。Opus 5 デフォルト化・一部コマンドの自律実行廃止が注目点（Qiita / saitoko）
+- 「Zenn投稿をClaude Code Skillsで自動化」: Claude Code Skillsでコンテンツ投稿を自動化する実践例（Zenn / katsuo_dev）
+
+#### references.md 更新提案
+- **self-hosted-runner の追加**: v2.1.224 で Anthropic Routines と並ぶ新たな実行基盤（Self-Hosted Runner）が公開ベータに。`references.md` に実行基盤の選択肢として追記を提案。ただし現在は Routines で安定動作中のため、移行判断は Tak に委ねる。
+
+#### 新規発見ソース候補
+- **DevelopersIO Claude Code 記事 (dev.classmethod.jp/en/articles/)**: v2.1.224 の詳細解説記事あり。英語・日本語混在の技術解説サイト。⭐⭐⭐⭐ 評価を提案。
+- **yodev.dev**: Claude Code self-hosted-runner のガイド記事あり（スペイン語コミュニティ）。情報収集目的での参照候補。
+
+#### 次回リサーチ推奨日
+2026-08-08（v2.1.224 直後のバグ報告 issue 動向確認 + 50% ブースト終了まで11日のため週次フォロー継続推奨）
+
+---
+
+
 ## [2026-08-06] デイリーレポート
 
 ### 内部知見（機能A）
