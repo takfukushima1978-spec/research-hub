@@ -1,3 +1,89 @@
+## [2026-08-08] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- research-hub/decisions/ → フォルダ未存在のためスキップ
+- tak-best-practices/: フォルダなし（新規 ADR なし）
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **47日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **47日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **47日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **47日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（v2.1.225 MCP OAuth macOS修正）**: MCP OAuth サーバーのキーチェーン読み取りタイムアウト後に 401 バーストが発生する問題を修正。MCP認証フローの信頼性に関わるためTBP-001「最小権限設計の実効性はバージョン毎に確認する」MCP認証セクションへの追記提案。
+- **Research Hub スキル廃止トリガー**: v2.1.215〜218 で `/verify`・`/code-review`・`/deep-research` の自律実行が廃止（手動実行のみに）。Research Hub の各 Routine プロンプトでこれらを自律起動している場合は手動トリガーへの移行が必要。確認を推奨。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.225・v2.1.226（2026-08-08）確認
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Claude Opus 5 / Cowork / 8月ニュースまとめ確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: #85124〜#85130 新着確認（2026-08-08）
+- Qiita: Claude Code週次まとめ（8/2週）/ 8/4・8/6・8/8 Anthropicニュース
+- Zenn: Claude Code × Zenn自動化・執筆環境記事
+- 会計×AI: kaikei-ai.jp / マネーフォワード / TOKIUM / 電子帳簿保存法2026情報
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.225（2026-08-08）— セッション安定性に直結する修正多数**
+
+今日リリースの v2.1.225 は Research Hub の Routines（headless セッション）に直接関係するバグ修正を複数含む:
+
+- **headless セッション 401 修正（重要）**: `CLAUDE_CODE_OAUTH_TOKEN` の長期トークンが短期トークンに差し替えられる際の一時的 401 エラーを修正。Routines が再起動まで認証エラーになるケースが解消。
+- **cross-session メッセージ スタック修正**: headless セッション起動時およびセッション中に cross-session メッセージが notice・expiry なしでパークされ続けていた問題を修正。
+- **MCP OAuth macOS バースト 401 修正**: キーチェーンのタイムアウト後に認証済みにもかかわらず 401 が連続発生する問題を修正。MCP を使う Routine に影響あり。
+- **auto mode 安全フィルター修正**: パーミッションチェックへの安全フィルター拒否が consecutive-block limit にカウントされる問題を修正。エラーループが起きにくくなる。
+- **gateway spend-limit**: 上限到達メッセージにキャップ名・リセット時間・オペレーターメッセージが表示されるように。Routines のコスト管理に有益。
+- 🔴 アクション: `claude --version` で v2.1.225 以上を確認。未更新なら `npm update -g @anthropic-ai/claude-code` で更新。
+
+**2. Claude Code v2.1.226（2026-08-08）— バグ修正・安定性向上**
+- v2.1.225 に続く追加安定化リリース。v2.1.225 へのアップデートで同時に取得される見込み。
+
+**3. Sonnet 5 プロモーション価格終了まで23日（8/31）**（継続）
+- 🔴 アクション: 8月中に Routine の API コスト試算を完了させる。
+
+**4. Claude Code 50% 使用量ブースト終了まで11日（8/19）**（継続）
+- 🔴 アクション: 8/19 までに大型タスク・調査作業を集中実行。残り11日で計画的に消化。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Claude Opus 5（2026-07-24 リリース）— Research Hub Routines の高度化**
+- Frontier-Bench で Opus 4.8 の2倍以上のスコア、ARC-AGI 3 では次点モデルの3倍。価格は Opus 4.8 と同額（$5/$25 per MTok）、1M コンテキスト・128K 出力、知識カットオフ 2026年5月。
+- Claude Code v2.1.219 で default Opus モデルに昇格済み（Opus 4.8 と同額）。
+- **Research Hub への影響**: deep-research-runner での長文処理・feedback-article-runner の推論品質向上に期待。Routines を Opus 5 で試験実行する価値あり。
+
+**2. `/verify`・`/code-review`・`/deep-research` 自律実行廃止への対応**
+- v2.1.215（/verify・/code-review）・v2.1.218（/deep-research）で自律実行が廃止され、手動トリガーのみに。
+- **Research Hub への影響**: 各 Routine プロンプトで上記コマンドを自律起動している記述がある場合、削除または手動実行パターンに書き換えが必要。prompts/ の確認を推奨。
+
+**3. マネーフォワード AI Cowork（2026年7月予定）**
+- バックオフィス業務を AI が自律的に実行する新機能。仕訳・経費精算・請求書処理の自動化が一段深くなる見込み。
+- **Tak の本業（経理部長・組織内会計士）への影響**: 現行の freee 連携フローとの比較評価、導入検討の価値あり。
+
+#### 🟢 参考情報
+
+- **電子帳簿保存法 2026 年要件緩和**: 中小企業向けの保存要件が一部緩和。2026年11月1日から新制度移行予定。生成AI・AI-OCRを活用した日付・金額・取引先の3項目自動整理が実務効率化の主軸に。
+- **freee AI 機能（2026年版）**: 仕訳提案精度・学習データ量・仕訳提案理由の表示で差別化。初心者でも精度安定しやすい設計。
+- **Zenn: Claude Code Skills で Zenn 投稿自動化**: Claude Code のスキル機能を活用して記事投稿ワークフローを自動化した実践事例。Research Hub の article 自動生成フローのヒントになりうる。
+- **anthropics/claude-code 新着 issues (Aug 8)**: #85124〜#85130 が新規オープン。バグ報告・機能要望が継続的に追加中。
+
+#### references.md 更新提案
+- **Claude Opus 5（2026-07-24）がデフォルトモデルに昇格**。references.md 内にモデルのデフォルト設定や価格表が記載されている場合、Opus 5 の情報（$5/$25 per MTok、1M コンテキスト）への更新を検討。
+- **`/verify`・`/code-review`・`/deep-research` 自律実行廃止**。references.md にこれらのコマンドの自動実行に関する記述がある場合、削除・修正を提案。
+
+#### 新規発見ソース候補
+- **kaikei-ai.jp（Kaikei AI Daily）**: 会計×AI の深掘り記事（freee AI 機能レビュー等）。⭐⭐⭐⭐ 候補として trusted-sources.md への追記提案。
+- **Uravation.com**: 電子帳簿保存法・インボイス×AIの実務ガイド。会計×AI 領域 ⭐⭐⭐ 候補。
+
+#### 次回リサーチ推奨日
+2026-08-09（翌日）。v2.1.225/226 のフォローアップ・Routines アップデート状況確認を推奨。
+
+---
 ## [2026-08-07] デイリーレポート
 
 ### 内部知見（機能A）
