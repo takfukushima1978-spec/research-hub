@@ -1,3 +1,104 @@
+## [2026-08-09] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **48日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **48日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **48日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **48日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（auto mode デフォルト化）**: Claude Code が8月14日から auto mode をデフォルト採用（Pro/Max/Team）。外部ツール導入時の「最小権限」実装において、allowlist/denylist に加えて auto mode の classifier ベース安全機構との相互補完設計が重要になる。TBP-001「外部ツール導入は審査→最小権限→段階拡張」への追記候補。具体的には「auto mode の classifier はパーミッション設定と独立して動作し、denylist より前段で危険コマンドをブロックする」旨を追記提案。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.225・v2.1.226 が最新（2026-08-08）。本日時点で新規リリースなし
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: auto mode デフォルト化発表（2026-08-08/09）
+- TechCrunch / 9to5Mac / The New Stack: auto mode 詳細レポート（2026-08-09）
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: #85366〜#85377（2026-08-09）新着確認
+- Qiita / Zenn: Claude Code週次まとめ（8/2週, v2.1.213〜v2.1.220）確認
+- freee プレスリリース（AFPBB/北海道新聞デジタル経由）: freee Agent Hub 発表（2026-08-07）
+- マネーフォワード AI Cowork: 7月リリース状況確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code auto mode が8月14日（5日後）からデフォルト化【最重要】**
+
+Anthropic が 2026-08-09 に発表。**Pro/Max/Team アカウントで 8月14日以降の新しいセッションはすべて auto mode で起動。**
+
+- **何が変わるか**: 従来は各 tool call ごとに人間の承認を求めるプロンプトが表示されていたが、auto mode では専用の classifier がすべての tool call を審査し、「不可逆・破壊的・環境外へのアクセス」に該当する場合のみブロック
+- **安全性データ**: 1,053人のテストユーザー実験で、人間の危険コマンド検知率 13.6% に対し auto mode は **89%** を検知
+- **headless/Routines への影響**: 
+  - auto mode 適用前: headless mode（`claude -p`）では 3回連続ブロック or 20回合計でプロセス終了
+  - auto mode 適用後: classifier がブロックした場合、Claude は自動的に安全な代替パスを探すかユーザーに確認を求める → **Routines がブロックで強制終了する頻度が減る可能性**
+  - ただし ClAudit false-positive 問題（後述）が Routines に影響する可能性も同時に存在
+- **課金変更**: auto mode の classifier オーバーヘッド（追加トークン）は Pro/Max/Team では**今日から課金対象外**
+- **既存ユーザーへの影響**: すでにデフォルト設定を変更済みの場合は一度プロンプトが表示される。固定（pinned）設定は変更されない
+- 🔴 **アクション**: Research Hub の Routines が 8/14 以降の挙動変化に対応しているか確認。特に Routine の permission 設定が auto mode と競合しないか、scheduled-tasks.md を確認
+
+**2. ClAudit false-positive バグ多発（GitHub #85366〜#85377, 2026-08-09）**
+
+本日 sworrl ユーザーが ClAudit（セキュリティ分類器）の誤判定バグを 12件一括で報告:
+- 正当なタスク実行中（VM 再起動待ち・プリンター確認・セキュリティテスト・SSH接続等）に分類器が誤フラグを立てるケース
+- `<task-notification>` タグを含む文字列で誤検知するケースも含まれる（**Routines の通知と関連する可能性**）
+- auto mode のデフォルト化（8/14）前に多数の誤検知報告が集中しているのは要注意
+- 🔴 **アクション**: 8/14 以降に Routines が予期せずブロックされたら ClAudit false-positive の可能性を疑う。GitHub issues を継続監視
+
+**3. Sonnet 5 プロモーション価格終了まで22日（8/31）**（継続）
+- 🔴 アクション: 8月中に Routine の API コスト試算を完了させる
+
+**4. Claude Code 50% 使用量ブースト終了まで10日（8/19）**（継続）
+- 🔴 アクション: 8/19 までに大型タスク・調査作業を集中実行
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. freee Agent Hub 正式提供開始（2026年8月28日）— 経理業務の自動化深度が増す**
+
+freee が 2026-08-07 の freee Advisor Day 2026 にて発表した2つの新サービス:
+- **freee顧問先管理 AIエージェント**: 資料回収・記帳・照合・決算申告の定型タスクを AI エージェントが一気通貫で処理。税理士事務所向け
+- **freee Agent Hub**: 税理士事務所が独自ニーズに合わせたカスタム AI エージェントを作成・共有できる開発基盤。Open Beta（5月〜）→ **8月28日に正式提供**
+- freee Advisor Day 2026: 福岡 8/28、大阪 9/3、東京 9/15 で体験セッションあり
+- **Tak の本業（経理部長・組織内会計士）への影響**: 税務担当者が使う freee のエージェント自動化が一段深くなる。現行の freee 連携フローとの比較評価、顧問税理士への影響確認を推奨
+
+**2. マネーフォワード AI Cowork — 7月リリース確認・MCP統合**
+
+- 予定通り 2026年7月に「バックオフィス業務を自律的に遂行する AI サービス」としてリリース済み
+- Claude Agent SDK + MCP を基盤に、仕訳・経費精算・請求書処理を自然言語で自律実行
+- MCP サーバー（公式）は全プランで提供中。Claude Code から直接マネーフォワードクラウド会計の仕訳・試算表・取引先にアクセス可能
+- **注意**: AI Cowork リリース後、MCP 手動設定は「上級者向け」ポジションへ移行（エージェントが自動割り当て）
+
+**3. Claude Code auto mode × Routines の最適設定確認（8/14対応）**
+
+- auto mode デフォルト化後の Routines 挙動変化を実際に監視
+- 特に `task-notification` タグや承認プロンプトパターンが classifier にどう評価されるか
+- 問題があれば Routine の環境設定で auto mode を明示的に指定 or 回避する設定を検討
+
+#### 🟢 参考情報
+
+- **ClAudit（セキュリティ分類器）の false-positive 問題**: GitHub #85366〜#85377 が本日大量報告。Anthropic 側でも auto mode デフォルト化前に精度改善を急いでいる可能性あり。今後のパッチリリースを注視
+- **freee会計 2026年 AI 機能全般**: 自動記帳が「領収書読み取り→仕訳提案」から「会社ルールに沿った取引登録＋証憑紐付け」フェーズへ進化。AI-OCR + 生成 AI の組み合わせが標準に
+- **Claude Code v2.1.222 実機検証（Qiita kai_kou 氏）**: `--forward-subagent-text` と `claude auto-mode reset` フラグは実は 2バージョン前から存在していた機能。ドキュメントとコードのズレを示す良い事例
+- **claude agents が自動 PR を作成（Qiita kai_kou 氏）**: claude agents コマンドが実際に PR を自動作成するようになった挙動を検証。Routines の PR 作成フローに影響する可能性
+
+#### references.md 更新提案
+- **auto mode デフォルト化（8/14〜）**: references.md にパーミッションモード（`--dangerously-skip-permissions` 等）に関する記述がある場合、auto mode が新デフォルトになる旨と、headless セッションでの動作変化を追記提案
+- **ClAudit 分類器追記**: auto mode の安全機構として ClAudit 分類器が全 tool call を審査する仕組みを記載提案。TBP-001 と連携
+
+#### 新規発見ソース候補
+- **releasebot.io/updates/anthropic**: Anthropic の全リリースノートを集約するサービス。Claude Code・Claude（モデル）の更新を横断確認可能。⭐⭐⭐ 候補として trusted-sources.md への追記提案
+- **explainx.ai/blog**: Claude Code の機能解説・実測データ（auto mode 89% vs 13.6% 等）が詳細。英語圏の技術解説ブログ。⭐⭐⭐ 候補
+
+#### 次回リサーチ推奨日
+2026-08-10（翌日）— auto mode デフォルト化は 8/14 適用のため、前日に変更内容と Routines への影響を再確認推奨
+
+---
+
 ## [2026-08-08] デイリーレポート
 
 ### 内部知見（機能A）
