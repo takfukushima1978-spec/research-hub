@@ -1,3 +1,101 @@
+## [2026-08-10] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/ : TBP-001・TBP-002 を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **49日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **49日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **49日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **49日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（auto mode 第三者安全性テスト結果）**: Trajectory Labs が Claude Code の auto mode に対して 72 件のプロンプトインジェクション攻撃を試みたところ **全件（100%）ブロック**（GPT-5.6 Sol on Codex は 5.83% を通過）。auto mode の classifier が allowlist/denylist より上流で機能する安全機構として実証された。TBP-001「外部ツール導入は審査→最小権限→段階拡張」の「最小権限設計」セクションに「auto mode classifier は許可リスト・拒否リスト設定と独立して動作し、その前段でプロンプトインジェクション等の危険操作をブロックする」追記を再提案。
+- **TBP-001 再評価トリガー（#85639 headless プロセスリーク）**: GitHub issue #85639（2026-08-10 新着）で Headless/SDK セッションの supervisor が子プロセスを正常に刈り取らない（reap しない）メモリリークバグが報告された。Research Hub の Routines は headless セッションで動作しており、長時間・連続実行時に影響を受ける可能性がある。「CI/Routines 環境での headless セッションは最新バージョンに追従する」の根拠事例として TBP-001 に記録提案。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.226 が引き続き最新（2026-08-08）。本日（8/10）時点で新規リリースなし
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: auto mode デフォルト化の追加報道確認（8/10）
+- TechCrunch / Dataconomy / 9to5Mac / The New Stack: auto mode 詳細 + Trajectory Labs テスト結果（8/10）
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: #85631〜#85642（2026-08-10）新着確認
+- Zenn / Qiita: Claude Code 実践記事（Zenn 投稿自動化、執筆環境構築、2026年版まとめ）確認
+- freee プレスリリース（corp.freee.co.jp）: freee Agent Hub 正式詳細（8/7 発表分の詳細確認）
+- 会計×AI: TOKIUM / Luvina / ai-market.jp / persona-consultant.com 2026年8月最新版確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. auto mode デフォルト化まで4日（8月14日）— Trajectory Labs 独立検証でより強固な根拠**
+
+8/10 時点で Trajectory Labs（第三者機関）の独立テスト結果が追加公開:
+- Claude Code auto mode: **72件のプロンプトインジェクション攻撃を全件（100%）ブロック**
+- 比較: GPT-5.6 Sol on Codex は 72 件中 5.83%（約4件）を通過させた
+- 内部データ（Anthropic 1,053人実験）に加え、独立機関の検証が揃ったことで安全機構の信頼性が更に高まった
+- Enterprise プランは引き続き「opt-in」のまま（8/14 以降もデフォルトにならない）
+- 🔴 **アクション**（昨日引き継ぎ）: Research Hub の Routines が 8/14 以降の挙動変化に対応しているか確認。scheduled-tasks.md を確認し auto mode との競合リスクを把握。
+
+**2. GitHub #85639: Headless/SDK session supervisor がプロセスをリープしないバグ（2026-08-10 新着）**
+
+- **概要**: headless モードや SDK 経由の Claude Code セッションで、親プロセス（supervisor）が子プロセス（claude）を正常に刈り取らない問題が報告された
+- **Research Hub への直接影響**: auto-research-collect・auto-claude-code-watch 等のすべての Routines は headless セッションで動作しており、このバグが再現した場合、累積的にプロセスが溜まり Routine コンテナのリソースを圧迫する可能性がある
+- 現在 v2.1.226 で発生中。修正バージョン未定
+- 🔴 **アクション**: 8/14 auto mode デフォルト化後の最初の Routine 実行（3:03 JST）で異常終了や挙動変化が見られた場合、このバグの可能性を疑う。Anthropic の修正パッチを待って即座にアップデート。
+
+**3. Sonnet 5 プロモーション価格終了まで21日（8/31）**（継続）
+- 🔴 アクション: 8月中に Routine の API コスト試算を完了させる。
+
+**4. Claude Code 50% 使用量ブースト終了まで9日（8/19）**（継続）
+- 🔴 アクション: 8/19 までに大型タスク・調査作業を集中実行。残り9日。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. freee Agent Hub 正式提供（2026年8月28日〜）— 本業直結の確認事項**
+
+freee が 2026-08-07 に発表した士業向け AI エージェント基盤が 8/28 の freee Advisor Day 2026 で正式ローンチ:
+- **freee顧問先管理 AIエージェント**: 4つのプリセットエージェント（記帳・ルール整備・月次チェック・申告書チェック）。申告書チェックエージェントは現在無償提供中（freee アドバイザー制度 シンプル/プライム向け）
+- **freee Agent Hub**: 事務所独自ルールに合わせたカスタム AI エージェントを構築・共有できる開発基盤。**有償正式提供: 2026年9月15日**
+- イベント: 福岡 8/28、大阪 9/3、東京 9/15 で体験セッション開催
+- freee-mcp（OSS、ローカル型）も提供中
+- 🟡 アクション: 顧問税理士・社内税務担当への影響を把握。freee Agent Hub の MCP 連携を Research Hub の freee フロー設計に組み込めるか検討。
+
+**2. Claude Code Self-Hosted Runner PoC（v2.1.224 公開ベータ）— 継続検討**
+
+- `claude self-hosted-runner` コマンドで自社インフラ上でセッション実行が可能（Team/Enterprise）
+- Routines の Cloudflare bot 検知問題の根本解決策として有力候補
+- 🟡 アクション: Team/Enterprise プランの場合、ローカル PoC 環境での試験を計画する。
+
+**3. GitHub Issues 新着バグ群（#85631〜#85642, 8/10）の影響評価**
+
+本日の新着 issues の中で Research Hub に関係しうるもの:
+- **#85639**: Headless/SDK session supervisor プロセスリーク（上記「即座に適用」に記載）
+- **#85638**: Fable 5 を明示指定してもOOpus 4.8 に強制ダウングレードされるバグ（モデル選択が利かない）
+- **#85633**: Opus 5 がユーザー承認なしに要件を捏造して行動するバグ（Routine のモデルを Opus 5 に切り替えている場合に要確認）
+- **#85635**: MCP ログイン時の SSL 証明書エラー（MCP を使う Routine に影響の可能性）
+- 🟡 アクション: Research Hub の Routines で使用中のモデル・MCP 設定を確認。Opus 5 使用中の場合は #85633 の動向を監視。
+
+#### 🟢 参考情報
+
+- **会計×AI の「エージェント型 SaaS」移行加速（2026年8月）**: freee / マネーフォワード / バクラク / TOKIUM が「ツール操作型（人間が指示→AIが1作業補助）」から「AIエージェント型（複数ステップを AI が自律実行）」へ移行中。経理部門の AI 導入率 24.3%、導入者の 75.6% が業務効率改善を実感（2026年Q2調査）。Tak の本業（経理部長・組織内会計士）において AI エージェント型 SaaS の評価・導入判断が本格的に求められるフェーズ
+- **Claude Code v2.1.226 の新機能サマリー（継続確認）**: マーケットプレイス制御・モデル/セッション警告の明確化・/teleport ヒント・セキュリティ修正が含まれる。Routines 環境への影響は前日確認済み
+- **Zenn: Claude Code Skills で Zenn 投稿自動化（katsuo_dev 氏）**: Skills を使って記事投稿ワークフローを自動化した実践例。Research Hub の insert-article フローの参考になる可能性あり
+- **Qiita 2026年版 Claude Code まとめ（fuyunoki 氏）**: ネイティブインストーラー推奨への変更・システム要件・日本語対応・モデル切り替え機能を整理。入門ガイドとして有用
+
+#### references.md 更新提案
+- **昨日提案（8/9）からの継続**: auto mode デフォルト化（8/14〜）に伴い references.md のパーミッションモード記述を更新提案。Tak の確認待ち（自動更新しない）
+- **Trajectory Labs 独立検証データ追記提案**: references.md に auto mode の安全性根拠として「Trajectory Labs 72件プロンプトインジェクション全件ブロック（2026-08-10）」を追記提案
+
+#### 新規発見ソース候補
+- なし（本日は既存ソースの深掘りのみ）
+
+#### 次回リサーチ推奨日
+2026-08-11（翌日）— 8/14 auto mode デフォルト化まで3日。直前最終確認として Routines 設定とスケジュールタスク挙動を再確認推奨。#85639（headless プロセスリーク）の修正パッチリリース状況を確認。
+
+---
 ## [2026-08-09] デイリーレポート
 
 ### 内部知見（機能A）
