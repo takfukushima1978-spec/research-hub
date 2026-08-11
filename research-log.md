@@ -1,3 +1,65 @@
+## [2026-08-11] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/ : TBP-001・TBP-002 を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **50日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **50日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **50日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **50日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（auto mode 8/14 デフォルト化）**: Claude Code auto mode が 8月14日（Pro/Max/Team）から正式デフォルトになる。Anthropic発表によれば分類器が「不可逆・破壊的・環境外」操作を自動遮断し、テストで危険操作の89%を検出。TBP-001「最小権限で開始」ステップは、従来の allowlist/denylist 設定を補完する上位レイヤーとして auto mode 分類器の役割を明記することを提案（update候補）。Enterprise/API経由のRoutinesは9月以降の適用となるため、Routinesの headless セッションへの影響を個別確認すること。
+- **TBP-001 再評価トリガー（v2.1.223 permission bypass fix 2件）**: v2.1.223（8/6）で「タブや不可視Unicode で隠蔽されたコマンドが許可ダイアログを通過できた」「zsh の `[[ ]]` 正規表現条件式に hidden コマンドを埋め込める」バグが修正された。外部ツール審査フェーズで「実際に動作するコマンドとダイアログ表示が一致するか」の確認の重要性を再確認する事例。TBP-001 の審査項目への追記を検討。
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.227（2026-08-10）が最新。前回レポート（8/10）より新規リリースなし
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: auto mode デフォルト化（8/14）の公式確認、Claude Opus 5・Fable 5・Sonnet 5 の状況を確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 8/11 新着 #85937〜#85948 を確認
+- Qiita（⭐⭐⭐）: Claude Code 週次まとめ（8/2週）、コマンド完全ガイド（8/6）確認
+- 会計×AI: TOKIUM・AI-Market・マネーフォワード・AI Revolution等 2026年8月版確認
+
+#### 🔴 即座に適用すべき事項
+1. **【重要】Auto mode 8/14 デフォルト化の確認**: Pro/Max/Team プランは8月14日から auto mode がデフォルトになる。Research Hub の Routines（headless セッション）への影響を事前確認すること。Enterprise/API は9月以降。`/config` で auto mode の状態を確認し、Routines の動作に変化がないか初日に観察を推奨。
+2. **v2.1.227 の headless セッション関連修正**: `CLAUDE_CODE_OAUTH_TOKEN` の短命トークン置換で生じた 401 問題（v2.1.225）、cross-session messages のヘッドレスセッション停滞問題などが修正済み。Routines の安定性向上が期待される。Claude Code を最新版にアップデートすること。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+1. **Claude Opus 5 のRoutines適用検討**: v2.1.219（7/24）で追加。1M context、$5/$25/Mtok（Opus 4.8 と同額）。agentic coding と長期タスクで大幅向上。auto-research-collect 等の Routines プロンプトをOpus 5 で動かした場合のコスト・品質変化を試したい。
+2. **self-hosted runner の活用評価**: v2.1.224（8/7）で `claude self-hosted-runner` が追加。自前マシン・コンテナを Routines の実行環境にできる（Team/Enterpriseプラン）。クラウドsandboxのoutbound制限を回避できる可能性あり。Supabase直叩き問題の代替手段として評価候補。
+3. **VSCode Focus view の活用**: v2.1.221（8/4）で追加。ツール実行を折り畳んでターン単位のサマリ表示する新UIモード（Ctrl+Alt+F）。Routinesのデバッグ時に会話の流れを把握しやすくなる可能性あり。
+
+#### 🟢 参考情報
+- **GitHub issues 8/11 新着**: #85948（Xcodeバッファ上書きによるデータロス）、#85944（Fableの過剰フラグ警告）、#85940（予期しないOpus 4.8降格）、#85939（ARM64 Linux headless hang）、#85937（Auto-reload無効なのに課金2件）。headless関連(#85939)はRoutinesに関連する可能性あり。
+- **会計AI 日本動向**: 経理部門のAI導入率約24.3%（2026年4月時点）。文章チェック・紙書類データ化・要約が上位3業務。「人が判断、AIが作業」の設計原則が主流化。経費精算自動化で月次締め2営業日前倒しの事例増加。
+- **マネーフォワード AI Cowork**: 2026年7月リリース。バックオフィス業務の自動化AI。freeeも仕訳学習精度の向上を進行中（少データで精度安定化）。
+- **Subagent depth 3 解禁**: v2.1.221（8/4）でサブエージェントのネスト深さが1→3に拡張（`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1` で旧動作）。Workflow/Agent利用者は複雑なオーケストレーションが可能に。
+- **RemoveなしのRemoved**: v2.1.221でultraplanが削除、v2.1.219でOpus 4.7がfast modeから削除。fast modeはOpus 5・Opus 4.8のみ対応。
+
+#### references.md 更新提案
+**提案あり**:
+1. **auto mode 分類器の位置づけ**: ハーネス設計において許可管理の主役が「allowlist/denylist」から「auto mode 分類器（上位層）+ allowlist/denylist（補完層）」へ移行する。`references.md` に「auto mode classifier は allowlist 設定より上流で動作し、Pro/Max/Team では8/14からデフォルト有効」の記述追加を検討。
+2. **Subagent depth 3の反映**: Workflow/Agentのベストプラクティスにサブエージェントのネスト3階層に関する記述を追加検討。
+
+※ 実際の更新は Tak 確認後に実施。
+
+#### 新規発見ソース候補
+特になし（既知ソースで網羅）。
+
+#### 次回リサーチ推奨日
+2026-08-14（3日後）
+注目点:
+① Auto mode 8/14 デフォルト化の実際の動作確認（Pro/Max/Team）
+② Routines（headless）への影響観察
+③ TBP-003・TBP-004候補の確認依頼（50日経過・要アクション）
+④ v2.1.228 以降のリリース確認
+
+---
+
 ## [2026-08-10] デイリーレポート
 
 ### 内部知見（機能A）
