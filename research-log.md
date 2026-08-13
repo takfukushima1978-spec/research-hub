@@ -1,3 +1,109 @@
+## [2026-08-13] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/ → フォルダ未存在のためスキップ
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **52日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **52日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **52日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **52日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（auto mode 8/14 デフォルト化・本日到来）**: 本日 2026-08-13（JST 8/14）より Pro/Max/Team の全新規セッションで auto mode がデフォルト化。前回レポートからの継続注目点①が現実に。Research Hub Routines（headless セッション）が今夜の初回実行（3:03 JST、4:00 JST）でどのような挙動を示すか、ログ確認を強く推奨。auto mode 分類器が許可リスト・拒否リスト設定と独立して前段でブロックする設計は TBP-001 に追記候補。
+- **TBP-001 再評価トリガー（v2.1.231 MCP OAuth redirect URI 修正）**: v2.1.231（2026-08-13）で、Slack 等の事前登録済み OAuth クライアントを使う MCP サーバーへのサインインが redirect URI 不一致で失敗するバグを修正。MCP 認証フローの信頼性に関わるため TBP-001「外部ツール審査フェーズ」への記録候補。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.231（2026-08-13）が最新。前回レポート（8/12）より2リリース進む（v2.1.229, v2.1.231）
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Riemann hypothesis 進展（8/10）、経済リサーチ（8/12）、Tino Cuéllar 入社（8/4）、収益ランレート $300億超を確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 8/13 新着 #86501〜#86508 を確認
+- Qiita（⭐⭐⭐）: Claude Code コマンド完全ガイド【8月版】、週次まとめ（8/2週）、Anthropicニュース（8/8）、エージェント統治視点記事（継続確認）
+- Zenn（⭐⭐⭐）: Skills で Zenn 投稿自動化記事確認
+- 会計×AI: luvina.jp・TOKIUM・ai-market.jp・freee・マネーフォワード 2026年8月版確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. 【本日到来】Auto mode 8/14 デフォルト化 — Routines の挙動確認が最優先**
+
+本日（2026-08-13）から Pro/Max/Team 全新規セッションで auto mode がデフォルト化。
+- 前回レポート（8/12）の注目点①が到来した
+- Research Hub の Routines（3:03 JST: auto-research-collect、4:00 JST: auto-claude-code-watch）が初回 auto mode セッションで正常動作するか確認が必要
+- headless セッションでの auto mode は classifier がブロックした場合に Claude が安全な代替パスを探す仕様 → ブロックで強制終了する頻度が減る可能性（ポジティブ）
+- 一方で ClAudit false-positive（`<task-notification>` タグ等で誤検知）の懸念は継続中
+- **アクション**: 本夜〜明朝の Routine 実行ログを翌朝確認。異常があれば Routine 環境設定の auto mode を明示設定で対応
+
+**2. Claude Code v2.1.231（2026-08-13）— MCP OAuth fix**
+
+- **修正内容**: Slack 等の事前登録済み OAuth クライアントを使う MCP サーバーへのサインインが redirect URI 不一致で失敗するバグを修正
+- MCP を活用している Routine（freee-mcp、マネーフォワード MCP 等）がある場合は接続確認を推奨
+- 🔴 **アクション**: Claude Code を v2.1.231 にアップデート
+
+**3. Claude Code v2.1.229（2026-08-12）— SSE keepalive & self-hosted-runner 強化**
+
+前回レポート（8/12）の v2.1.228 から更にリリース。主な更新:
+- **Remote Control `--continue`**: 最新の Remote Control セッションを再開するコマンドのドキュメントを追加
+- **self-hosted-runner 強化**: マネージド環境と同等の server-supplied Claude Code hook サポートを追加
+- **SSE keepalive**: Vertex / Bedrock 上流でのアイドルタイムアウト切断を防ぐため、Gateway のストリーミング応答に keepalive ping を追加
+- 🔴 **アクション**: self-hosted-runner を評価中の場合は v2.1.229 以降の安定版でテスト
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. freee Agent Hub 正式提供（8/28）まで15日 — 本業直結（継続）**
+
+- 2026-08-28（福岡）の freee Advisor Day で正式ローンチ予定
+- 士業向け AI エージェント基盤（記帳・ルール整備・月次チェック・申告書チェックの4プリセット）
+- freee Agent Hub の有償正式提供は 2026-09-15
+- 🟡 アクション: 顧問税理士・社内税務担当への影響確認を 8/28 前に完了。freee-mcp との統合設計検討
+
+**2. self-hosted-runner の本格評価（v2.1.229 安定化を受けて）**
+
+- server-supplied hooks のサポートが追加され、managed 環境と同等の機能に
+- Routines の Cloudflare bot 検知問題の根本解決策として引き続き最有力
+- 🟡 アクション: Team/Enterprise プランであれば、ローカル PoC を計画。v2.1.229 でテスト
+
+**3. Anthropic の Riemann hypothesis 進展 — 研究用 Claude 活用の広がり**
+
+- 未公開研究版 Claude がリーマン予想関連問題で長年の下限（41.6%）を 67.2% に改善（2026-08-10）
+- 数学的推論・複雑問題解決での Claude 活用可能性の広がりを示す
+- 🟡 アクション: Research Hub の deep-research-runner において複雑な数値計算・分析タスクに Claude の推論能力を活用する設計を検討
+
+#### 🟢 参考情報
+
+- **GitHub Issues 8/13 新着（#86501〜#86508）**: MCP関連（#86503, macOS/VS Code, bug）、認証関連（#86502, VS Code/WSL, bug）、AWS Bedrock 関連（#86501, bug）、サンドボックス/セキュリティ（#86505, macOS, bug/再現手順あり）が主要。#86504・#86507は invalid。headless/Routines への直接影響は確認されず
+- **Anthropic 収益ランレート $300億超（2026）**: 2025年末 $90億から急拡大。$100万超の企業顧客が1000社超。Claude API・Routines の長期安定供給の根拠として継続記録
+- **Anthropic 経済リサーチ（8/12）**: 労働者再訓練プログラムに関するエビデンスレビューを公開。AI による雇用変化への対応研究として参照
+- **Anthropic 数学研究（8/10）**: 未公開版 Claude がリーマン予想関連問題で長年の下限（41.6%）を 67.2% に改善。研究分野での Claude 活用可能性を示す
+- **Mariano-Florentino Cuéllar 入社（8/4）**: Chief Global Affairs Officer として参加。AI 政策・規制対応の体制強化
+- **会計×AI（2026年8月）**: 「ツール操作型 SaaS」→「AIエージェント型 SaaS」への移行が加速継続。経理 AI 導入率約24%、月次締め2営業日前倒し事例増加。freee Agent Hub・マネーフォワード AI Cowork が今後の評価対象として確定。Tak の本業（経理部長・組織内会計士）において AI エージェント型 SaaS の評価・導入判断フェーズが継続
+- **Zenn: Claude Code Skills で Zenn 投稿自動化**: Skills を活用して記事投稿ワークフロー全体を自動化した実践例。Research Hub insert-article フローのスキル化参考候補
+- **マネーフォワード AI Cowork（7月リリース済み）**: Claude Agent SDK + MCP 基盤、仕訳・経費精算・請求書処理を自然言語で自律実行。MCP サーバーが全プランで提供中
+
+#### references.md 更新提案
+**提案あり（継続・本日 auto mode デフォルト化で緊急度上昇）**:
+1. **auto mode デフォルト化の反映**: references.md にパーミッションモード記述がある場合、「8/14 より Pro/Max/Team では auto mode がデフォルト」かつ「headless セッション（Routines）での挙動変化」を追記提案。本日から実際に適用されたため緊急度が上昇
+2. **Sonnet 5 価格永久化の反映**: 「標準価格 $2/$10/Mtok（2026-08-10 永久化確定）」への更新提案（継続）
+
+※ 実際の更新は Tak 確認後に実施。
+
+#### 新規発見ソース候補
+- なし（新規発見ソースなし。既知ソースで網羅）
+
+#### 次回リサーチ推奨日
+2026-08-14（翌日）
+注目点:
+① Auto mode デフォルト化後の初回 Routines（3:03, 4:00 JST）の実際の動作ログ確認（本日夜〜明朝）
+② TBP-003・TBP-004候補（52日経過）の Tak への確認依頼（最優先）
+③ v2.1.231 以降の新規リリース確認
+④ freee Agent Hub（8/28 正式提供）に向けた準備状況確認
+
+---
+
 ## [2026-08-12] デイリーレポート
 
 ### 内部知見（機能A）
