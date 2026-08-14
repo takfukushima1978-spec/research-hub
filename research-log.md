@@ -1,3 +1,113 @@
+## [2026-08-14] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001・TBP-002 を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **53日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **53日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **53日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **53日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（auto mode デフォルト施行・本日到来）**: 本日（2026-08-14）より Pro/Max/Team の全新規セッションで auto mode がデフォルト化。前回からの連続注目点が実際に到来した。本夜の Routines（3:03 JST auto-research-collect、4:00 JST auto-claude-code-watch）が初回 auto mode セッションで正常動作するかログ確認が最優先。v2.1.232 の subagent fork デフォルト化との組み合わせで、Routines の fork 型サブエージェントが auto mode 分類器と干渉しないかも確認が必要。
+- **TBP-001 再評価トリガー（v2.1.232 subagent fork default化）**: サブエージェント fork（subagent_type: "fork"）がデフォルト有効になり、フォークされたサブエージェントは親会話の全コンテキスト＋プロンプトキャッシュを引き継ぐ。Research Hub Routines で Workflow/Agent ツールを使う場合、fork のデフォルト化によるコンテキスト継承がトークン消費量に影響する可能性。TBP-001「段階拡張時のコスト計算」の前提として fork 型のキャッシュ共有コスト構造を記録提案。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.232（2026-08-13）が最新。前回レポート（8/13）より1リリース進む（v2.1.232）
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Riot Platforms $9.1B compute deal（8/11）、Claude for Open Source、Decart 買収交渉報道（未確定）
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 8/14 新着 #86776〜#86778 を確認
+- Qiita（⭐⭐⭐）: Claude Code 8月アップデート記事（継続確認。新規大型記事なし）
+- Zenn（⭐⭐⭐）: Claude Code Skills 自動化記事（前回確認済みと同一。新規大型記事なし）
+- 会計×AI: freee prtimes・corp.freee.co.jp・smarf.jp・ai-revolution.co.jp 2026年8月最新版確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. 【本日施行】Auto mode デフォルト化 — 今夜の Routines が初回検証**
+
+本日（2026-08-14）から Pro/Max/Team の全新規セッションで auto mode がデフォルト化された（前回レポート以来の連続注目点が到来）。
+- Research Hub Routines の初回 auto mode セッション（3:03 JST auto-research-collect、4:00 JST auto-claude-code-watch）が今夜実行される
+- v2.1.232 の subagent fork デフォルト化と組み合わせた初実行のため、Routine 挙動変化のリスクが前日より高い
+- ClAudit false-positive（`<task-notification>` タグ誤検知等）で Routine がブロックされた場合、Routine 環境設定で auto mode を明示指定する設定を検討
+- 🔴 **アクション**: 明朝（8/15）に Routine 実行ログを最優先で確認。異常終了・記事投入0件・エラーが見られたら auto mode ブロックの可能性を疑う
+
+**2. Claude Code v2.1.232（2026-08-13）— Subagent Fork デフォルト化**
+
+前回レポート（8/13）の v2.1.231 に続くリリース。主な変更:
+- **Subagent Fork デフォルト有効**: `subagent_type: "fork"` のサブエージェントが親会話のフル会話履歴＋プロンプトキャッシュを自動継承。インタラクティブセッションで teammate 以外のエージェント spawn がデフォルトでバックグラウンド実行に
+- **@ メンション**: プロンプトで `@` を入力すると他の Claude Code セッションを名前で指定可能。メンションされたセッションへ `SendMessage` で直接連絡
+- **セッション名ユニーク化**: 同名のライブセッションが存在する場合、起動・改名すると `名前-単語-単語` のバリアント名を自動付与
+- MCP OAuth / SSE keepalive / self-hosted runner 強化（v2.1.231 で対応済みの継続確認）
+- 🔴 **アクション**: Claude Code を v2.1.232 にアップデート（`npm update -g @anthropic-ai/claude-code`）。Workflow/Agent ツールで fork 型サブエージェントを使うプロンプトがある場合、コンテキスト継承の動作変化を確認
+
+**3. Anthropic × Riot Platforms $9.1B コンピュートディール（2026-08-11 確定）**
+
+Riot Platforms との 20年間・191MW・$9.1B の大型コンピュートディールが確定（Texas Rockdale キャンパス）。契約は 2048年6月まで、5年延長オプション×2で最大 $16.1B。
+- 8/11 発表後、Riot 株価は 25%上昇（$24.40）
+- Anthropic の直近のコンピュート調達: Volta Infra $10B + xAI $45B + SpaceX GPU + Riot $9.1B
+- Research Hub の観点: Anthropic のインフラ基盤強化が継続 → API・Routines の長期安定供給の根拠がさらに強化
+- 🔴 **アクション**: 長期 Routine 設計でインフラ安定性を前提に織り込んで良い
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. freee Agent Hub 正式提供（8/28）まで14日 — 本業直結（継続・最終局面）**
+
+- 2026-08-28（福岡・freee Advisor Day）で「freee顧問先管理 | AIエージェント」正式オープン、有償提供は 9/15
+- **申告書チェックエージェント**: 8/28 より無償提供開始。freee申告の法人税申告書類と会計BS・PLを横断チェックし、申告前の論点を提案。経理部長・組織内会計士として実務直結
+- freee Agent Hub（オープン β 終了 → 正式提供 9/15）: 士業向けカスタムAIエージェント開発基盤
+- 🟡 アクション: 8/28 前に顧問税理士・社内税務担当への影響確認を完了。申告書チェックエージェントの無償体験を 8/28 以降に予約
+
+**2. Anthropic Decart AI 買収交渉（$6B 規模・未確定）**
+
+- Anthropic が AI スタートアップ Decart AI を約 $6B で買収交渉中との報道（複数メディア。Anthropic 公式発表なし）
+- Decart AI は高速 AI 推論・インタラクティブシミュレーション技術で知られる
+- Research Hub への影響: 買収成立の場合、Claude の推論速度・インタラクティブ応答性が改善される可能性。deep-research-runner の応答速度向上に期待
+- 🟡 アクション: 公式発表を待って評価。直近の Routine 設計変更は不要
+
+**3. Claude for Open Source — OSS メンテナーへの無償 Claude Max 20x 提供**
+
+- Anthropic が OSS メンテナー・コントリビューター向けに 6ヶ月間の無償 Claude Max 20x（約 $1,200 相当）を提供
+- 対象: OSS プロジェクトの主要メンテナー・コントリビューター
+- Research Hub・My-Profile-and-Memory 等の自プロジェクトで OSS 扱いのものがあれば申請価値あり
+- 🟡 アクション: Anthropic の Claude for Open Source 申請ページを確認。条件を満たすプロジェクトがあれば申請を検討
+
+#### 🟢 参考情報
+
+- **GitHub Issues 8/14 新着（#86776〜#86778）**: #86778（Linux: agents+TUI でのデータロスバグ）、#86777（macOS: model area バグ）、#86776（Linux: agent-view/TUI で Claude agents TUI / --bg / FleetView / daemon bg セッション絡みのバグ・詳細再現手順あり）。TUI 絡みのバグが集中している。headless/Routines への直接影響は確認されず。ただし #86776 は daemon bg セッション絡みで Routines と設計が近い
+- **Anthropic Alignment Science 新ベンチマーク（8月）**: 「実証的・数学的に検証が事実上不可能な問いへの推論能力」を計測するベンチマークを設計。長期的な Claude の研究用途での信頼性向上につながる可能性あり
+- **Sonnet 5 価格（補足確認）**: 一部メディアで「8/31 プロモーション終了・9/1 値上げ」の情報が流通中だが、8/12 レポートで確認済みの通り Anthropic は 2026-08-10 に「$2/$10/Mtok を永久標準価格に決定」と発表済み。値上げ報道は発表前の古い情報を参照している可能性が高い。信頼できる情報源（8/10 発表）をベースに「Sonnet 5 は永久に $2/$10/Mtok」として計画して良い
+- **freee/マネーフォワード MCP 比較（smarf.jp 2026）**: freee-mcp（Claude から仕訳・請求・勤怠を自然言語操作）vs マネーフォワード クラウド会計 MCP（2025年10月対応済み・仕訳・経費・取引先アクセス）の比較記事が登場。2026年時点での国産会計 SaaS MCP 接続が実用段階に入ったことを示す
+- **会計×AI 2026年8月 動向継続**: freee AI エージェント・マネーフォワード AI エージェント・バクラク AI エージェント・TOKIUM の4製品が「AIエージェント型標準 SaaS」フェーズへ。経理 AI 導入率約24%・導入企業の75.6%が業務効率改善実感の動向が継続
+
+#### references.md 更新提案
+**提案あり（継続）**:
+1. **auto mode デフォルト化の反映（本日施行で緊急度継続）**: references.md にパーミッションモード記述がある場合、「8/14 より Pro/Max/Team では auto mode がデフォルト」かつ「headless セッション（Routines）での挙動変化」を追記提案。実際の施行日到来で継続最優先
+2. **v2.1.232 subagent fork default**: harness-design-guide の Workflow/Agent 設計セクションに「fork 型サブエージェントがデフォルトで親コンテキスト継承するため、コスト計算に反映が必要」を追記提案
+3. **Riot Platforms $9.1B deal**: references.md の Anthropic インフラセクション（あれば）に Riot Platforms 契約を追記提案。長期 API 安定性の根拠強化として
+
+※ 実際の更新は Tak 確認後に実施。
+
+#### 新規発見ソース候補
+- **claudeupdates.dev（Claude Code v2.1.232 詳細ページ）**: v2.1.232 の 49件の変更を網羅的にリスト化するページが確認できた。詳細リリースノートの一次確認先として有用（評価候補: ⭐⭐⭐）
+- **dev.classmethod.jp（DevelopersIO 日本語解説）**: v2.1.230〜v2.1.232 の変更点を日本語で解説する記事を確認。英語チェンジログの日本語補完として有用（評価候補: ⭐⭐⭐⭐）
+- なし（その他新規発見ソースなし）
+
+#### 次回リサーチ推奨日
+2026-08-15（翌日）
+注目点:
+① 【最優先】本夜の Routines（3:03 JST, 4:00 JST）の auto mode 下での実行ログ確認（auto mode + subagent fork default の組み合わせ初実行）
+② TBP-003・TBP-004候補（53日経過）の Tak への確認依頼（最優先継続）
+③ v2.1.233 以降の新規リリース確認
+④ freee Agent Hub（8/28 正式提供）まで14日 → 顧問税理士・社内税務担当への影響確認完了期限
+⑤ Anthropic Decart 買収の公式発表有無
+
+---
 ## [2026-08-13] デイリーレポート
 
 ### 内部知見（機能A）
