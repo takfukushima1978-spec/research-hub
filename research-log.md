@@ -1,3 +1,115 @@
+## [2026-08-15] デイリーレポート
+
+### 内部知見（機能A）
+
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- tak-best-practices/: TBP-001・TBP-002 を確認（新規 ADR なし）
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **54日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。⚠️ **54日経過。Tak への最優先アクション要請。**
+- **TBP-004候補**（2026-06-22 提案・確認待ち **54日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。⚠️ **54日経過。Tak への最優先アクション要請。**
+
+#### 再検討トリガー該当
+
+**TBP-001 再評価トリガー（auto mode デフォルト化・初日翌日確認）**:
+昨日 2026-08-14 に auto mode が Pro/Max/Team 全新規セッションでデフォルト化された。本日 8/15 は初回 Routines 実行後の翌日にあたり、昨夜の auto-research-collect（3:03 JST）・auto-claude-code-watch（4:00 JST）が auto mode 下で正常動作したかどうかのログ確認が最優先。
+- 新情報: Auto mode の **classifier 呼び出しコストは無料**（Pro/Max/Team のトークン使用量にカウントされない）→ TBP-001「段階拡張時のコスト計算」の前提として、Routines の auto mode 採用はコスト増なしで安全性向上を得られる設計に変わった
+- 89% vs 13.6%（human）の危険コマンド検知率差。Routines の安全性の根拠として TBP-001 に追記候補
+
+**TBP-001 再評価トリガー（v2.1.233 forward_user_identity opt-in）**:
+v2.1.233（8/14）で追加された `forward_user_identity` apps gateway 設定（opt-in）は、プロキシ後段でのユーザー別支出帰属を可能にする。enterprise 運用で複数ユーザーが Routines を共有する場合の「最小権限」設計に影響する可能性。ただし opt-in かつ enterprise 限定の高度設定であり、個人利用の Routines には直接影響なし。TBP-001 の「審査フェーズ」に「enterprise gateway 設定の identity forwarding 有無」を確認項目として追記を提案。
+
+---
+
+### 外部リサーチ（機能B）
+
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.233（2026-08-14）が最新。前回レポート（8/14）より1リリース進む
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Claude for Government beta、auto mode デフォルト化周辺記事確認
+- anthropics/claude-code GitHub issues（⭐⭐⭐⭐⭐）: 8/15 新着 #87002〜#87008 を確認
+- Qiita（⭐⭐⭐）: 8月アップデート解説記事（berrylove氏）を継続確認。8/15 新規大型記事なし
+- Zenn（⭐⭐⭐）: Zenn 投稿自動化（katsuo_dev氏, 2026-08）確認。8/15 新規大型記事なし
+- 会計×AI: freee prtimes・ai-revolution.co.jp・aipicks.jp 2026年8月版確認
+
+#### 🔴 即座に適用すべき事項
+
+**1. Claude Code v2.1.233（2026-08-14）— GitLab MR + Linux memory cgroup**
+
+前回レポート（8/14, v2.1.232）に続くリリース。主な追加機能:
+- **GitLab MR URL サポート**: `--worktree` フラグと `claude agents` ビューに GitLab MR URL を追加。MR が `!N` 形式で表示される。GitLab を使う場合は worktree ワークフローが大幅改善
+- **forward_user_identity opt-in**: Anthropic upstream の apps gateway 設定。プロキシ後段でのユーザー別支出帰属が可能に（enterprise 向け・opt-in）
+- **Linux memory cgroup（CLAUDE_CODE_TOOL_MEMORY_LIMIT）opt-in**: Bash ツールコマンドのメモリ上限を設定可能に。暴走ビルドがセッション全体をハングさせることを防ぐ。Routines/Linux 環境での安定性向上
+- **WebFetch キャッシュ TTL 設定（CLAUDE_CODE_WEBFETCH_CACHE_TTL_MS）**: セッション内 URL キャッシュの TTL をミリ秒単位で設定可能
+- **バグ修正**: クラウドセッションが lost とマークされる問題、MCP v2 接続問題、Remote Control セッション再開、Cloud gateway /login、音声モードのスタック、mTLS クライアント証明書ローテーション、AWS/Vertex リージョン値不正 を修正
+- 🔴 **アクション**: Claude Code を v2.1.233 にアップデート（`npm update -g @anthropic-ai/claude-code`）
+
+**2. 【最優先確認】Auto mode 初回 Routines 実行後確認（本日 8/15）**
+
+昨夜（8/14→8/15）の auto-research-collect（3:03 JST）・auto-claude-code-watch（4:00 JST）が auto mode 下での初回実行にあたる。
+- Classifier overhead は **無料**（Pro/Max/Team ではトークン消費にカウントされない）
+- 初回セッション開始時に「auto mode に切り替えますか？」という一回限りのプロンプトが表示される可能性があり、headless セッション（Routines）でそれが表示された場合、セッションがブロックされることがある
+- 🔴 **アクション**: Research Hub Routines の実行ログを確認。記事投入0件・エラー終了の場合は auto mode ブロックを疑い、Routine 環境設定で permission mode を明示的に設定する
+
+**3. Anthropic Decart 買収交渉（$6B・継続中）**
+
+8/13〜8/14 の Bloomberg 等複数メディアが報道。Decart は AI 推論コスト削減ソフト＋生成動画（ワールドモデル型リアルタイム動画加工）で知られる。2026年5月に $3B で Radical Ventures + NVIDIA 参加の $300M ラウンドを完了した直後の $6B 売却交渉。
+- 目的: Anthropic は推論コスト削減とチップ効率化で Decart 技術を取り込む狙いとされる
+- Research Hub への影響: 買収成立なら Claude の推論速度・コスト効率が改善 → deep-research-runner の応答コスト低下の可能性
+- 🔴 **アクション**: 公式発表を待って評価。現時点では交渉中のため Routine 設計変更は不要
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. Linux memory cgroup（CLAUDE_CODE_TOOL_MEMORY_LIMIT）の Routines 適用検討**
+
+- v2.1.233 で追加された opt-in の Linux メモリ制限機能
+- Routines がクラウド sandbox（Linux 環境）で実行されるため、暴走プロセスによるセッションハングを防ぐ有用な設定
+- Research Hub の auto-research-collect・deep-research-runner は Web 検索 + DB 書き込みで複数ツールを連鎖的に呼ぶため、メモリ暴走リスクがある
+- 🟡 アクション: `CLAUDE_CODE_TOOL_MEMORY_LIMIT` を各 Routine の環境変数に設定。まずデフォルト値を確認し、適切な上限値（512MB〜1GB 程度）を実測して設定
+
+**2. freee Agent Hub（8/28 正式提供）— 本業直結・まで13日**
+
+- 2026-08-28（freee Advisor Day 2026、福岡）で「freee顧問先管理 | AIエージェント」正式提供。同日 freee Agent Hub も正式オープン。有償は 9/15 から
+- 申告書チェックエージェント: 8/28 より無償提供。freee 申告の法人税申告書類と BS・PL を横断チェックし、申告前の論点を提案
+- 🟡 アクション: 8/28 前に顧問税理士・社内税務担当への影響確認を完了させる。8/28 以降に申告書チェックエージェントの無償体験を申し込む
+
+**3. Claude for Government beta — 行政向け Claude**
+
+- Anthropic が Claude for Government を beta 提供開始。連邦政府機関向けに Claude API・Routines を提供。Anthropic が契約・課金主体になる
+- 民間経理向けの直接適用はないが、規制産業（税務・監査）での AI エージェント活用の先行事例として参照価値あり
+- 🟡 アクション: 今後の会計×AI 規制動向リサーチの参照先として記録。直接アクションは不要
+
+#### 🟢 参考情報
+
+- **GitHub Issues 8/15 新着（#87002〜#87008）**: Android バグ（#87004、再現手順あり）、macOS 機能リクエスト（#87003、model area 改善要望）、Linux エージェントバグ（#87002）、Windows デスクトップバグ（#87007、詳細再現手順あり）、コスト関連重複 issue（#87008）、コスト関連機能リクエスト（#87006）。headless/Routines への直接影響は確認されず
+- **Auto mode 安全性データ**: 1,053人の有料 Claude Code ユーザー研究で、危険コマンドを含む承認リクエストの 86% をユーザーが承認していた（気づかず OK した）。Classifier の 89% 検知率との対比で、auto mode のほうが危険コマンドを構造的に防げることが示された。headless Routines では人間確認がそもそもないため、auto mode の classifier の方がより有効な安全機構
+- **Decart 社の技術詳細**: 生成動画の「ワールドモデル」（リアルタイム動画加工・シミュレーション）と AI 推論コスト削減ソフトが主力。Anthropic が取り込む場合、特に推論コスト削減技術が Claude API コスト構造に直接影響する可能性
+- **会計 AI 市場（2026年8月）動向継続**: freee・マネーフォワード・バクラク・TOKIUM の4社が「AIエージェント型 SaaS」標準搭載フェーズへ。会計ソフト+別途 AI ツールという構成が時代遅れになりつつある状況が継続。経理部長・組織内会計士として、4製品の AI エージェント機能の実地評価フェーズを今夏〜秋に計画することを継続推奨
+
+#### references.md 更新提案
+**提案あり（継続・更新）**:
+1. **auto mode デフォルト化の反映（本日実施完了）**: references.md にパーミッションモード記述がある場合、「2026-08-14 より Pro/Max/Team では auto mode がデフォルト」「classifier overhead は無料（Pro/Max/Team）」を追記提案。auto mode が実際に施行されたため提案を正式化
+2. **v2.1.233 Linux memory cgroup**: harness-design-guide の Routines/Linux 安定性セクションに「CLAUDE_CODE_TOOL_MEMORY_LIMIT で Bash ツールのメモリ上限設定が可能（opt-in）」を追記提案
+3. **v2.1.232 subagent fork default 継続**: 前回からの継続提案。Workflow/Agent ツールで fork 型サブエージェントを使う場合のコンテキスト継承コスト構造を記録提案
+
+※ 実際の更新は Tak 確認後に実施。
+
+#### 新規発見ソース候補
+- **claudeissues.com**: anthropics/claude-code の 83,000+ issues を検索・インデックス化するトラッカーサイト。特定バグの追跡に有用（評価候補: ⭐⭐⭐）
+- **releasebot.io/updates/anthropic/claude-code**: Claude Code の月次リリースを自動まとめ。Releasebot が Anthropic リリースを月次でリスト化。英語チェンジログの補完として有用（評価候補: ⭐⭐⭐）
+
+#### 次回リサーチ推奨日
+2026-08-16（翌日）
+注目点:
+① 【最優先】昨夜の Routines（3:03, 4:00 JST）の auto mode 下での初回動作ログ確認（記事投入件数・エラー有無）
+② TBP-003・TBP-004候補（54日経過 → 55日目）の Tak への確認依頼（最優先継続）
+③ v2.1.234 以降の新規リリース確認
+④ Anthropic Decart 買収の公式発表有無
+⑤ freee Agent Hub（8/28 正式提供）まで13日 → 申告書チェックエージェント無償体験の申し込み準備
+
+---
+
 ## [2026-08-14] デイリーレポート
 
 ### 内部知見（機能A）
