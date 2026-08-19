@@ -1,3 +1,73 @@
+## [2026-08-19] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能スコープ外のためスキップ
+- research-hub/decisions/ → フォルダ未存在のためスキップ
+- tak-best-practices/ → TBP-001・TBP-002 の2件存在。新規ADRなし。
+
+#### TBP 昇格候補
+- **TBP-003候補**（2026-06-22 提案・確認待ち **58日目**）:「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak の確認待ち継続。2ヶ月超（要アクション判断）。
+- **TBP-004候補**（2026-06-22 提案・確認待ち **58日目**）:「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak の確認待ち継続。2ヶ月超（要アクション判断）。
+
+#### 再検討トリガー該当
+- **TBP-001 再評価トリガー（Claude Code タスクツール廃止・2026-08-15）**: TaskCreate/Get/Update/List, TodoWrite が Opus 4.8、Sonnet 5、Fable 5、Mythos 5 以降のモデルではデフォルト無効化（`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` で復活可能）。TBP-001の「外部ツール導入の段階拡張」知見とは別レイヤーだが、ハーネス設計の中でタスクツール前提の hooks / skills / CLAUDE.md 記述がないか確認を推奨。このリポジトリの daily-research ルーティン自体も TaskCreate を使用しているため、モデル更新時に動作変化する可能性あり。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ（⭐⭐⭐⭐⭐）: v2.1.235（2026-08-18）が最新。本日（8/19）新バージョンなし
+- Anthropic 公式ブログ（⭐⭐⭐⭐⭐）: Claude Opus 5 ローンチ、Compliance API 拡張、業績情報
+- releasebot.io / havoptic.com: タスクツール廃止（8/15）の詳細確認
+- 会計×AI: バクラク AI明細仕訳、freee vs マネーフォワード 2026年比較
+
+#### 🔴 即座に適用すべき事項
+なし（昨日の v2.1.235 アップデートが引き続き推奨）
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**1. 🟡 Claude Code タスクツール廃止 → ルーティン設計の見直し（2026-08-15〜）**
+
+TaskCreate / Get / Update / List / TodoWrite が新モデル（Opus 4.8, Sonnet 5, Fable 5, Mythos 5）でデフォルト無効化：
+
+- `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` で従来動作に戻せるが、公式の方向性は廃止
+- **影響範囲**: このリポジトリの daily-research ルーティンプロンプト内で TaskCreate 等を呼び出す指示がある場合、モデル更新後にサイレント失敗する可能性
+- **アクション候補**: ルーティンプロンプトから TaskCreate 依存を除去し、プレーンテキストでの進捗管理に切り替える設計を検討
+
+**2. 🟡 Claude Opus 5 ローンチ — コスト半減でフロンティア品質**
+
+「思慮深くプロアクティブ」を売りにした新モデル。Mythos 5 相当の能力でコストを約半分に抑える設計：
+
+- deep-research-runner や auto-research-collect で使用モデルを Opus 5 に切り替えることで品質向上・コスト最適化の両立が期待できる
+- **アクション候補**: Routines の環境設定でモデルを Opus 5 に更新を検討
+
+**3. 🟡 Compliance API が Claude Code に拡張（Claude Enterprise beta）**
+
+Anthropic の Compliance API が Cowork と Claude Code に対応。デスクトップ・Web・モバイル・CLI の全プラットフォームで利用可能（Claude Enterprise 顧客向け beta）：
+
+- 監査ログ、データ保持ポリシー、利用制限の一元管理が可能に
+- 会社組織での Claude Code 導入を検討している場合に重要な企業向け機能
+
+#### 🟢 参考情報
+
+- **Anthropic Q2業績**: 売上 $11.5B超（前期比大幅増）。Decart社買収交渉（約$60億）、Riot Platforms との$90億コンピューティング契約。事業基盤の急速な拡大
+- **バクラク「AI明細仕訳」**: 複数明細を持つ請求書（運送費・電気代など）の仕訳をAIが自動生成。勘定科目・部門まで含めて入力。2026年度の会計SaaS AI機能強化の象徴的事例
+- **freee vs マネーフォワード AI機能 2026年比較**: freee が推測精度・初期学習速度で優位。マネーフォワードは補助科目推測で先行。月間500件規模で経理工数80%削減事例（60h→12h）が報告される水準
+- **Anthropic Alignment Science チーム**: 「検証不可能な質問に対するモデルの推論能力」を測定するベンチマーク設計の論文を 2026年8月に公開
+
+#### references.md 更新提案
+- **更新提案**: harness-design-guide/references.md に「Claude Code v2.1.235以降（2026-08-15〜）: 新モデル（Opus 4.8, Sonnet 5, Fable 5, Mythos 5）ではタスクツール（TaskCreate/TodoWrite）がデフォルト無効。`CLAUDE_CODE_ENABLE_TODO_TOOLS=1` で復活可能」を追記提案。ルーティン設計・CLAUDE.md テンプレートに影響する変更のため、参照ドキュメントへの明記を推奨。
+
+#### 新規発見ソース候補
+- kaikei-ai.jp（Kaikei AI Daily）: 会計×AI専門メディア。freee・バクラク等のAI機能を CPA 視点で深掘り。会計×AI軸の⭐⭐⭐⭐候補として trusted-sources.md への追記を提案。
+
+#### 次回リサーチ推奨日
+2026-08-20（明日）。Claude Opus 5 の詳細スペック確認、タスクツール廃止のルーティン影響調査。
+
+---
+
 ## [2026-08-18] デイリーレポート
 
 ### 内部知見（機能A）
