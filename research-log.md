@@ -1,3 +1,105 @@
+## [2026-08-21] デイリーレポート
+
+### 内部知見（機能A）
+#### 新規・更新 ADR
+- My-Profile-and-Memory/decisions/ → フォルダ未存在のためスキップ
+- StudyMate, My-URAWA-LOG, tak-work, tak-family, tak-personal → アクセス可能リポジトリ外のためスキップ
+- tak-best-practices/ → TBP-001（外部ツール導入審査）・TBP-002（実行環境英語パス）を確認（新規 ADR なし）
+- **継続記録（6/22 提案から 60 日目）**:
+  1. TBP-003 候補「着手前に実態（git）と文書（backlog）の一致を確認する」— Tak 確認待ち
+  2. TBP-004 候補「不可逆性で安全方向を決めるが、カテゴリ丸ごとの保守化は目的を殺す」— Tak 確認待ち
+
+#### TBP 昇格候補
+なし（本日は新規 ADR なし）
+
+#### 再検討トリガー該当
+- **TBP-001（外部ツール導入審査）継続**: 過去の評価項目追記提案が未確認のまま継続。
+- **TBP-001 新規照合①（Claude Code v2.1.238 MCP/プラグインセキュリティ強化）**: v2.1.238（2026-08-21 時点最新）で MCP 関連のセキュリティ修正・プラグイン権限制御が強化。TBP-001「外部ツール導入審査」の「最小権限で開始」原則において、MCP サーバー・プラグイン追加時の再審査フロー更新候補として記録。
+- **TBP-001 新規照合②（freee Agent Hub 正式発表 — 2026-08-21 確認）**: freee が「freee Agent Hub」を 2026-08-28 正式ローンチ予定と発表。Claude Code/AI エージェントから freee API をフル活用できるハブサービス。Tak の本業（経理部長）が直接利用する外部 AI ツールとして、TBP-001 の 4 軸チェック（セキュリティ・権限・コスト・継続性）の具体的な適用対象として記録。
+- **TBP-002（実行環境英語パス）**: 新規トリガーなし。
+
+---
+
+### 外部リサーチ（機能B）
+#### 参照した情報源
+- Claude Code 公式チェンジログ: https://code.claude.com/docs/en/changelog（WebFetch）
+- anthropics/claude-code GitHub Issues: https://github.com/anthropics/claude-code/issues（WebFetch）
+- WebSearch: Anthropic Claude Code v2.1.238 changelog August 2026
+- WebSearch: freee Agent Hub 2026年8月 正式ローンチ
+- WebSearch: Anthropic protein design chemistry research August 2026
+- WebSearch: 会計 AI 経理 freee マネーフォワード バクラク TOKIUM 2026年8月21日
+
+#### 🔴 即座に適用すべき事項
+
+**① Claude Code v2.1.238（2026-08-21 時点最新）— 39 変更: MCP/セキュリティ修正・通知 hooks・自己ホストランナー改善・CPU 修正**
+- **MCP 関連セキュリティ修正（重要）**: MCP サーバー/プラグインの権限制御が強化。既存の MCP 設定の見直しを推奨。
+- **通知 hooks 追加**: タスク完了・エラー発生時のカスタム通知フック（Routine の監視性向上）。
+- **自己ホストランナー（self-hosted-runner）改善**: Anthropic クラウド sandbox 以外での Routine 実行安定性が向上。
+- **CPU 使用率修正**: 長時間実行タスクでの CPU 消費が改善（deep-research-runner 等への好影響が期待される）。
+- **Research Hub への影響**: MCP セキュリティ強化により、worker/ 経由の Worker-relay 設定が影響を受けないか確認推奨。通知 hooks は auto-research-morning-email との統合を検討する価値あり。
+
+**② freee Agent Hub 正式ローンチ予定（2026-08-28）— Tak 本業への直接影響大**
+- freee が「freee Agent Hub」を 2026-08-28 に正式ローンチすると発表（2026-08-21 確認）。
+- 概要: Claude Code / AI エージェントから freee API をフル活用できるハブサービス。
+  - 対応: 仕訳・請求書・経費精算・振込・レポート生成などの経理 API をエージェントから直接操作可能
+  - 認証: OAuth 2.0 / API Key 両対応
+  - MCP サーバー形式でも提供予定（MCP 経由で Claude Code と統合可能）
+- **Research Hub への直接影響**: Research Hub の「会計×AI 重要発表」枠で即時記事化推奨（8/28 ローンチ当日）。
+- **Tak 業務への直接影響**: 経理部長として最も即戦力になる外部 AI ツール。TBP-001 の 4 軸チェック（審査→最小権限→段階拡張）を適用すべき最優先案件。
+
+#### 🟡 近いうちに試したいこと（上位3件）
+
+**① freee Agent Hub の TBP-001 審査準備（ローンチ前）**
+- 2026-08-28 の freee Agent Hub ローンチ前に TBP-001 の external-audit スキルで事前 4 軸チェック実施を推奨。
+- 確認項目: セキュリティ（OAuth スコープ最小化）・権限（読み取り専用 → 段階的拡張）・コスト（API 呼び出し課金体系）・継続性（freee の SLA・stoppage リスク）。
+- MCP サーバー形式の場合は既存 freee MCP との統合/差分も確認。
+
+**② Claude Code v2.1.238 の通知 hooks 評価**
+- Routine（auto-research-collect, deep-research-runner 等）の完了・エラー通知を hooks 経由でカスタマイズできる可能性。
+- auto-research-morning-email（6:57 JST Discord 通知）との統合を設計し、Routine 失敗時の即時アラートを実現。
+
+**③ Anthropic タンパク質設計・分析化学研究（2026-08-18）の続報追跡**
+- Anthropic が Claude Opus 5 を NMR/LC-MS データ解析・タンパク質構造設計に適用した研究発表（8/18）。
+- Tak の本業への直接接点は少ないが、Claude の科学分野適用範囲の急速な拡張として記録。次回 Research Hub の auto-research-collect で記事化候補。
+
+#### 🟢 参考情報
+
+**会計×AI トレンド（2026-08-21 時点）**
+- **AI エージェント標準フェーズに移行**: freee・マネーフォワード・バクラク・TOKIUM の 4 大 SaaS が「AI エージェント標準搭載」フェーズへ移行。単一機能の AI から、複数業務を横断する自律エージェント型へ。
+- **freee Agent Hub（8/28 ローンチ）**: 上記 🔴② 参照。
+- **TOKIUM AI エージェント**: 経費精算・請求書処理・振込のエンド・ツー・エンド自動化。従来比 85% の工数削減を発表。
+- **バクラク × Claude Code 連携事例**: 中堅製造業がバクラク API + Claude Code で月次仕訳照合を全自動化（工数 90% 削減）。
+- **Tak 業務への直接参考**: 経理 AI の「効率化 → 戦略化」フェーズは 2026 年末まで加速見込み。freee Agent Hub の評価が最優先。
+
+**GitHub Issues 新着（2026-08-21 周辺）**
+- Claude Code v2.1.238 の 39 変更のうち、MCP セキュリティ・通知 hooks・CPU 修正が Research Hub 関連。
+- その他の issues は軽微な UX 改善・バグ修正が中心（直接影響なし）。
+
+**Zenn / Qiita 日本語コミュニティ（2026-08-21 時点）**
+- 「Claude Code v2.1.238 新機能解説」記事が Zenn で公開見込み（8/21 夜以降）。
+- 「freee Agent Hub ファーストルック」記事が Qiita で 8/28 以降に集中予想。
+- @__sosukesuzuki（Anthropic Claude Code チーム・日本人）の X 発信に注目。
+
+#### references.md 更新提案
+
+継続未確認項目: 過去提案（6/15〜8/20）の未確認項目を引き継ぎ。
+
+**新規追加提案（2026-08-21）**:
+1. **Claude Code v2.1.238（通知 hooks・MCP セキュリティ・CPU 修正）**: 通知設計・MCP 設定セクションへの追記提案。
+2. **freee Agent Hub（2026-08-28 ローンチ）**: 会計×AI ツール評価・TBP-001 適用事例として references.md に追記提案。Tak の本業直結。
+
+#### 新規発見ソース候補
+なし（本日は新規有望ソース未発見）
+
+#### 次回リサーチ推奨日
+2026-08-28（freee Agent Hub ローンチ当日）。記事化・TBP-001 審査着手のタイミング。
+注目点:
+① **freee Agent Hub 正式ローンチ（8/28）**: Research Hub 記事化 + TBP-001 審査開始
+② **Claude Code v2.1.239 以降**: 通知 hooks の詳細仕様・MCP 変更の影響継続監視
+③ **TBP-003・TBP-004 昇格候補**: Tak 確認状況（6/22 提案から 60 日経過）
+④ **Anthropic タンパク質設計研究の続報**: Claude Opus 5 科学応用の拡張状況
+
+---
 ## [2026-08-20] デイリーレポート
 
 ### 内部知見（機能A）
